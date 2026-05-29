@@ -1,0 +1,2159 @@
+:root {
+    --bg-color: #fcf8f1;
+    /* Slightly off-white/beige background */
+    --border-color: #e5e2db;
+    --text-main: #222222;
+    --text-muted: #555555;
+    --gold: #c3a362;
+    --product-bg: #f2f1ec;
+    --font-serif: 'Marcellus', serif;
+    --font-sans: 'Jost', sans-serif;
+}
+
+
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.navbar-brand {
+    font-family: var(--f-head);
+    font-weight: 600;
+    /* Removed the negative letter-spacing, serif fonts need room to breathe */
+    letter-spacing: 0px;
+}
+
+html,
+body {
+    max-width: 100vw;
+    overflow-x: clip;
+}
+
+
+
+body {
+    background-color: var(--bg-color);
+    font-family: var(--font-serif);
+    color: var(--text-main);
+}
+
+/* --- Top Bar --- */
+/* --- Top Bar --- */
+.top-bar {
+    padding: 20px 40px;
+    position: relative;
+    /* Added to act as the anchor for the absolute logo */
+}
+
+/* Absolute Centering for Logo */
+.logo-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Pulls it back perfectly to the center */
+    text-align: center;
+}
+
+/* Search Bar */
+.search-container {
+    position: relative;
+    width: 300px;
+}
+
+.search-input {
+    width: 100%;
+    border-radius: 50px;
+    border: 1px solid var(--border-color);
+    padding: 10px 40px 10px 20px;
+    background-color: #fff;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #ccc;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    cursor: pointer;
+}
+
+/* Logo */
+.brand-logo {
+    font-family: var(--font-serif);
+    color: var(--gold);
+    font-size: 2.8rem;
+    text-decoration: none;
+    letter-spacing: 2px;
+    font-weight: 400;
+    line-height: 1;
+}
+
+/* User Actions (Account & Cart) */
+.user-actions a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+}
+
+.cart-icon-container {
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: white;
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+}
+
+/* --- Navigation Bar --- */
+.main-nav {
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+}
+
+.nav-item {
+    margin: 0 15px;
+}
+
+.nav-link {
+    color: var(--text-main);
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    padding: 15px 5px !important;
+    position: relative;
+}
+
+.nav-link i {
+    font-size: 0.7rem;
+    margin-left: 3px;
+    vertical-align: middle;
+}
+
+.nav-link.active-link:hover {
+    border-bottom: 2px solid var(--text-main);
+}
+
+/* --- Mega Menu --- */
+.mega-dropdown {
+    position: static !important;
+}
+
+.mega-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--bg-color);
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 40px;
+    margin-top: 0;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.03);
+    display: none;
+    /* Hidden by default */
+}
+
+/* Show Mega Menu on Hover */
+.mega-dropdown:hover .mega-menu {
+    display: block;
+}
+
+/* Dropdown Lists */
+.menu-col h6 {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: var(--text-main);
+}
+
+.menu-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu-list li {
+    margin-bottom: 12px;
+}
+
+.menu-list a {
+    text-decoration: none;
+    color: var(--text-main);
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.menu-list a:hover {
+    /* color: var(--gold); */
+    text-decoration: underline 1px solid #222222;
+}
+
+/* Featured Product Card */
+.featured-product {
+    background-color: var(--product-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-img-placeholder {
+    height: 100px;
+    background-color: var(--product-bg);
+    width: 100%;
+}
+
+.product-img-placeholder img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    overflow: hidden;
+}
+
+.sale-badge {
+    position: absolute;
+    top: 180px;
+    left: 0;
+    background-color: var(--gold);
+    color: white;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    padding: 3px 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.product-details {
+    padding: 30px 20px 20px;
+}
+
+.product-title {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.price-row {
+    font-family: var(--font-sans);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.current-price {
+    font-size: 1.1rem;
+    color: var(--text-main);
+}
+
+.old-price {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.discount-text {
+    color: var(--gold);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+}
+
+
+
+
+
+
+/* --- Standard Dropdown (Shop By Material) --- */
+.standard-dropdown {
+    position: relative;
+}
+
+.standard-dropdown .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    /* Positions it directly below the nav link */
+    left: 0;
+    background-color: var(--bg-color);
+    /* Matches the header's off-white */
+    border: none;
+    border-radius: 0;
+    /* Removes Bootstrap's default rounded corners */
+    padding: 15px 0;
+    margin-top: 0;
+    min-width: 220px;
+    display: none;
+    /* Hidden by default */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Show Dropdown on Hover */
+.standard-dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/* Dropdown Item Styling */
+.standard-dropdown .dropdown-item {
+    font-family: var(--font-serif);
+    color: var(--text-main);
+    padding: 12px 25px;
+    font-size: 1rem;
+    background-color: transparent;
+    transition: color 0.2s ease;
+}
+
+/* Override Bootstrap's gray background on hover */
+.standard-dropdown .dropdown-item:hover,
+.standard-dropdown .dropdown-item:focus {
+    /* color: var(--gold); */
+    background-color: transparent;
+    text-decoration: underline 1px solid #222222;
+}
+
+
+
+
+
+
+
+
+
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 991px) {
+    .top-bar {
+        padding: 15px 20px;
+    }
+
+    /* Pull logo back into normal flow and put it first */
+    .logo-container {
+        position: static;
+        transform: none;
+        left: auto;
+        order: 1;
+    }
+
+    /* Put icons second */
+    .user-actions {
+        order: 2;
+        gap: 20px !important;
+        /* Tighten gap between icons */
+    }
+
+    /* Drop search bar to the bottom row, full width */
+    .search-container {
+        order: 3;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    /* Slightly scale down the logo for smaller screens */
+    .brand-logo {
+        font-size: 2.3rem;
+    }
+
+    /* Scale up the mobile icons slightly to match your image */
+    .mobile-icon i {
+        font-size: 1.4rem;
+    }
+
+    /* Optional: Hide the desktop navigation links on mobile 
+       (Assuming you will trigger an off-canvas menu with the hamburger) */
+    .main-nav {
+        display: none;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Hero Carousel Section --- */
+.hero-section {
+    position: relative;
+    width: 100%;
+    /* Optional: Adds a subtle line between header and hero if needed */
+    /* border-top: 1px solid var(--border-color); */
+}
+
+/* Image Styling */
+.hero-img {
+    height: 80vh;
+    /* Adjust this value to make the banner taller or shorter */
+    min-height: 500px;
+    object-fit: cover;
+    /* Ensures the image fills the space without stretching */
+    object-position: center;
+}
+
+@media(max-width:525px) {
+
+    .hero-img {
+        height: 25vh !important;
+        min-height: 25vh !important;
+    }
+
+    .hero-section {
+        height: 30vh;
+    }
+
+}
+
+/* Custom Controls Container */
+.carousel-custom-controls {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    /* Aligns perfectly with the 40px padding of your top-bar */
+    z-index: 10;
+    display: flex;
+    gap: 12px;
+}
+
+/* Circular Buttons */
+.carousel-control-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 1px solid #ebebeb;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    /* Very subtle shadow for depth */
+    transition: all 0.3s ease;
+}
+
+/* Button Hover State */
+.carousel-control-btn:hover {
+    background-color: var(--product-bg);
+    color: var(--gold);
+    border-color: var(--border-color);
+}
+
+/* --- Mobile Adjustments for Hero --- */
+@media (max-width: 991px) {
+    .hero-img {
+        height: 40vh;
+        /* Slightly shorter on mobile */
+        min-height: 400px;
+    }
+
+    .carousel-custom-controls {
+        bottom: 20px;
+        right: 20px;
+        /* Shrinks the right-margin to match mobile padding */
+    }
+
+    .carousel-control-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Product Grid Section --- */
+.product-section {
+    background-color: var(--bg-color);
+    /* Uses the off-white root variable */
+}
+
+/* Header & Typography */
+.section-title {
+    font-family: var(--font-serif);
+    /* Using sans-serif based on screenshot text style */
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--text-main);
+}
+
+.view-all-link {
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    transition: color 0.2s;
+}
+
+.view-all-link:hover {
+    color: var(--gold);
+}
+
+/* Product Card Styling */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: var(--product-bg);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.04);
+}
+
+/* Image Wrapper & Badge */
+.product-img-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* Forces perfect square images */
+    overflow: hidden;
+}
+
+/* Force all product images to be perfect 1:1 squares */
+.product-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    /* Forces the square shape */
+    object-fit: cover;
+    /* Crops the image gracefully instead of stretching it */
+    display: block;
+    /* Removes any weird spacing below images */
+}
+
+.grid-sale-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background-color: var(--gold);
+    color: white;
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 2;
+}
+
+/* Product Details */
+.product-info {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.grid-product-title {
+    font-family: var(--font-sans);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    font-weight: 400;
+}
+
+.grid-price-row {
+    margin-top: auto;
+    /* Pushes price to the bottom if titles are different heights */
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: var(--font-sans);
+}
+
+.grid-current-price {
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
+.grid-old-price {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.grid-discount {
+    font-size: 0.75rem;
+    color: var(--gold);
+}
+
+/* Color Swatches */
+.color-swatches {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.swatch-text {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--text-main);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .view-all-link {
+        font-size: 0.85rem;
+    }
+
+    .product-info {
+        padding: 12px;
+    }
+
+    .grid-product-title {
+        font-size: 0.85rem;
+    }
+
+    .grid-current-price {
+        font-size: 0.9rem;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Product Detail Section --- */
+.product-detail-section {
+    background-color: var(--bg-color);
+    font-family: var(--font-sans);
+}
+
+/* Sticky Gallery Magic */
+.sticky-gallery {
+    position: sticky;
+    top: 30px;
+    /* Distance from the top of the screen when it sticks */
+    align-items: flex-start;
+    /* Prevents flex children from stretching vertically */
+}
+
+/* Thumbnails */
+.thumbnails {
+    width: 70px;
+    /* Fixed width for the thumbnail column */
+    flex-shrink: 0;
+}
+
+.thumb-img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.thumb-img:hover {
+    border-color: #ccc;
+}
+
+.thumb-img.active {
+    border-color: var(--text-main);
+    /* Black border for active state */
+}
+
+/* Main Image */
+.main-image {
+    background-color: #f6f5f0;
+    /* Slight contrast background if image is transparent */
+}
+
+.main-image img {
+    max-height: 85vh;
+    /* Prevents the image from being taller than the screen */
+    object-fit: contain;
+    /* Ensures the whole art piece is visible */
+}
+
+/* Typography & Right Column details */
+.product-title-large {
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.product-brand {
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+}
+
+.current-price-large {
+    font-size: 1.5rem;
+    color: var(--text-main);
+}
+
+.old-price-large {
+    font-size: 1.1rem;
+}
+
+.save-badge {
+    color: var(--gold);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.quick-specs p {
+    margin-bottom: 8px;
+    color: var(--text-main);
+    font-size: 1.05rem;
+}
+
+/* Variants */
+.variant-label {
+    font-size: 0.85rem;
+    text-transform: capitalize;
+}
+
+.variant-box {
+    display: inline-block;
+    border: 1px solid var(--text-main);
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    cursor: default;
+}
+
+/* Action Buttons */
+.btn-add-cart {
+    background-color: transparent;
+    border: 1px solid var(--text-main);
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.95rem;
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+
+.btn-add-cart:hover {
+    background-color: var(--text-main);
+    color: white;
+}
+
+.btn-buy-now {
+    background-color: var(--gold);
+    border: 1px solid var(--gold);
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.95rem;
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+
+.btn-buy-now:hover {
+    background-color: #ae9054;
+    /* Slightly darker gold */
+    color: white;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 991px) {
+    .sticky-gallery {
+        position: static;
+        /* Turns off sticky on mobile */
+        flex-direction: column-reverse;
+        /* Puts main image on top, thumbs below */
+    }
+
+    .thumbnails {
+        width: 100%;
+        flex-direction: row !important;
+        /* Thumbs horizontal on mobile */
+        overflow-x: auto;
+    }
+
+    .thumb-img {
+        width: 70px;
+        height: 70px;
+    }
+
+    .product-title-large {
+        font-size: 1.5rem;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* CSS Code for Product Detail Section */
+:root {
+    --text-gold: #c3a362;
+    --border-beige: #e5e2db;
+    --bg-main: #fcf8f1;
+    /* Off-white background */
+    --gold: #c3a362;
+}
+
+.product-detail-section {
+    background-color: var(--bg-main);
+}
+
+
+
+.mobile-swipe-wrapper {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    width: 100%;
+}
+
+.main-swipe-img {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    scroll-snap-align: start;
+    object-fit: cover;
+}
+
+
+
+
+/* Font Classes */
+.font-marcellus {
+    font-family: 'Marcellus', serif;
+}
+
+.font-jost {
+    font-family: 'Jost', sans-serif;
+}
+
+/* Left Sticky Side Styling */
+.product-gallery-container {
+    padding-right: 0;
+}
+
+.product-gallery-inner {
+    padding-right: 15px;
+    /* Spacing from main image column */
+}
+
+/* Vertical Thumbnails */
+.product-thumbnails {
+    padding-right: 0;
+}
+
+.thumbnail-wrapper {
+    overflow: hidden;
+    cursor: pointer;
+    background-color: transparent;
+    transition: border-color 0.2s;
+    aspect-ratio: 2/3;
+    /* Set a portrait aspect ratio */
+}
+
+.thumbnail-wrapper.active {
+    border-color: #222222 !important;
+    /* Selected border color */
+}
+
+.thumbnail-wrapper img {
+    object-fit: cover;
+    height: 100%;
+}
+
+/* Main Image */
+.product-main-image {
+    display: block;
+    position: relative;
+}
+
+.main-image-item {
+    display: none;
+    /* Hide all by default on desktop */
+}
+
+/* Right Detail Side Styling */
+.product-info-container .product-title {
+    font-size: 2.2rem;
+    color: #222222;
+}
+
+.product-info-container .brand-text {
+    font-size: 1.1rem;
+}
+
+/* Price Styling */
+.grid-current-price,
+.grid-old-price {
+    font-family: 'Jost', sans-serif;
+}
+
+.grid-old-price {
+    font-size: 1.2rem;
+    text-decoration: line-through;
+}
+
+.grid-discount {
+    font-size: 1.1rem;
+    color: var(--text-gold);
+}
+
+/* Variant Selectors */
+.variant-option-box {
+    background-color: transparent;
+    cursor: default;
+}
+
+.variant-option-box:first-of-type {
+    border-color: #222222 !important;
+    /* Assume the shown variant is "selected" */
+}
+
+/* CTA Buttons */
+.add-to-cart-btn {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.solid-gold-btn {
+    background-color: var(--gold);
+    color: #ffffff;
+    border: 1px solid var(--gold);
+}
+
+.solid-gold-btn:hover {
+    background-color: #d1b174;
+    border-color: #d1b174;
+}
+
+.buy-now-btn {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 991px) {
+
+    /* Enable horizontal swiping on mobile */
+    .product-main-image {
+        overflow: hidden;
+        padding: 0;
+    }
+
+    .mobile-swipe-wrapper {
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        height: 300px;
+    }
+
+    /* Hide scrollbar for a cleaner look */
+    .mobile-swipe-wrapper::-webkit-scrollbar {
+        display: none;
+    }
+
+    .main-swipe-img {
+        flex: 0 0 100%;
+        width: 100%;
+        scroll-snap-align: start;
+        object-fit: cover;
+    }
+
+    /* Keep the thumbnails row functional below the main image */
+    .product-thumbnails {
+        flex-direction: row !important;
+        overflow-x: auto;
+        padding-top: 15px;
+    }
+
+    .thumbnail-wrapper {
+        width: 70px;
+        flex-shrink: 0;
+    }
+}
+
+/* Ensure desktop only shows the active image */
+@media (min-width: 992px) {
+    .main-swipe-img {
+        display: none;
+    }
+
+    .main-swipe-img:first-child {
+        display: block;
+        width: 100%;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Hover Actions Card Modifications --- */
+
+/* Font override to match the specific serif look */
+.grid-product-title.font-marcellus {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+}
+
+/* Make the card overflow visible */
+.product-card.card-with-hover {
+    overflow: visible !important;
+}
+
+/* FIX 1: Make the image wrapper visible so it stops clipping the buttons */
+/* Make the wrapper visible so buttons can pop out */
+.product-card.card-with-hover .product-img-wrapper {
+    overflow: visible !important;
+}
+
+/* Apply the rounded corners directly to the image so the card still looks neat */
+.product-card.card-with-hover .product-img-wrapper img {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+}
+
+/* Container for the Quick View and Add to Cart buttons */
+.card-hover-actions {
+    position: absolute;
+    top: -15px;
+    right: -20px;
+    /* Pushes the buttons slightly out of the card container */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+}
+
+/* Individual Button Styling */
+.hover-action-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: var(--gold);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+
+    /* Animation initial state */
+    opacity: 0;
+    transform: translateX(15px);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+}
+
+.hover-action-btn:hover {
+    background-color: #ae9054;
+    color: white;
+}
+
+/* Trigger animation on Card Hover (Desktop Only) */
+.product-card.card-with-hover:hover .hover-action-btn {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.product-card.card-with-hover .hover-action-btn:nth-child(1) {
+    transition-delay: 0.0s;
+}
+
+.product-card.card-with-hover .hover-action-btn:nth-child(2) {
+    transition-delay: 0.08s;
+}
+
+/* --- Tablet & Mobile Adjustments for Hover Cards --- */
+@media (max-width: 991px) {
+
+    /* Force buttons to be fully visible and in position without hover */
+    .product-card.card-with-hover .hover-action-btn {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Pull the buttons in slightly so they don't cause horizontal scrolling on small screens */
+    .card-hover-actions {
+        right: -10px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Shop By Collection Section --- */
+.collection-section {
+    background-color: var(--bg-color);
+    /* Matches the site's off-white background */
+}
+
+/* Link Wrapper */
+.collection-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: color 0.3s ease;
+}
+
+.collection-link:hover .collection-title {
+    color: var(--gold);
+    /* Highlights text on hover */
+}
+
+/* Circular Image Wrapper */
+.collection-img-wrapper {
+    width: 100%;
+    max-width: 220px;
+    /* Prevents circles from getting too massive on ultrawide screens */
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background-color: var(--border-color);
+    /* Acts as a placeholder while loading */
+
+    /* Subtle shadow to separate it from the background */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.collection-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Smooth zoom effect on hover */
+.collection-link:hover .collection-img-wrapper img {
+    transform: scale(1.08);
+}
+
+/* Collection Title Text */
+.collection-title {
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: center;
+    line-height: 1.4;
+    margin: 0;
+    transition: color 0.3s ease;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .collection-img-wrapper {
+        margin-bottom: 12px;
+    }
+
+    .collection-title {
+        font-size: 0.85rem;
+        /* Scales text down slightly for smaller screens */
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Brand Values Section --- */
+.values-section {
+    background-color: var(--bg-color);
+}
+
+.feature-title {
+    font-family: var(--font-serif);
+    color: var(--gold);
+    font-size: 2.2rem;
+    font-weight: 400;
+    margin-bottom: 15px;
+}
+
+.feature-text {
+    font-family: var(--font-sans);
+    color: var(--gold);
+    font-size: 1.1rem;
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 280px;
+    margin: 0 auto;
+}
+
+/* Vertical Dividers for Desktop */
+@media (min-width: 768px) {
+    .border-desktop-sides {
+        border-left: 1px solid #222222;
+        border-right: 1px solid #222222;
+    }
+}
+
+/* Ensure consistent spacing between rows on mobile */
+@media (max-width: 767px) {
+    .feature-title {
+        font-size: 1.8rem;
+    }
+
+    .feature-text {
+        font-size: 1rem;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Google Reviews Section --- */
+.reviews-section {
+    background-color: var(--bg-color);
+    overflow: hidden;
+}
+
+.google-stars i,
+.review-stars i {
+    color: #fbc02d;
+    /* Google Yellow */
+    font-size: 0.9rem;
+    margin: 0 1px;
+}
+
+.reviews-carousel-wrapper {
+    position: relative;
+    padding: 0 50px;
+    width: 100%;
+}
+
+/* Continuous Animation Track */
+.reviews-track {
+    display: flex;
+    gap: 25px;
+    width: max-content;
+    animation: smoothScroll 40s linear infinite;
+    padding: 20px 0;
+}
+
+/* Pause on hover */
+.reviews-track:hover {
+    animation-play-state: paused;
+}
+
+@keyframes smoothScroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+
+    /* Animates half the width for a seamless loop */
+}
+
+/* Review Card Styling */
+.review-card {
+    background: white;
+    width: 350px;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    flex-shrink: 0;
+    font-family: var(--font-sans);
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar,
+.avatar-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #8d6e63;
+    color: white;
+    font-weight: 500;
+}
+
+.review-date {
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.review-text {
+    font-size: 0.9rem;
+    color: #444;
+    line-height: 1.6;
+    margin: 15px 0 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    /* Truncate text */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.read-more {
+    font-size: 0.85rem;
+    color: #888;
+    text-decoration: none;
+}
+
+/* Control Buttons */
+.review-control {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #838383;
+    z-index: 5;
+    transition: color 0.3s;
+}
+
+.review-control:hover {
+    color: var(--text-main);
+}
+
+.review-control.prev {
+    left: 30px;
+}
+
+.review-control.next {
+    right: 30px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .review-card {
+        width: 280px;
+    }
+
+    .reviews-track {
+        animation-duration: 25s;
+    }
+}
+
+
+
+/* --- Google Reviews Drag & Auto-Scroll --- */
+.reviews-grab-container {
+    overflow-x: hidden;
+    /* Hide scrollbar */
+    cursor: grab;
+    padding: 20px 0;
+    white-space: nowrap;
+    user-select: none;
+    /* Prevent text selection while dragging */
+}
+
+.reviews-grab-container:active {
+    cursor: grabbing;
+}
+
+.reviews-track {
+    display: flex;
+    gap: 25px;
+    width: max-content;
+    will-change: transform;
+    /* Performance boost for JS animation */
+}
+
+.review-card {
+    background: white;
+    width: 350px;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    flex-shrink: 0;
+    white-space: normal;
+    /* Allow text wrapping inside cards */
+}
+
+/* Maintain consistency with the rest of Sebin's Jodha design */
+.review-header .avatar {
+    background-color: var(--gold) !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Newsletter Section --- */
+.newsletter-section {
+    background-color: var(--gold);
+    /* Uses your existing #c3a362 gold */
+    padding: 60px 0;
+}
+
+.newsletter-title {
+    font-size: 2.8rem;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+.newsletter-text {
+    font-size: 1.1rem;
+    font-weight: 300;
+    opacity: 0.95;
+    letter-spacing: 0.5px;
+}
+
+/* Form Styling */
+.newsletter-form {
+    max-width: 550px;
+    margin: 0 auto;
+}
+
+.newsletter-form .input-group {
+    background-color: white;
+    padding: 5px;
+    border-radius: 0;
+    /* Keeps the sharp look from the image */
+}
+
+.newsletter-input {
+    border: none !important;
+    background-color: #f9f9f9 !important;
+    /* Slightly off-white inside */
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 0 !important;
+}
+
+.newsletter-input:focus {
+    box-shadow: none;
+}
+
+.newsletter-btn {
+    background-color: white !important;
+    color: var(--gold) !important;
+    border: none;
+    padding: 12px 30px;
+    font-weight: 500;
+    font-size: 1rem;
+    border-radius: 0 !important;
+    transition: opacity 0.3s;
+}
+
+.newsletter-btn:hover {
+    color: white !important;
+    background-color: var(--gold) !important;
+}
+
+/* Mobile Adjustments */
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .newsletter-title {
+        font-size: 2.2rem;
+    }
+
+    .newsletter-form .input-group {
+        /* Force vertical stacking and override Bootstrap default flex behavior */
+        display: flex !important;
+        flex-direction: column !important;
+        background-color: transparent;
+        padding: 0;
+        gap: 15px;
+        /* Increased gap for better touch targets */
+    }
+
+    .newsletter-input,
+    .newsletter-btn {
+        /* Ensure elements take full width and behave as block elements */
+        width: 100% !important;
+        flex: none !important;
+        text-align: center;
+        /* Re-apply background for mobile since parent group becomes transparent */
+        background-color: white !important;
+        padding: 15px 20px;
+    }
+
+    .newsletter-input {
+        /* Add a border or shadow if needed to separate from the background on mobile */
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Footer Section --- */
+.footer-section {
+    background-color: var(--bg-color);
+    /* Uses existing #fcf8f1 */
+    border-top: 1px solid var(--border-color);
+}
+
+.footer-heading {
+    font-family: var(--font-sans);
+    /* Clean sans-serif headings */
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.footer-list {
+    list-style: none;
+}
+
+.footer-list li {
+    margin-bottom: 12px;
+}
+
+.footer-list a {
+    text-decoration: none;
+    color: var(--text-main);
+    font-family: var(--font-jost);
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.footer-list a:hover {
+    color: var(--gold);
+}
+
+.contact-info p {
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
+.social-links a {
+    color: var(--text-main);
+    font-size: 1.5rem;
+    transition: color 0.2s;
+}
+
+.social-links a:hover {
+    color: var(--gold);
+}
+
+/* Payment Icons */
+.payment-methods i {
+    font-size: 2rem;
+    color: #444;
+    /* Standard icon color for clarity */
+}
+
+/* Bottom Divider and Copyright */
+.footer-divider {
+    border-color: #e5e2db;
+    opacity: 1;
+}
+
+.copyright-text {
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.copyright-text a {
+    color: #444;
+    text-underline-offset: 4px;
+}
+
+/* Responsive Fixes */
+@media (max-width: 768px) {
+    .footer-heading {
+        margin-top: 20px;
+    }
+
+    .payment-methods {
+        margin-top: 30px;
+        justify-content: center !important;
+    }
+}
+
+
+
+/* Ensure the container can handle the slide */
+.mobile-highlight-box {
+    position: relative;
+    overflow: hidden;
+    /* This hides the menus that are off-screen */
+}
+
+/* Base state for all panels */
+.nav-panel {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+}
+
+/* Sub-panels start hidden to the right */
+.sub-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateX(100%);
+    visibility: hidden;
+    background-color: #f8f6f2;
+    /* Match offcanvas bg */
+    z-index: 5;
+}
+
+/* Active states */
+.slide-out {
+    transform: translateX(-100%);
+}
+
+.slide-in {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- Search Results Dropdown --- */
+.search-results-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    z-index: 1000;
+    max-height: 450px;
+    overflow-y: auto;
+    border-radius: 8px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    scrollbar-width: thin;
+    scrollbar-color: var(--gold) transparent;
+}
+
+.search-results-dropdown::-webkit-scrollbar {
+    width: 4px;
+}
+
+.search-results-dropdown::-webkit-scrollbar-thumb {
+    background-color: var(--gold);
+    border-radius: 10px;
+}
+
+.search-category-section {
+    padding: 10px 0;
+}
+
+.search-category-section:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.search-category-title {
+    padding: 8px 15px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    background-color: #f9f9f7;
+    font-family: var(--font-sans);
+}
+
+.search-item {
+    padding: 10px 15px;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: background-color 0.2s;
+}
+
+.search-item:hover {
+    background-color: #fcf8f1;
+}
+
+.search-item-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background-color: #eee;
+}
+
+.search-item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.search-item-info {
+    flex-grow: 1;
+}
+
+.search-item-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 2px;
+    font-family: var(--font-serif);
+}
+
+.search-item-extra {
+    font-size: 0.8rem;
+    color: var(--gold);
+    font-family: var(--font-sans);
+}
+
+@media (max-width: 991px) {
+    .search-results-dropdown {
+        top: 100%;
+        border-radius: 0 0 10px 10px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+}
+
+ / *   L i s t   V i e w   O v e r r i d e s   * /   # p r o d u c t - g r i d . l i s t - v i e w   . c o l    {
+               w i d t h :    1 0 0 %    ! i m p o r t a n t ;
+       
+}
+
+     # p r o d u c t - g r i d . l i s t - v i e w   . p r o d u c t - c a r d    {
+               d i s p l a y :    f l e x    ! i m p o r t a n t ;
+               f l e x - d i r e c t i o n :    r o w    ! i m p o r t a n t ;
+               a l i g n - i t e m s :    f l e x - s t a r t ;
+               g a p :    3 0 p x ;
+               t e x t - a l i g n :    l e f t ;
+               p a d d i n g :    2 0 p x ;
+               b a c k g r o u n d :    # f f f ;
+               b o r d e r - b o t t o m :    1 p x   s o l i d   r g b a ( 0 ,  0 ,  0 ,  0 . 0 5 ) ;
+       
+}
+
+     # p r o d u c t - g r i d . l i s t - v i e w   . p r o d u c t - i m g - w r a p p e r    {
+               w i d t h :    2 8 0 p x    ! i m p o r t a n t ;
+               m a x - w i d t h :    3 0 % ;
+               f l e x - s h r i n k :    0 ;
+       
+}
+
+     # p r o d u c t - g r i d . l i s t - v i e w   . p r o d u c t - i n f o    {
+               f l e x - g r o w :    1 ;
+               p a d d i n g - t o p :    1 0 p x ;
+       
+}
+
+     @ m e d i a   ( m a x - w i d t h :   7 6 7 p x )    {
+               # p r o d u c t - g r i d . l i s t - v i e w   . p r o d u c t - c a r d    {
+                           g a p :    1 5 p x ;
+                           p a d d i n g :    1 0 p x ;
+                   
+    }
+
+               # p r o d u c t - g r i d . l i s t - v i e w   . p r o d u c t - i m g - w r a p p e r    {
+                           w i d t h :    1 2 0 p x    ! i m p o r t a n t ;
+                   
+    }
+
+       
+}
+
+       

@@ -1,0 +1,4713 @@
+/* ==================== 1. DESIGN SYSTEM & VARIABLES ==================== */
+/* ==================== 1. DESIGN SYSTEM & VARIABLES ==================== */
+:root {
+    /* Rich Luxury Colors */
+    --c-primary: #1A1514;
+    /* Deep Espresso/Charcoal - Softer than pure black */
+    --c-gold: #D1B246;
+    /* Jodha Gold (Kept the same) */
+    --c-linen: #EFEBE3;
+    /* Cashmere / Warm Stone - Feels rich and earthy */
+    --c-white: #FCFBF9;
+    /* Alabaster - Softer, premium white for cards */
+    --c-body: #3A3633;
+    /* Warm Dark Text - Easier to read, looks expensive */
+
+    /* Luxury Fonts */
+    --f-head: 'Playfair Display', serif;
+    --f-body: 'Montserrat', sans-serif;
+}
+
+html,
+body {
+    max-width: 100vw;
+    overflow-x: clip;
+    /* <--- The magic fix */
+    font-family: var(--f-body);
+    color: var(--c-body);
+    background-color: var(--c-linen);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.navbar-brand {
+    font-family: var(--f-head);
+    font-weight: 600;
+    /* Removed the negative letter-spacing, serif fonts need room to breathe */
+    letter-spacing: 0px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: 0.3s;
+}
+
+
+
+
+
+/* ============================================== 2. HEADER STYLES ==================== */
+
+/* Top Bar */
+.top-bar {
+    padding: 20px 40px;
+    position: relative;
+    /* Added to act as the anchor for the absolute logo */
+}
+
+.top-bar strong {
+    color: var(--c-gold);
+}
+
+/* Absolute Centering for Logo */
+.logo-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Pulls it back perfectly to the center */
+    text-align: center;
+}
+
+.top-links a {
+    color: #ccc;
+    margin-left: 20px;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.top-links a:hover {
+    color: var(--c-gold);
+}
+
+/* Main Navbar */
+.navbar {
+    background-color: var(--c-white);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 16px 0;
+}
+
+.navbar-brand img {
+    width: 140px;
+}
+
+@media (max-width: 768px) {
+    .navbar-brand img {
+        width: 100px;
+    }
+}
+
+
+
+
+
+
+
+.brand-subtitle {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--c-gold);
+    text-transform: uppercase;
+    margin-top: -4px;
+}
+
+/* Search Bar */
+.search-form {
+    width: 40%;
+    max-width: 500px;
+}
+
+.search-form .input-group {
+    border-bottom: 1px solid #ddd;
+    /* Underline style for luxury feel */
+}
+
+.search-form .form-control {
+    border: none;
+    box-shadow: none;
+    font-size: 14px;
+    padding: 10px;
+    background: transparent;
+}
+
+.search-form .input-group-text {
+    border: none;
+    color: #999;
+}
+
+.search-form .form-control:focus {
+    background: transparent;
+}
+
+
+
+/* Style the webkit cancel button to match the luxury theme */
+input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    height: 14px;
+    width: 14px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23999999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>') no-repeat center center;
+    background-size: contain;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+input[type="search"]::-webkit-search-cancel-button:hover {
+    opacity: 1;
+}
+
+
+
+
+
+
+/* =============================================== SEARCH SUGGESTIONS DROP DOWN ==================== */
+
+/* Ensure the form acts as the anchor point */
+.search-form {
+    position: relative;
+    z-index: 1050;
+    /* Higher than other nav elements */
+}
+
+/* The Dropdown Container */
+.search-suggestions {
+    background-color: #fff;
+    border-top: none;
+    padding: 20px;
+    z-index: 1060;
+}
+
+/* Showing Logic: When user clicks/focuses inside the form */
+.search-form:focus-within .search-suggestions {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Suggestion Typography */
+.suggestion-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #999;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+/* Trending Tags */
+.search-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #f5f5f5;
+    color: var(--c-body);
+    font-size: 12px;
+    border-radius: 20px;
+    transition: 0.2s;
+}
+
+.search-tag:hover {
+    background: var(--c-gold);
+    color: var(--c-white);
+}
+
+/* Product List Items */
+.product-suggestion-item {
+    border-bottom: 1px solid #f9f9f9;
+    transition: 0.2s;
+}
+
+.product-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.product-suggestion-item:hover {
+    background-color: #fafafa;
+}
+
+.suggestion-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+}
+
+.product-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--c-primary);
+}
+
+.product-price {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+
+
+/* Icons */
+.nav-icon {
+    font-size: 18px;
+    color: var(--c-primary);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-icon:hover {
+    color: var(--c-gold);
+}
+
+.icon-label {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.badge-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--c-gold);
+    color: var(--c-white);
+    font-size: 10px;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Category Bar (Desktop) */
+.category-bar {
+    background: var(--c-white);
+    border-bottom: 1px solid #eaeaea;
+    padding: 0;
+}
+
+.category-bar .nav-link {
+    color: var(--c-primary);
+    font-weight: 500;
+    font-size: 14px;
+    text-transform: uppercase;
+    padding: 15px 25px;
+    position: relative;
+}
+
+.category-bar .nav-link:hover,
+.category-bar .nav-link.active {
+    color: var(--c-gold);
+}
+
+.category-bar .text-gold {
+    color: var(--c-gold);
+}
+
+.text-gold {
+    color: var(--c-gold);
+}
+
+
+/* ==================== 3. MEGA MENU ==================== */
+.has-megamenu {
+    position: static;
+}
+
+/* Essential for full width */
+
+.megamenu {
+    width: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0;
+    border: none;
+    border-top: 1px solid var(--c-gold);
+    padding: 40px 0;
+    background: var(--c-white);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border-radius: 0;
+}
+
+.menu-heading {
+    color: var(--c-primary);
+    font-family: var(--f-head);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.megamenu ul li a {
+    display: block;
+    color: #666;
+    padding: 6px 0;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.megamenu ul li a:hover {
+    color: var(--c-gold);
+    transform: translateX(5px);
+}
+
+/* Featured Image in Menu */
+.mega-feature-card {
+    position: relative;
+    height: 100%;
+    min-height: 200px;
+    border-radius: 0px;
+    /* Sharp edges */
+    overflow: hidden;
+}
+
+.mega-feature-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: 0.5s;
+}
+
+.mega-feature-card:hover img {
+    transform: scale(1.05);
+}
+
+.feature-content {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    max-width: 200px;
+}
+
+.feature-content h5 {
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.badge-gold {
+    background: var(--c-gold);
+    color: #fff;
+    font-size: 10px;
+    padding: 3px 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Hover to open dropdown (Optional - Desktop only) */
+@media all and (min-width: 992px) {
+    .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+}
+
+
+
+
+
+/* Badge Styling for Navbar Icons */
+.badge-count {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    background-color: var(--c-gold);
+    color: #fff;
+    border-radius: 50%;
+    padding: 2px 5px;
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Make sure the desktop suggestion box drops *over* the content */
+.desktop-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    border: 1px solid #eee;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-suggestions {
+    position: relative;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+    margin-top: 15px;
+}
+
+
+
+
+/* Highlight items on hover */
+.product-suggestion-item:hover .product-name {
+    color: var(--c-gold) !important;
+}
+
+/* Ensure focus states look clean */
+.search-form .form-control:focus {
+    border-color: #dee2e6;
+    /* Keeps the border neutral instead of turning blue */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* ====================================== 4. HERO SECTION (VIDEO) ==================== */
+.hero-section {
+    position: relative;
+    height: 85vh;
+    /* 85% of screen height */
+    width: 100%;
+    overflow: hidden;
+    /*display: flex;*/
+    align-items: center;
+    justify-content: center;
+}
+
+.video-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.video-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Ensures video fills screen without stretching */
+}
+
+/* Dark Overlay to make text readable */
+.video-wrapper .overlay-hero {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.185);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    color: var(--c-white);
+}
+
+.hero-content h5 {
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--c-gold);
+    margin-bottom: 20px;
+}
+
+.hero-content h1 {
+    font-size: 52px;
+    line-height: 1.1;
+    margin-bottom: 30px;
+    font-weight: 400;
+}
+
+/* Buttons */
+.btn-primary-custom {
+    background-color: var(--c-primary);
+    color: var(--c-gold);
+    border: 1px solid var(--c-primary);
+    padding: 15px 40px;
+    border-radius: 0px;
+    /* Sharp */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-primary-custom:hover {
+    background-color: var(--c-gold);
+    color: var(--c-primary);
+    border-color: var(--c-gold);
+}
+
+
+
+/* Buttons Gold */
+.btn-primary-custom2 {
+    background-color: var(--c-gold);
+    color: var(--c-primary);
+    border: 1px solid var(--c-gold);
+    padding: 15px 40px;
+    border-radius: 0px;
+    /* Sharp */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.btn-primary-custom2:hover {
+    background-color: var(--c-primary);
+    color: var(--c-gold);
+    border-color: var(--c-primary);
+}
+
+
+
+.btn-outline-custom {
+    background: transparent;
+    color: var(--c-white);
+    border: 1px solid var(--c-white);
+    padding: 15px 40px;
+    border-radius: 0px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.btn-outline-custom:hover {
+    background: var(--c-white);
+    color: var(--c-primary);
+}
+
+/* Animation */
+.fade-in-up {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.8s forwards;
+}
+
+.delay-1 {
+    animation-delay: 0.2s;
+}
+
+.delay-2 {
+    animation-delay: 0.4s;
+}
+
+.delay-3 {
+    animation-delay: 0.6s;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .hero-content h1 {
+        font-size: 36px;
+    }
+
+    .hero-section {
+        height: 70vh;
+    }
+
+    .btn {
+        width: 100%;
+        margin: 10px 0 !important;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+/* ==================== CURATED COLLECTIONS (EXHIBITION LAYOUT) ==================== */
+
+.category-section {
+    padding: 120px 0;
+    background-color: var(--c-white);
+    /* Keeps the rich cashmere background */
+}
+
+/* Typography Enhancements */
+.letter-spacing-3 {
+    letter-spacing: 3px;
+}
+
+.category-section h2.display-4 {
+    font-weight: 400;
+    /* Lighter weight serif looks much more expensive */
+    line-height: 1.1;
+}
+
+/* 1. The Slider Container */
+.category-slider-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* 2. The Scrollable Track */
+.category-slider {
+    display: flex;
+    gap: 40px;
+    /* Massive gap between cards for luxury feel */
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 40px;
+    padding-right: 5vw;
+    /* Allows the last item to not hit the screen edge */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.category-slider::-webkit-scrollbar {
+    display: none;
+}
+
+/* 3. The Slide Item (Responsive scaling) */
+.slider-item {
+    min-width: 280px;
+    flex: 0 0 auto;
+    width: 280px;
+}
+
+@media (min-width: 992px) {
+    .slider-item {
+        width: 350px;
+        min-width: 350px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .slider-item {
+        width: 420px;
+        min-width: 420px;
+    }
+
+    /* Huge lush images on big screens */
+}
+
+
+
+/* =========================================================
+   Mobile View (Show 3 Cards) 
+========================================================= */
+@media (max-width: 767px) {
+    .category-slider {
+        gap: 12px;
+        /* Reduce the massive 40px gap for mobile */
+        padding-bottom: 20px;
+        padding-right: 0;
+        /* Remove extra right padding to fit exactly 3 */
+    }
+
+    .slider-item {
+        /* Reset min-width and calculate exactly 3 items per row minus the gaps */
+        min-width: unset;
+        width: calc((100% - 24px) / 2);
+        flex: 0 0 calc((100% - 24px) / 2);
+    }
+
+    /* Scale down the footer spacing to fit the smaller cards */
+    .category-card .card-footer-luxury {
+        margin-top: 10px !important;
+        /* Overrides the Bootstrap mt-4 */
+        padding-bottom: 8px;
+    }
+
+    /* Scale down the typography for 3-column mobile view */
+    .category-card .cat-title {
+        font-size: 10px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Make the arrow smaller to fit next to the text */
+    .category-card .luxury-arrow svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Optional: Show arrow by default on mobile since hover doesn't exist on touch screens */
+    .luxury-arrow {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+
+
+
+
+
+/* 4. Card & Image Styling */
+.category-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    text-align: left;
+    /* Left align is more editorial than center align */
+}
+
+.category-card .img-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* Forces perfect square */
+    overflow: hidden;
+    background-color: #e8e4db;
+}
+
+.category-card .img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+    /* Ultra-smooth, slow zoom */
+}
+
+.category-card:hover .img-wrapper img {
+    transform: scale(1.06);
+    /* Slower, smaller zoom for elegance */
+}
+
+/* 5. Typography & Details for the Category Title */
+.card-footer-luxury {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    /* Delicate baseline */
+    padding-bottom: 15px;
+}
+
+.category-card .cat-title {
+    font-family: var(--f-body);
+    color: var(--c-primary);
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: color 0.4s ease;
+}
+
+/* The Slide-in Arrow Effect */
+.luxury-arrow {
+    opacity: 0;
+    transform: translateX(-15px);
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    color: var(--c-gold);
+}
+
+.category-card:hover .cat-title {
+    color: var(--c-gold);
+}
+
+.category-card:hover .luxury-arrow {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* 6. Slider Controls - Elegant Minimalist Buttons */
+.btn-slider {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    /* Thin, subtle border */
+    background: transparent;
+    color: var(--c-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+    cursor: pointer;
+}
+
+.btn-slider:hover {
+    border-color: var(--c-primary);
+    background: var(--c-primary);
+    color: var(--c-white);
+}
+
+/* Mobile Adjustments */
+@media (max-width: 991px) {
+    .category-section {
+        padding: 80px 0;
+    }
+
+    .category-section h2.display-4 {
+        font-size: 2.5rem;
+    }
+
+    .editorial-header {
+        position: relative !important;
+        top: 0 !important;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* ======================================= DEALS SECTION (LUXURY UPDATE) ==================== */
+
+.deals-section {
+    /* padding: 64px 0; */
+    background-color: var(--c-white);
+    /* Pure/Alabaster white background */
+    user-select: none;
+}
+
+/* 1. Container & Track */
+.marquee-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    cursor: grab;
+    touch-action: pan-y;
+}
+
+.marquee-container:active {
+    cursor: grabbing;
+}
+
+.marquee-track {
+    display: flex;
+    gap: 40px;
+    /* Increased gap for elegance */
+    width: max-content;
+    will-change: transform;
+}
+
+/* 2. Luxury Card Design */
+.deal-card {
+    width: 550px;
+    /* Slightly wider */
+    height: 340px;
+    background: transparent;
+    /* Transparent makes the borders pop */
+    border: 1px solid #E5E0D8;
+    /* Delicate warm grey/beige border */
+    flex-shrink: 0;
+    box-shadow: none;
+    /* REMOVED heavy drop shadow */
+    transition: border-color 0.4s ease;
+    pointer-events: none;
+}
+
+.deal-card a {
+    pointer-events: auto;
+    /* Re-enable clicks */
+}
+
+.deal-card:hover {
+    border-color: var(--c-gold);
+    /* Entire card highlights subtly on hover */
+}
+
+/* 3. The "Museum Frame" Effect around the image */
+.deal-img-frame {
+    width: 100%;
+    height: 100%;
+    border: 1px solid #E5E0D8;
+    /* Inner border */
+    padding: 6px;
+    /* Creates the matte/passepartout effect */
+    background-color: var(--c-linen);
+    /* Very subtle contrast behind image */
+}
+
+.deal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 4. Editorial Link (Replaces boxy button) */
+.btn-luxury-link {
+    display: inline-block;
+    color: var(--c-primary);
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--c-primary);
+    /* Underline style */
+    padding-bottom: 4px;
+    transition: color 0.3s, border-color 0.3s;
+}
+
+.btn-luxury-link:hover {
+    color: var(--c-gold);
+    border-color: var(--c-gold);
+}
+
+/* Typography Utility */
+.x-small {
+    font-size: 11px;
+}
+
+.letter-spacing-3 {
+    letter-spacing: 3px;
+}
+
+.letter-spacing-2 {
+    letter-spacing: 2px;
+}
+
+/* 5. Pagination (Dashes) */
+.slider-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.pagination-dash {
+    width: 30px;
+    height: 2px;
+    /* Thinner, more elegant lines */
+    background-color: #dcdcdc;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.pagination-dash.active {
+    background-color: var(--c-gold);
+    width: 45px;
+}
+
+/* Responsive Tweaks */
+@media (max-width: 1200px) {
+    .deal-card {
+        width: 480px;
+        height: 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .deals-section {
+        padding: 60px 0;
+    }
+
+    .deal-card {
+        width: 85vw;
+        height: auto;
+        min-height: 200px;
+    }
+
+    .deal-card .col-6 {
+        width: 100%;
+    }
+
+    /* Stacks vertically */
+    .deal-card .col-6.p-3 {
+        padding-bottom: 0 !important;
+    }
+
+    .deal-img-frame {
+        height: 250px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* ================================== TRENDING PRODUCTS ==================== */
+
+.trending-section {
+    padding: 80px 0;
+    background-color: var(--c-white);
+}
+
+.product-card {
+    transition: all 0.3s ease;
+}
+
+/* 1. Image Wrapper (1:1 Ratio) */
+.product-img-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* Forces perfect square */
+    background-color: #f9f9f9;
+    overflow: hidden;
+    border-radius: 0px;
+    /* Sharp edges */
+}
+
+.product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+/* Hover Zoom */
+.product-card:hover .product-img {
+    transform: scale(1.08);
+}
+
+/* 2. Wishlist Button (Floating Top Right) */
+.btn-wishlist {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 35px;
+    height: 35px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: 0.2s;
+    font-size: 14px;
+    color: var(--c-primary);
+}
+
+.btn-wishlist:hover {
+    background: var(--c-primary);
+    color: var(--c-white);
+}
+
+/* 3. Add to Cart Button (Slide Up Effect) */
+.btn-add-cart {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 12px;
+    background: var(--c-primary);
+    color: var(--c-white);
+    border: none;
+    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transform: translateY(100%);
+    /* Hidden by default */
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-add-cart:hover {
+    background-color: var(--c-gold);
+    color: var(--c-primary);
+}
+
+/* Show button on hover */
+.product-card:hover .btn-add-cart {
+    transform: translateY(0);
+}
+
+/* 4. Product Info */
+.product-title a {
+    color: var(--c-primary);
+    text-decoration: none;
+    font-family: var(--f-head);
+    font-size: 16px;
+    transition: 0.2s;
+}
+
+.product-title a:hover {
+    color: var(--c-gold);
+}
+
+/* Rating Badge (Single Star) */
+.rating-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--c-body);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.text-tiny {
+    font-size: 10px;
+}
+
+/* Smaller star icon */
+
+/* 5. Color Swatches */
+.color-swatches {
+    display: flex;
+    gap: 5px;
+}
+
+.swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    /* Light border for white swatches */
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.swatch:hover {
+    transform: scale(1.2);
+    border-color: var(--c-primary);
+}
+
+/* Mobile Tweak: Always show Cart button on mobile? 
+   Or keep hidden until tap. Keeping hidden is cleaner. */
+@media (max-width: 768px) {
+    .product-title a {
+        font-size: 14px;
+    }
+
+    .btn-wishlist {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+
+
+
+
+
+
+
+
+/* ==================== COLLECTION SHOWCASE ==================== */
+
+.section-spacing {
+    padding-bottom: 80px;
+}
+
+/* 1. Banner Styling */
+.collection-banner {
+    height: 400px;
+    /* Cinematic height */
+    width: 100%;
+    overflow: hidden;
+}
+
+.banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7);
+    /* Darken image slightly so text pops */
+}
+
+/* 2. Custom Tabs (Jodha Style) */
+
+.jodha-tabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+
+    /* Hide scrollbar for Firefox */
+    scrollbar-width: none;
+    /* Hide scrollbar for IE and Edge */
+    -ms-overflow-style: none;
+}
+
+.jodha-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+/* Optional: Ensure buttons don't shrink too much */
+.jodha-tabs .nav-item {
+    flex: 0 0 auto;
+}
+
+.jodha-tabs .nav-link {
+    color: var(--c-primary);
+    /* Dark Grey */
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    margin: 0 10px;
+    padding: 10px 30px;
+    font-family: var(--f-head);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+/* Active State: Gold Background */
+.jodha-tabs .nav-link.active,
+.jodha-tabs .nav-link:hover {
+    background-color: var(--c-gold);
+    color: var(--c-white);
+    border-color: var(--c-gold);
+}
+
+/* Mobile Tweak for Tabs */
+@media (max-width: 768px) {
+    .collection-banner {
+        height: 250px;
+    }
+
+    .jodha-tabs .nav-link {
+        padding: 8px 15px;
+        font-size: 11px;
+        margin: 0 5px;
+    }
+}
+
+
+
+
+
+
+
+
+
+/* ==================== NEW ARRIVALS (EDITORIAL) ==================== */
+
+/* 1. Large Editorial Card */
+
+.new-arrivals .row>.col-lg-6 {
+    display: flex;
+}
+
+.editorial-card {
+    flex: 1;
+}
+
+
+.editorial-card {
+    /* Ensures it stays tall */
+    cursor: pointer;
+}
+
+.editorial-img {
+    transition: transform 0.8s ease;
+}
+
+/* Slow Zoom Effect on Large Card */
+.editorial-card:hover .editorial-img {
+    transform: scale(1.05);
+}
+
+/* Gradient Overlay for Text Readability */
+.overlay-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+    z-index: 1;
+    pointer-events: none;
+}
+
+.editorial-content {
+    z-index: 2;
+    /* Sits above gradient */
+
+}
+
+/* 2. Responsive Tweaks */
+@media (max-width: 991px) {
+    .editorial-card {
+        min-height: 400px;
+        /* Smaller on tablets */
+        margin-bottom: 20px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== TRUST SECTION ==================== */
+.trust-section {
+    background-color: #f8f6f2;
+    /* Adjusted to your warmer linen tone */
+}
+
+.trust-video-wrapper {
+    min-height: 500px;
+    overflow: hidden;
+}
+
+.p-lg-6 {
+    padding: 6rem 5rem;
+}
+
+.lead-sm {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--c-body);
+    max-width: 90%;
+}
+
+.opacity-10 {
+    opacity: 0.1;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 991px) {
+    .trust-video-wrapper {
+        min-height: auto;
+        height: 45vh;
+        /* Responsive height instead of fixed pixels */
+    }
+
+    /* Target the content padding directly to remove the gap */
+    .trust-content {
+        padding-top: 2.5rem !important;
+        padding-bottom: 3.5rem !important;
+    }
+
+    .display-5 {
+        font-size: 28px;
+    }
+
+    .lead-sm {
+        font-size: 14px;
+        margin-bottom: 2rem !important;
+        max-width: 100%;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== REVIEWS SECTION ==================== */
+
+/* 1. Slider Container */
+.review-slider-wrapper {
+    overflow: hidden;
+    padding: 10px 0 30px 0;
+    /* Space for shadows */
+}
+
+.review-slider {
+    display: flex;
+    gap: 30px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    /* Hide scrollbar Firefox */
+}
+
+.review-slider::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar Chrome/Safari */
+}
+
+/* 2. Sizing for 3 items per screen */
+.review-item {
+    min-width: 100%;
+    /* Mobile: 1 card per screen */
+    flex: 0 0 100%;
+}
+
+@media (min-width: 768px) {
+    .review-item {
+        min-width: 45%;
+        /* Tablet: 2 cards */
+        flex: 0 0 45%;
+    }
+}
+
+@media (min-width: 1200px) {
+    .review-item {
+        /* Desktop: 3 cards. Calc accounts for the 30px gap x 2 */
+        min-width: calc((100% - 60px) / 3);
+        flex: 0 0 calc((100% - 60px) / 3);
+    }
+}
+
+/* 3. Card Styling */
+.review-card {
+    background: var(--c-white);
+    border: 1px solid #eee;
+    padding: 30px;
+    height: 100%;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border-color: var(--c-gold);
+}
+
+.review-title {
+    font-family: var(--f-head);
+    font-weight: 600;
+    color: var(--c-primary);
+}
+
+.x-small {
+    color: var(--c-body);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stars {
+    color: var(--c-gold);
+}
+
+
+
+
+
+
+
+
+/* ====================================================================== BLOG SECTION ==================== */
+
+/* Card Styling */
+.blog-card {
+    background: transparent;
+    transition: transform 0.3s ease;
+}
+
+/* Image Zoom Effect */
+.blog-img {
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.blog-card:hover .blog-img {
+    transform: scale(1.05);
+}
+
+/* Typography Tweaks */
+.blog-content h4 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    transition: color 0.3s;
+}
+
+.blog-card:hover h4 a {
+    color: var(--c-gold) !important;
+}
+
+.x-small {
+    font-size: 11px;
+}
+
+/* Link Hover Animation */
+.btn-link i {
+    transition: transform 0.3s;
+}
+
+.btn-link:hover i {
+    transform: translateX(5px);
+}
+
+
+
+/* Reusable class to hide horizontal scrollbars but keep functionality */
+.hide-scrollbar {
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+/* Ensure the nav items don't shrink inside the flex container */
+#journalTabs .nav-item {
+    flex: 0 0 auto;
+}
+
+
+
+
+
+
+/* ==================== TRUSTED PARTNERS (LUXURY UPDATE) ==================== */
+
+.partners-section {
+    padding: 80px 0;
+    background-color: var(--c-white);
+    /* Warm luxury background instead of stark white */
+    overflow: hidden;
+}
+
+/* 1. Wrapper with "Ticker Tape" Borders and Fade */
+.partners-marquee-wrapper {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 40px 0;
+    /* Space inside the lines */
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    /* Delicate top framing line */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    /* Delicate bottom framing line */
+
+    /* Smooth fade-out on the left and right edges */
+    mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+/* 2. Track & Groups */
+.partners-track {
+    display: flex;
+    width: max-content;
+    animation: scroll-partners 40s linear infinite;
+    /* Smooth, deliberate speed */
+}
+
+.partners-group {
+    display: flex;
+    align-items: center;
+    gap: 120px;
+    /* Massive spacing for a gallery feel */
+    padding-right: 120px;
+    /* Must equal the gap for a flawless math loop */
+}
+
+/* 3. Pause Animation on Hover */
+.partners-marquee-wrapper:hover .partners-track {
+    animation-play-state: paused;
+}
+
+/* 4. Logo Styling & Interactions */
+.partner-logo {
+    flex-shrink: 0;
+    width: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.partner-logo img {
+    width: 100%;
+    height: auto;
+    max-height: 72px;
+    object-fit: contain;
+
+    /* The Luxury Fix */
+    opacity: 1;
+    /* Dark enough to see, light enough to look subtle */
+    /*filter: grayscale(100%);*/
+    /* Elegant monochrome */
+    mix-blend-mode: multiply;
+    /* MAGIC: Instantly removes white backgrounds from logos */
+
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+    cursor: pointer;
+}
+
+.partner-logo:hover img {
+    opacity: 1;
+    filter: grayscale(0%);
+    /* Returns to original color */
+    transform: scale(1.05);
+    /* Gentle, refined lift effect */
+}
+
+/* 5. Keyframes for Infinite Loop */
+@keyframes scroll-partners {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991px) {
+    .partners-section {
+        padding: 60px 0;
+    }
+
+    .partners-group {
+        gap: 60px;
+        padding-right: 60px;
+    }
+
+    .partners-marquee-wrapper {
+        padding: 30px 0;
+    }
+
+    .partner-logo {
+        width: 120px;
+    }
+
+    .partner-logo img {
+        max-height: 40px;
+    }
+}
+
+
+
+
+
+
+
+
+
+/* ==================== FEATURED IN SECTION ==================== */
+
+.featured-in-section {
+    padding: 80px 0;
+    background-color: var(--c-white);
+    /* Keeps it bright and separated from the linen sections */
+}
+
+.featured-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+.featured-logo img {
+    max-height: 40px;
+    /* Keeps logos small and elegant like the reference */
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+
+    /* Luxury styling: faded grayscale by default */
+    opacity: 1;
+    /*filter: grayscale(100%);*/
+    mix-blend-mode: multiply;
+    /* Removes white backgrounds from standard JPGs/PNGs */
+
+    transition: all 0.4s ease;
+    cursor: pointer;
+}
+
+/* Hover Effect: Brings the publication logo to life */
+.featured-logo:hover img {
+    opacity: 1;
+    filter: grayscale(0%);
+    transform: scale(1.05);
+    /* Very subtle pop */
+}
+
+/* Responsive tweaks for mobile spacing */
+@media (max-width: 768px) {
+    .featured-in-section {
+        padding: 50px 0;
+    }
+
+    .featured-logo img {
+        max-height: 30px;
+        /* Slightly smaller on mobile */
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== FOOTER ==================== */
+
+
+.jodha-footer {
+    background-color: var(--c-primary);
+    border-top: 4px solid var(--c-gold);
+    /* Gold accent line at top */
+}
+
+
+.footer-logo {
+    width: 200px;
+}
+
+
+/* Links Hover Effect */
+.hover-gold {
+    transition: color 0.3s ease;
+}
+
+.hover-gold:hover {
+    color: var(--c-gold) !important;
+    padding-left: 5px;
+    /* Subtle movement */
+}
+
+/* Social Buttons */
+.btn-floating {
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: 0.3s;
+}
+
+.btn-floating:hover {
+    background-color: var(--c-gold);
+    border-color: var(--c-gold);
+    color: var(--c-primary);
+}
+
+/* Newsletter Input */
+.newsletter-form .form-control {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.newsletter-form .form-control:focus {
+    box-shadow: none;
+    border-color: var(--c-gold);
+    background: transparent;
+}
+
+.newsletter-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Join Button */
+.btn-gold {
+    background-color: var(--c-gold);
+    border: 1px solid var(--c-gold);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.btn-gold:hover {
+    background-color: #fff;
+    border-color: #fff;
+}
+
+/* Footer Font Adjustments */
+.jodha-footer h5,
+.jodha-footer h6 {
+    letter-spacing: 1px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================================================ PRODUCT LISTING PAGE (PLP) ==================== */
+
+.border-bottom-luxury {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* 1. Sort Dropdown */
+.luxury-select {
+    font-family: var(--f-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--c-primary);
+    background-color: #f9f9f9;
+    padding: 10px 35px 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: auto;
+}
+
+.luxury-select:focus {
+    box-shadow: none;
+    background-color: #f0f0f0;
+}
+
+
+/* Make Filter Sidebar Sticky */
+.filter-sidebar {
+    position: -webkit-sticky;
+    /* For Safari support */
+    position: sticky;
+    top: 120px;
+    /* Adjust this value based on your header/navbar height */
+    z-index: 10;
+    height: max-content;
+    /* Ensures the sticky container isn't taller than its content */
+    padding-bottom: 20px;
+}
+
+
+/* 2. Sidebar Filter Titles */
+.filter-title {
+    font-family: var(--f-body);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--c-primary);
+    margin-bottom: 20px;
+}
+
+/* 3. Custom Checkboxes (Luxury Style) */
+.luxury-checkbox-list li {
+    margin-bottom: 12px;
+}
+
+.luxury-checkbox {
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--c-body);
+    user-select: none;
+}
+
+/* Hide default browser checkbox */
+.luxury-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* Custom Box */
+.luxury-checkbox .checkmark {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    height: 18px;
+    width: 18px;
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+/* On hover */
+.luxury-checkbox:hover .checkmark {
+    border-color: var(--c-gold);
+}
+
+/* On checked */
+.luxury-checkbox input:checked~.checkmark {
+    background-color: var(--c-primary);
+    border-color: var(--c-primary);
+}
+
+/* Checkmark icon (Hidden by default) */
+.luxury-checkbox .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.luxury-checkbox input:checked~.checkmark:after {
+    display: block;
+}
+
+/* Text styling */
+.luxury-checkbox .label-text {
+    font-size: 13px;
+    transition: color 0.2s;
+}
+
+.luxury-checkbox input:checked~.label-text {
+    color: var(--c-primary);
+    font-weight: 500;
+}
+
+/* 4. Dual Head Price Slider */
+.price-slider-container {
+    width: 100%;
+    position: relative;
+}
+
+/* Container to overlap inputs */
+.multi-range-slider {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    margin-bottom: 20px;
+}
+
+/* The visual track */
+.slider-track {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background-color: #eee;
+    top: 0;
+    border-radius: 3px;
+    z-index: 1;
+}
+
+/* The filled part of the track (Gold) */
+.slider-track .track-fill {
+    position: absolute;
+    height: 100%;
+    background-color: var(--c-gold);
+    z-index: 2;
+}
+
+/* Overlapping Inputs */
+.multi-range-slider input[type="range"] {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    top: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: none;
+    /* Let clicks pass through */
+    background: transparent;
+    z-index: 3;
+}
+
+/* Thumb styling (Webkit) */
+.multi-range-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: all;
+    /* Re-enable clicks on thumb */
+    width: 16px;
+    height: 16px;
+    background-color: var(--c-white);
+    border: 2px solid var(--c-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Thumb styling (Firefox) */
+.multi-range-slider input[type="range"]::-moz-range-thumb {
+    pointer-events: all;
+    width: 16px;
+    height: 16px;
+    background-color: var(--c-white);
+    border: 2px solid var(--c-primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Price Display Boxes */
+.price-input-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #eee;
+    padding: 8px 12px;
+    width: 45%;
+    background: #f9f9f9;
+}
+
+.price-input-box .currency {
+    color: #999;
+    font-size: 13px;
+    margin-right: 5px;
+}
+
+.price-input-box input {
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--c-primary);
+    outline: none;
+}
+
+
+
+.clearall-filters-btn:hover {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--c-gold);
+}
+
+
+/* 5. Pagination Styling (Luxury Update) */
+.pagination-luxury .page-link {
+    border: 1px solid transparent;
+    /* Invisible border to keep sizing stable */
+    background-color: transparent;
+    color: var(--c-body);
+    font-family: var(--f-body);
+    font-size: 13px;
+    font-weight: 500;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    border-radius: 999px;
+    /* Sharp edges to match your buttons */
+}
+
+/* FIX: Removes the default Bootstrap blue outline on click */
+.pagination-luxury .page-link:focus {
+    box-shadow: none;
+    outline: none;
+    background-color: transparent;
+    color: var(--c-primary);
+}
+
+/* Hover State */
+.pagination-luxury .page-link:hover {
+    background-color: var(--c-linen);
+    color: var(--c-primary);
+    border-color: #E5E0D8;
+    border-radius: 999px;
+    /* Very delicate border appears on hover */
+}
+
+/* Active State */
+.pagination-luxury .page-item.active .page-link {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+    border-color: var(--c-primary);
+    font-weight: 600;
+    border-radius: 999px;
+}
+
+/* Disabled State (For Left/Right Arrows) */
+.pagination-luxury .page-item.disabled .page-link {
+    color: #ccc;
+    background-color: transparent;
+    border-color: transparent;
+    border-radius: 999px;
+}
+
+
+
+/* ==================== CUSTOM SORT DROPDOWN ==================== */
+
+/* 1. The Trigger Button */
+.luxury-dropdown button {
+    font-family: var(--f-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--c-primary);
+    background-color: transparent;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px !important;
+    transition: all 0.3s ease;
+}
+
+.luxury-dropdown button:hover {
+    color: var(--c-gold);
+}
+
+/* 2. The Dropdown Box */
+.luxury-dropdown .dropdown-menu {
+    min-width: 220px;
+    padding: 10px 0;
+    background-color: var(--c-white);
+    border: 1px solid #E5E0D8 !important;
+    /* Elegant thin border */
+    animation: fadeInDropdown 0.2s ease-in-out;
+}
+
+/* 3. Dropdown List Items */
+.luxury-dropdown .dropdown-item {
+    font-family: var(--f-body);
+    font-size: 14px;
+    color: var(--c-body);
+    padding: 10px 24px;
+    transition: all 0.2s ease;
+}
+
+.luxury-dropdown .dropdown-item:hover,
+.luxury-dropdown .dropdown-item:focus {
+    background-color: var(--c-linen);
+    color: var(--c-primary);
+    text-decoration: underline 1px solid var(--c-primary);
+}
+
+/* 4. Active State (Currently Selected) */
+.luxury-dropdown .dropdown-item.active,
+.luxury-dropdown .dropdown-item:active {
+    background-color: transparent;
+    color: var(--c-gold);
+    font-weight: 600;
+}
+
+/* Smooth Fade-in Animation */
+@keyframes fadeInDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+
+
+
+
+
+
+/* ==================== GRID SWITCHER BUTTONS ==================== */
+.grid-btn {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: transparent;
+    color: var(--c-primary);
+    width: 35px;
+    height: 35px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border-radius: 0;
+}
+
+.grid-btn.active,
+.grid-btn:hover {
+    background-color: var(--c-gold);
+    border-color: var(--c-gold);
+    color: #fff;
+}
+
+/* ==================== LIST VIEW (1-COLUMN) STYLES ==================== */
+/* When the wrapper gets the .list-view class via JS */
+#product-grid.list-view .product-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 40px;
+    padding: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Optional delicate border for list view */
+    background: #fff;
+}
+
+#product-grid.list-view .product-img-wrapper {
+    width: 320px;
+    /* Fixed width for the image on the left */
+    flex-shrink: 0;
+    margin-bottom: 0;
+    height: 100%;
+}
+
+#product-grid.list-view .product-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+    margin-top: 0 !important;
+}
+
+/* Make title larger in list view */
+#product-grid.list-view .product-title {
+    font-size: 24px;
+    margin-bottom: 10px !important;
+}
+
+/* Make price larger in list view */
+#product-grid.list-view .price {
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+
+/* ==================== RESPONSIVE LIST VIEW ==================== */
+
+/* Standard Desktop List View */
+#product-grid.list-view .product-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 40px;
+    padding: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: #fff;
+}
+
+#product-grid.list-view .product-img-wrapper {
+    width: 320px;
+    flex-shrink: 0;
+    margin-bottom: 0;
+    height: 100%;
+}
+
+#product-grid.list-view .product-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left;
+    margin-top: 0 !important;
+}
+
+/* 📱 Mobile List View Adjustments */
+@media (max-width: 767px) {
+    #product-grid.list-view .product-card {
+        gap: 15px;
+        padding: 10px;
+        align-items: stretch;
+        /* Ensures the image fills the height */
+    }
+
+    #product-grid.list-view .product-img-wrapper {
+        width: 120px;
+        /* Small image on the left for mobile */
+        min-height: 120px;
+    }
+
+    #product-grid.list-view .product-title {
+        font-size: 15px;
+        margin-bottom: 5px !important;
+        line-height: 1.3;
+    }
+
+    #product-grid.list-view .price {
+        font-size: 15px;
+        margin-top: 5px;
+    }
+
+    /* Hide the 'Add to Cart' button text on mobile list view to save space */
+    #product-grid.list-view .btn-add-cart {
+        padding: 8px;
+        font-size: 12px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =============================================================== PRODUCT DETAILED PAGE ==================== */
+
+/* ==================== PRODUCT HERO (PDP) ==================== */
+
+/* 1. Sticky Information Block */
+.sticky-pdp-info {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 130px;
+    /* Leaves room so it doesn't overlap the top navbar */
+    height: max-content;
+    padding-bottom: 40px;
+}
+
+/* 2. Delicate Borders */
+.border-bottom-delicate {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.border-top-delicate {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* 3. Product Carousel Customization */
+.luxury-carousel {
+    position: relative;
+    overflow: hidden;
+}
+
+.product-main-img {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+/* Dots / Indicators */
+.luxury-carousel .carousel-indicators {
+    margin-bottom: 20px;
+}
+
+.luxury-carousel .carousel-indicators button {
+    width: 30px;
+    height: 2px;
+    background-color: var(--c-primary);
+    opacity: 0.2;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.luxury-carousel .carousel-indicators button.active {
+    opacity: 1;
+    width: 45px;
+    background-color: var(--c-gold);
+}
+
+/* Arrow Controllers */
+.ctrl-btn-luxury {
+    width: 44px;
+    height: 44px;
+    background-color: var(--c-white);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 50%;
+    color: var(--c-primary);
+    transition: all 0.3s ease;
+}
+
+.ctrl-btn-luxury:hover {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+    border-color: var(--c-primary);
+}
+
+/* 4. Quantity Selector */
+.qty-selector {
+    width: 120px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: var(--c-white);
+    height: 50px;
+}
+
+.qty-selector .btn-qty {
+    background: transparent;
+    border: none;
+    color: var(--c-primary);
+    width: 35px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s;
+}
+
+.qty-selector .btn-qty:hover {
+    color: var(--c-gold);
+}
+
+.qty-selector .qty-input {
+    border: none;
+    background: transparent;
+    width: 40px;
+    font-family: var(--f-body);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--c-primary);
+    outline: none;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.qty-selector .qty-input::-webkit-outer-spin-button,
+.qty-selector .qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* 5. Luxury Buttons */
+.btn-luxury-solid {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+    border: 1px solid var(--c-primary);
+    height: 50px;
+    font-family: var(--f-body);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+}
+
+.btn-luxury-solid:hover {
+    background-color: transparent;
+    color: var(--c-primary);
+    border: 1px solid var(--c-primary);
+}
+
+.btn-luxury-outline {
+    background-color: transparent;
+    color: var(--c-primary);
+    border: 1px solid var(--c-primary);
+    height: 50px;
+    font-family: var(--f-body);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+}
+
+.btn-luxury-outline:hover {
+    border-color: var(--c-gold);
+    color: var(--c-gold);
+}
+
+.btn-luxury-icon {
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: var(--c-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-luxury-icon:hover {
+    border-color: var(--c-gold);
+    color: var(--c-gold);
+}
+
+/* 6. Accordion Styling (Details under image) */
+.accordion-luxury .accordion-item {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background-color: transparent;
+}
+
+.accordion-luxury .accordion-button {
+    background-color: transparent !important;
+    color: var(--c-primary) !important;
+    font-family: var(--f-body);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 24px 0;
+    box-shadow: none !important;
+}
+
+.accordion-luxury .accordion-button::after {
+    /* Uses pure stroke SVG for the open/close chevron */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231A1514' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    transition: transform 0.3s ease;
+}
+
+.accordion-luxury .accordion-body {
+    padding: 0 0 24px 0;
+}
+
+/* 7. Perks Icons */
+.perk-icon {
+    color: var(--c-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+/* Floating Wishlist Button on Image Gallery */
+.btn-wishlist-pdp {
+    top: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    background-color: var(--c-white);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 50%;
+    color: var(--c-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    /* Soft drop shadow so it stands out on images */
+}
+
+.btn-wishlist-pdp:hover {
+    color: var(--c-gold);
+    border-color: var(--c-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+
+
+
+
+
+
+
+
+/* --- Larger Circular Button Style --- */
+.btn-lg-circle {
+    width: 50px !important;
+    /* Increased from standard 42px */
+    height: 50px !important;
+    /* Increased from standard 42px */
+    font-size: 1.4rem !important;
+    /* Larger icon size */
+    opacity: 1 !important;
+    /* Always visible on PDP */
+    transform: none !important;
+    /* Remove the hover slide-in for this specific button */
+    background-color: white !important;
+    /* White background for Wishlist on PDP */
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.3s ease;
+}
+
+.btn-lg-circle:hover {
+    background-color: var(--gold) !important;
+    color: white !important;
+    border-color: var(--gold) !important;
+}
+
+
+
+
+
+
+
+
+/* --- Vertical Thumbnail Switcher Styles --- */
+.vertical-thumb-column {
+    background-color: var(--bg-color);
+    /* Matches your brand background */
+}
+
+.thumb-item {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* Forced 1:1 ratio */
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+.thumb-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumb-item.active {
+    border: 2px solid var(--text-main);
+    /* Highlights the current image */
+}
+
+.thumb-nav-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.thumb-nav-btn:hover {
+    color: var(--gold);
+}
+
+/* Ensure Carousel Height matches wrapper */
+.luxury-carousel .carousel-inner,
+.luxury-carousel .carousel-item {
+    height: 100%;
+}
+
+
+
+
+
+
+
+
+
+/* ==================== WRITE REVIEW SECTION ==================== */
+
+/* 1. Header Layout */
+.vertical-divider {
+    width: 1px;
+    height: 60px;
+    background-color: rgba(0, 0, 0, 0.08);
+    /* Delicate grey line from reference */
+}
+
+.btn-gold-luxury {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+    font-family: var(--f-body);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-size: 14px;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-gold-luxury:hover {
+    background-color: var(--c-gold);
+    /* Gold background from reference */
+    color: var(--c-white);
+    transform: translateY(-2px);
+}
+
+/* 2. Rating Selector Logic */
+.rating-input {
+    flex-direction: row-reverse;
+    /* Reverses for CSS hover selection logic */
+}
+
+.rating-input label {
+    font-size: 1.5rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.rating-input label:hover,
+.rating-input label:hover~label,
+.rating-input input:checked~label {
+    color: var(--c-gold);
+    /* Toggle to solid star on selection/hover */
+    font-weight: 900;
+    content: "\f005";
+    /* FontAwesome Solid Star */
+}
+
+/* 3. Luxury Floating Label Form */
+.luxury-form-group {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.luxury-form-control {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    /* Minimalist bottom-only border */
+    padding: 10px 0;
+    background: transparent;
+    font-family: var(--f-body);
+    font-size: 14px;
+    color: var(--c-primary);
+    transition: border-color 0.3s ease;
+}
+
+.luxury-form-control:focus {
+    outline: none;
+    border-bottom-color: var(--c-gold);
+}
+
+.luxury-label {
+    position: absolute;
+    top: -12px;
+    left: 0;
+    font-family: var(--f-body);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #999;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.luxury-form-control::placeholder {
+    font-size: 13px;
+    color: #ccc;
+    font-family: var(--f-body);
+}
+
+/* Responsive Tweaks */
+@media (max-width: 767px) {
+    .vertical-divider {
+        display: none;
+    }
+}
+
+
+
+
+.star-icon {
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+    color: #ddd;
+    /* Default grey color for empty stars */
+}
+
+/* Color for filled or hovered stars */
+.star-icon.fa-solid,
+.star-icon:hover {
+    color: var(--c-gold) !important;
+}
+
+/* Subtle animation on click */
+.star-icon:active {
+    transform: scale(1.2);
+}
+
+
+
+
+
+
+
+/* ==================== Our Trusted Partners Section ==================== */
+
+
+.trusted-clients-section {
+    background-color: var(--bg-color);
+    /* Matches your main #fcf8f1 background */
+}
+
+.client-logo-card {
+    background-color: #f4efe6;
+    /* Slight darker beige contrast for the boxes */
+    border-radius: 8px;
+    /* Soft rounded corners matching your image */
+    padding: 25px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 140px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.client-logo-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.client-logo-card img {
+    max-width: 100%;
+    max-height: 75px;
+    object-fit: contain;
+    /* Kept original colors to match your reference design perfectly */
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .client-logo-card {
+        height: 100px;
+        padding: 15px;
+    }
+
+    .client-logo-card img {
+        max-height: 50px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== CART DRAWER (OFFCANVAS) ==================== */
+
+
+.navbar-toggler:focus,
+.navbar-toggler:active,
+.navbar-toggler-icon:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+
+
+
+
+
+/* Width and setup */
+.luxury-cart-drawer {
+    width: 420px !important;
+    /* Wide, spacious luxury feel on desktop */
+    border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+@media (max-width: 576px) {
+    .luxury-cart-drawer {
+        width: 100% !important;
+        /* Full width on mobile */
+    }
+}
+
+/* Custom Minimalist Close Button */
+.btn-close-luxury {
+    background: transparent;
+    border: none;
+    color: var(--c-primary);
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.3s ease, color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-close-luxury:hover {
+    color: var(--c-gold);
+    transform: rotate(90deg);
+    /* Elegant rotation on hover */
+}
+
+/* Cart Item Image */
+.cart-item-img-wrapper {
+    width: 100px;
+    height: 100px;
+    background-color: var(--c-linen);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-item-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Mini Quantity Selector (Overrides PDP styles for the cart) */
+.qty-selector.mini {
+    width: 90px;
+    height: 35px;
+}
+
+.qty-selector.mini .btn-qty {
+    width: 25px;
+}
+
+.qty-selector.mini .qty-input {
+    font-size: 12px;
+}
+
+/* Ensure the offcanvas body scrolls but hides the scrollbar for elegance */
+.luxury-cart-drawer .offcanvas-body {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.luxury-cart-drawer .offcanvas-body::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+
+/* Cart Order Note Textarea */
+.luxury-cart-note {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0;
+    padding: 10px 0;
+    font-family: var(--f-body);
+    font-size: 12px;
+    color: var(--c-primary);
+    background-color: transparent;
+    resize: none;
+    /* Prevents user from breaking the layout by dragging */
+    box-shadow: none !important;
+    transition: border-color 0.3s ease;
+}
+
+.luxury-cart-note:focus {
+    outline: none;
+    border-color: var(--c-gold);
+}
+
+.luxury-cart-note::placeholder {
+    color: #666666;
+    font-style: italic;
+}
+
+
+
+
+
+
+
+
+/* Mobile Offcanvas Hover Effects */
+.mobile-highlight-box a {
+    transition: opacity 0.3s ease;
+}
+
+.mobile-highlight-box a:hover {
+    opacity: 0.7;
+}
+
+.mobile-nav-section a {
+    transition: color 0.3s ease;
+}
+
+.mobile-nav-section a:hover {
+    color: var(--c-gold) !important;
+}
+
+/* Ensure the scrollbar inside the menu remains minimal */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =================================================== MOBILE DRILLDOWN MENU ==================== */
+.transition-transform {
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Default state: Main menu is visible, Sub menus are pushed to the right */
+.nav-panel.main-panel {
+    transform: translateX(0%);
+}
+
+.nav-panel.sub-panel {
+    transform: translateX(110%);
+    /* Pushed out of view */
+    visibility: hidden;
+    /* Prevents focus/tabbing when hidden */
+    background-color: transparent;
+}
+
+/* Active states toggled by JS */
+.nav-panel.main-panel.slide-out {
+    transform: translateX(-110%);
+    visibility: hidden;
+}
+
+.nav-panel.sub-panel.slide-in {
+    transform: translateX(0%);
+    visibility: visible;
+}
+
+
+
+/* Ensure minimum height for touch accessibility */
+.touch-target-44 {
+    min-height: 44px;
+}
+
+/* Luxury hover effect for the circular icons */
+.transition-icon {
+    transition: all 0.3s ease;
+}
+
+.touch-target-44:hover .transition-icon,
+.transition-icon:hover {
+    border-color: var(--c-gold) !important;
+    color: var(--c-gold) !important;
+    background-color: var(--c-linen);
+    transform: translateY(-2px);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* ======================================================= CART PAGE =================== */
+
+
+/* ==================== CART PROGRESS TRACKER ==================== */
+
+.luxury-progress-tracker {
+    padding: 0 15px;
+}
+
+/* 1. The Delicate Background Line */
+.luxury-progress-tracker .progress-line {
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* 2. Step Container */
+.luxury-progress-tracker .progress-step {
+    cursor: default;
+    transition: all 0.3s ease;
+}
+
+/* 3. Step Numbers (The Circles) */
+.luxury-progress-tracker .step-number {
+    width: 32px;
+    height: 32px;
+    font-family: var(--f-body);
+    font-size: 13px;
+    font-weight: 500;
+    background-color: var(--c-white);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    color: #999;
+    transition: all 0.3s ease;
+}
+
+/* 4. Step Labels (Text) */
+.luxury-progress-tracker .step-label {
+    font-family: var(--f-body);
+    font-size: 10px;
+    font-weight: 600;
+    color: #999;
+    transition: all 0.3s ease;
+}
+
+/* 5. ACTIVE STATE (Current Step) */
+.luxury-progress-tracker .progress-step.active .step-number {
+    background-color: var(--c-primary);
+    border-color: var(--c-primary);
+    color: var(--c-white);
+}
+
+.luxury-progress-tracker .progress-step.active .step-label {
+    color: var(--c-primary);
+}
+
+/* Optional: COMPLETED STATE (For future steps) */
+.luxury-progress-tracker .progress-step.completed .step-number {
+    background-color: var(--c-linen);
+    /* Gentle cashmere tone for completed */
+    border-color: var(--c-primary);
+    color: var(--c-primary);
+}
+
+.luxury-progress-tracker .progress-step.completed .step-label {
+    color: var(--c-primary);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== MAIN CART INTERFACE ==================== */
+
+/* Image Wrapper */
+.cart-img-wrap {
+    width: 140px;
+    height: 140px;
+    background-color: var(--c-linen);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-page-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@media (max-width: 576px) {
+    .cart-img-wrap {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* Sticky Right Column Summary */
+.sticky-cart-summary {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 120px;
+    /* Offset for header */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    /* Very subtle edge */
+}
+
+/* Darker delicate border for the Cashmere background */
+.border-bottom-delicate-dark {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* Luxury Minimalist Form Inputs (Shipping, Coupon, GST) */
+.luxury-input-minimal {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 0;
+    padding: 8px 0;
+    font-family: var(--f-body);
+    font-size: 13px;
+    background-color: transparent;
+    color: var(--c-primary);
+    box-shadow: none !important;
+    transition: border-color 0.3s ease;
+}
+
+.luxury-input-minimal:focus {
+    outline: none;
+    border-bottom-color: var(--c-gold);
+}
+
+.luxury-input-minimal::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* ==================== CUSTOM GST SWITCH FIX ==================== */
+
+/* 1. Default (OFF) State */
+.luxury-switch.form-check-input {
+    width: 35px;
+    height: 20px;
+    background-color: rgba(0, 0, 0, 0.15) !important;
+    /* Force grey background */
+    border: none;
+    outline: none;
+    box-shadow: none !important;
+    /* Kills the blue glow on initial click */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* 2. Kills the blue ring when the OFF switch is actively clicked/focused */
+.luxury-switch.form-check-input:focus {
+    border-color: transparent !important;
+    box-shadow: none !important;
+    /* Keeps the little white circle visible when focused */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
+}
+
+/* 3. Checked (ON) State */
+.luxury-switch.form-check-input:checked {
+    background-color: var(--c-gold) !important;
+    border-color: var(--c-gold) !important;
+}
+
+/* 4. Kills the blue ring when the ON switch is actively clicked/focused */
+.luxury-switch.form-check-input:focus:checked {
+    box-shadow: none !important;
+    background-color: var(--c-gold) !important;
+    border-color: var(--c-gold) !important;
+}
+
+
+
+/* ==================== CUSTOM SHIPPING DROPDOWN ==================== */
+
+/* Container and Menu Styling */
+.custom-select-dropdown .dropdown-menu {
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    padding: 10px 0;
+    animation: fadeInDropdown 0.2s ease-in-out;
+}
+
+/* List Items */
+.custom-select-dropdown .dropdown-item {
+    font-family: var(--f-body);
+    font-size: 13px;
+    color: var(--c-body);
+    padding: 10px 15px;
+    transition: all 0.2s ease;
+}
+
+/* Hover State */
+.custom-select-dropdown .dropdown-item:hover,
+.custom-select-dropdown .dropdown-item:focus {
+    background-color: var(--c-linen);
+    color: var(--c-primary);
+}
+
+/* Active/Selected State */
+.custom-select-dropdown .dropdown-item.active {
+    background-color: transparent;
+    color: var(--c-gold);
+    font-weight: 600;
+}
+
+
+
+
+/* ==================== LUXURY RADIO BUTTONS ==================== */
+
+.luxury-radio {
+    display: flex;
+    align-items: center;
+    padding-left: 0;
+}
+
+/* Hide default browser radio */
+.luxury-radio .form-check-input {
+    width: 16px;
+    height: 16px;
+    margin-top: 0;
+    margin-left: 0;
+    background-color: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+/* Checked State - Gold Fill */
+.luxury-radio .form-check-input:checked {
+    border-color: var(--c-gold);
+    background-color: transparent;
+}
+
+/* Inner Dot for Checked State */
+.luxury-radio .form-check-input:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: var(--c-gold);
+    border-radius: 50%;
+}
+
+.luxury-radio .form-check-label {
+    transition: color 0.2s ease;
+}
+
+.luxury-radio .form-check-input:checked~.form-check-label {
+    color: var(--c-primary) !important;
+    font-weight: 500;
+}
+
+
+
+
+
+
+/* ==================== COUPON INPUT PERFECT ALIGNMENT ==================== */
+.luxury-coupon-input-group {
+    /* Remove the duplicate border here since the parent .border-bottom-delicate-dark handles it, 
+       OR keep this and remove the parent class for a 'floating' feel. */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    transition: border-color 0.3s ease;
+    width: 100%;
+    display: flex !important;
+}
+
+/* Force the input to not have any default browser height that pushes the line down */
+.luxury-coupon-input-group input {
+    height: 24px !important;
+    /* Fixed height ensures text and button line up */
+    line-height: 24px;
+    background: transparent !important;
+}
+
+.luxury-coupon-input-group:focus-within {
+    border-bottom-color: var(--c-gold);
+}
+
+
+
+
+
+/* ==================== COUPON FORM V2 (RESPONSIVE FIX) ==================== */
+
+.coupon-section-v2 {
+    width: 100%;
+    padding-bottom: 12px;
+    /* This creates the single unbroken line look */
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    transition: border-color 0.3s ease;
+}
+
+.coupon-group-v2 {
+    display: flex !important;
+    flex-direction: row !important;
+    /* Forces single line even on mobile */
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    /* Absolute prevention of wrapping */
+    width: 100%;
+}
+
+.coupon-input-v2 {
+    flex-grow: 1;
+    min-width: 0;
+    /* Essential: Allows input to shrink on small screens */
+    border: none !important;
+    background: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    font-family: var(--f-body);
+    font-size: 13px;
+    color: var(--c-primary);
+}
+
+.coupon-apply-btn-v2 {
+    flex-shrink: 0;
+    /* Prevents button from squishing */
+    background: none;
+    border: none;
+    padding: 0 0 0 15px !important;
+    color: var(--c-gold);
+    font-family: var(--f-body);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    /* Prevents text from breaking into two lines */
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+.coupon-apply-btn-v2:hover {
+    opacity: 0.7;
+}
+
+/* Highlight bottom border when user is typing */
+.coupon-section-v2:focus-within {
+    border-bottom-color: var(--c-gold);
+}
+
+/* Clean up for small mobile screens (under 350px) */
+@media (max-width: 350px) {
+    .coupon-input-v2 {
+        font-size: 11px;
+    }
+
+    .coupon-apply-btn-v2 {
+        font-size: 10px;
+    }
+}
+
+
+
+
+
+
+/* ======================================================== CHECKOUT PAGE ==================== */
+
+
+/* ==================== CHECKOUT MINIMAL HEADER ==================== */
+
+.checkout-header {
+    position: relative;
+    z-index: 10;
+}
+
+.checkout-header a {
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.checkout-header a:hover {
+    color: var(--c-gold) !important;
+}
+
+
+
+
+
+
+
+/* ==================== CHECKOUT PAGE FORM STYLING ==================== */
+
+/* Sticky Ledger */
+/* Checkout Ledger - Default Mobile (Static) */
+.sticky-checkout-ledger {
+    position: relative;
+    height: max-content;
+    /* Ensures the container shapes perfectly to its contents */
+}
+
+/* Checkout Ledger - Desktop Only (Sticky) */
+@media (min-width: 992px) {
+    .sticky-checkout-ledger {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 20px;
+        /* Gives it a little breathing room from the top of the browser window */
+    }
+}
+
+
+
+/* Enhancing Placeholder Visibility (High Contrast) */
+.luxury-input-minimal::placeholder {
+    color: rgba(0, 0, 0, 0.6) !important;
+    /* Made darker and more visible */
+    font-style: normal;
+}
+
+/* Adjusting focus states for Checkout inputs */
+.luxury-input-minimal {
+    margin-bottom: 0.5rem;
+}
+
+/* Custom Minimalist Checkbox */
+.luxury-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    padding-left: 0;
+    /* Keeps it flush with the input above */
+}
+
+.luxury-checkbox-input {
+    width: 18px;
+    height: 18px;
+    margin-top: 0;
+    margin-left: 0 !important;
+    /* <--- THIS FIXES THE ALIGNMENT BUG */
+    margin-right: 12px;
+    background-color: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.luxury-checkbox-input:checked {
+    background-color: var(--c-gold);
+    border-color: var(--c-gold);
+}
+
+.luxury-checkbox-input:checked::after {
+    content: '\2713';
+    /* Unicode checkmark */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+}
+
+.luxury-checkbox-input:focus {
+    box-shadow: none !important;
+    border-color: var(--c-gold);
+}
+
+
+
+
+
+
+/* ==================== RESPONSIVE CHECKOUT ADJUSTMENTS ==================== */
+
+/* Desktop Behavior */
+@media (min-width: 992px) {
+    .responsive-ledger-border {
+        border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+    }
+}
+
+/* Mobile & Tablet Behavior (< 992px) */
+@media (max-width: 991.98px) {
+
+    /* 1. Adjust the Ledger when it moves to the top */
+    .responsive-ledger-border {
+        border-left: none !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        /* Replaces side border with bottom border */
+        margin-bottom: 2rem;
+    }
+
+    /* 2. Add padding to body/section so the sticky footer doesn't hide the last form input */
+    .checkout-main-section {
+        padding-bottom: 90px !important;
+    }
+
+    /* 3. The Sticky Action Bar at the Bottom */
+    .mobile-sticky-actions {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--c-white);
+        padding: 15px 20px;
+        margin-top: 0 !important;
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.08);
+        /* High-end soft shadow */
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        z-index: 1040;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== AUTH PAGE CUSTOM STYLES ==================== */
+
+.auth-section {
+    overflow: hidden;
+}
+
+/* Video Background Stylings */
+.video-background-wrapper {
+    position: relative;
+    background-color: var(--c-primary);
+}
+
+.video-overlay {
+    background: linear-gradient(to bottom, rgba(26, 21, 20, 0.219), rgba(26, 21, 20, 0.363));
+    z-index: 0;
+}
+
+/* Offer Badge Styling */
+.offer-code-badge {
+    background-color: rgba(255, 255, 255, 0.05);
+    /* backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); */
+    transition: all 0.5s ease;
+}
+
+.offer-code-badge:hover {
+    background-color: rgba(0, 0, 0, 0.404);
+    border-color: var(--c-gold) !important;
+}
+
+/* Auth Card Fade-In */
+.auth-card {
+    animation: fadeInUp 1s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Smooth Google Button Interaction */
+.btn-outline-dark:hover {
+    background-color: #000000;
+    border-color: var(--c-primary);
+    transform: translateY(-1px);
+}
+
+/* Custom Transition for Luxury Experience */
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+
+
+
+
+
+
+
+
+
+/* OTP Verification Styling */
+.otp-input {
+    width: 60px;
+    height: 70px;
+    font-size: 28px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 0;
+    background: transparent;
+    transition: all 0.3s ease;
+    font-family: var(--f-body);
+}
+
+.otp-input:focus {
+    outline: none;
+    box-shadow: none !important;
+    border-bottom-color: var(--c-gold) !important;
+    transform: translateY(-5px);
+    /* Gentle lift on focus */
+}
+
+/* Modal Content Background */
+#otpModal .modal-content {
+    background-color: var(--c-white);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================= DASHBOARD PAGE CUSTOM STYLES ==================== */
+
+/* ==================== PATRON DASHBOARD STYLES ==================== */
+
+/* Sticky Left Sidebar */
+.sticky-sidebar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 100px;
+    /* Adjust based on your header height */
+}
+
+/* Delicate Borders */
+.border-end-delicate {
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.border-bottom-delicate {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Dashboard Nav Links */
+.dashboard-nav .nav-link {
+    color: rgba(0, 0, 0, 0.6);
+    font-family: var(--f-body);
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.dashboard-nav .nav-link:hover,
+.dashboard-nav .nav-link.active {
+    color: var(--c-primary) !important;
+    background-color: transparent;
+}
+
+/* Progress Bar Overrides */
+.order-progress-wrapper span {
+    font-family: var(--f-body);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 9px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991px) {
+
+    /* Remove vertical line, add horizontal line on mobile */
+    .border-end-delicate {
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+    }
+
+    .sticky-sidebar {
+        position: relative;
+        top: 0;
+    }
+
+    /* Address column separation on mobile */
+    .border-start-md {
+        border-left: none !important;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        padding-top: 2rem;
+    }
+}
+
+/* Desktop Address Border */
+@media (min-width: 992px) {
+    .border-start-md {
+        border-left: 1px solid rgba(0, 0, 0, 0.08) !important;
+        padding-left: 3rem;
+    }
+}
+
+/* ==================== MOBILE DASHBOARD DROPDOWN ==================== */
+.luxury-select-nav {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 0;
+    padding: 12px 0;
+    /* Adjust padding to align text */
+    font-family: var(--f-body);
+    font-weight: 600;
+    color: var(--c-primary);
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    /* Ensure the dropdown arrow stays on the right */
+    background-position: right center;
+}
+
+.luxury-select-nav:focus {
+    box-shadow: none;
+    border-bottom-color: var(--c-gold);
+    outline: none;
+}
+
+/* Adjust responsive margin for the sidebar container on mobile */
+@media (max-width: 991px) {
+    .border-end-delicate {
+        /* Removed the large margin-bottom here, as the dropdown container handles spacing now */
+        margin-bottom: 0;
+        border-bottom: none;
+        /* Let the dropdown container handle the bottom border */
+        padding-bottom: 0;
+    }
+}
+
+
+/* ==================== CUSTOM MOBILE DASHBOARD DROPDOWN ==================== */
+
+.custom-mobile-nav .btn:focus {
+    box-shadow: none !important;
+    border-bottom-color: var(--c-gold) !important;
+}
+
+.custom-mobile-nav .dropdown-menu {
+    padding: 10px 0;
+    animation: fadeInDropdown 0.2s ease-in-out;
+}
+
+.custom-mobile-nav .dropdown-item {
+    font-family: var(--f-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--c-body);
+    padding: 12px 20px;
+    transition: all 0.2s ease;
+}
+
+.custom-mobile-nav .dropdown-item:hover,
+.custom-mobile-nav .dropdown-item:focus {
+    background-color: var(--c-linen);
+    color: var(--c-primary);
+}
+
+.custom-mobile-nav .dropdown-item.active {
+    background-color: transparent;
+    color: var(--c-gold);
+    font-weight: 600;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ======================================================= ABOUT US HERO STYLES ==================== */
+
+
+/* Fixed Video Background Logic */
+.about-hero .hero-bg-fixed {
+    position: absolute;
+    /* Contains it within the hero section */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    /* Brings it in front of the body background */
+    pointer-events: none;
+}
+
+.about-hero .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Staggered Reveal Animation */
+@keyframes textReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(40px);
+        filter: blur(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+.animate-reveal {
+    opacity: 0;
+    animation: textReveal 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+/* Delays for a cinematic sequence */
+.delay-1 {
+    animation-delay: 0.4s;
+}
+
+.delay-2 {
+    animation-delay: 0.8s;
+}
+
+/* Subtle Video Zoom In Effect */
+.hero-bg-fixed video {
+    animation: slowZoom 20s ease-in-out infinite alternate;
+}
+
+@keyframes slowZoom {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+}
+
+
+
+
+
+
+
+
+.border-top-gold {
+    border-top: 1px solid var(--c-gold);
+}
+
+/* Animations for Luxury Entrance */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    opacity: 0;
+    animation: fadeInUp 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+.delay-1 {
+    animation-delay: 0.3s;
+}
+
+.delay-2 {
+    animation-delay: 0.6s;
+}
+
+/* Cinematic Scroll Indicator Animation */
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.animate-bounce {
+    animation: bounce 2.5s infinite;
+}
+
+.letter-spacing-5 {
+    letter-spacing: 5px;
+}
+
+
+
+
+/* ==================== ORIGIN SECTION STYLES ==================== */
+
+.py-10 {
+    padding-top: 100px;
+    padding-bottom: 100px;
+}
+
+.mt-10 {
+    margin-top: 100px;
+}
+
+.origin-img-large {
+    height: 550px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.origin-img-small {
+    height: 380px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Luxury Hover Effect */
+.hover-zoom {
+    transition: transform 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.origin-section:hover .hover-zoom {
+    transform: scale(1.05);
+}
+
+/* Text Selection Color for Brand Consistency */
+::selection {
+    background: var(--c-gold);
+    color: var(--c-white);
+}
+
+@media (max-width: 991px) {
+    .origin-img-large {
+        height: 400px;
+    }
+
+    .origin-img-small {
+        height: 250px;
+    }
+
+    .py-10 {
+        padding-top: 60px;
+        padding-bottom: 60px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== MONUMENTAL STORY STYLES ==================== */
+
+/* Overlap and Shadows */
+.shadow-luxury {
+    box-shadow: 30px 30px 0px 0px var(--c-linen);
+    /* Elegant offset background instead of shadow */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.reveal-img-container {
+    height: 600px;
+}
+
+.divider-gold {
+    height: 1px;
+    background-color: var(--c-gold);
+}
+
+/* Custom Spacing for Luxury Feel */
+.mb-10 {
+    margin-bottom: 120px;
+}
+
+.border-delicate {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive Fixes */
+@media (max-width: 991px) {
+    .reveal-img-container {
+        height: 400px;
+    }
+
+    .shadow-luxury {
+        box-shadow: 15px 15px 0px 0px var(--c-linen);
+    }
+
+    .mb-10 {
+        margin-bottom: 60px;
+    }
+}
+
+
+
+
+
+
+
+
+
+/* ==================== GALLERY CAROUSEL STYLES ==================== */
+
+/* ==================== REFINED GALLERY STYLES ==================== */
+
+#luxury-gallery-wrap {
+    background-color: var(--c-primary);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gallery-focus-frame {
+    height: 420px;
+    /* Reduced for 650px section height */
+    background-color: #000;
+    overflow: hidden;
+}
+
+.gallery-focus-frame img {
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.95;
+    transition: transform 6s ease-in-out;
+}
+
+.carousel-item.active .gallery-focus-frame img {
+    transform: scale(1.08);
+    /* Subtle zoom for active slide */
+}
+
+/* Shadow logic */
+.shadow-luxury-refined {
+    box-shadow: 0 50px 80px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Minimalist Stroke Buttons */
+.btn-stroke-nav {
+    background: none;
+    border: none;
+    padding: 10px;
+    color: rgba(255, 255, 255, 0.4);
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.btn-stroke-nav:hover {
+    color: var(--c-gold);
+    transform: translateX(3px);
+    /* Subtle nudge effect */
+}
+
+.btn-stroke-nav:first-child:hover {
+    transform: translateX(-3px);
+}
+
+.btn-stroke-nav svg {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    #luxury-gallery-wrap {
+        height: 500px;
+    }
+
+    .gallery-focus-frame {
+        height: 280px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== JOURNAL LISTING STYLES ==================== */
+
+.journal-hero {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.journal-cat-link {
+    font-family: var(--f-body);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--c-body);
+    border: none;
+    border-bottom: 2px solid transparent !important;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.journal-cat-link.active,
+.journal-cat-link:hover {
+    color: var(--c-gold) !important;
+    border-bottom-color: var(--c-gold) !important;
+}
+
+/* Luxury Pagination */
+.pagination-number {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--c-body);
+    font-family: var(--f-body);
+    font-size: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.pagination-number:hover,
+.pagination-number.active {
+    background-color: var(--c-primary);
+    color: var(--c-white);
+    border-color: var(--c-primary);
+}
+
+.pagination-arrow {
+    color: var(--c-gold);
+    transition: opacity 0.3s;
+}
+
+.pagination-arrow.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.blog-card {
+    transition: transform 0.4s ease;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+}
+
+.blog-img-wrapper .blog-img {
+    transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.blog-card:hover .blog-img {
+    transform: scale(1.05);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ==================== ARTICLE DETAIL STYLES ==================== */
+
+/* Elegant Drop Cap for the first letter of the article */
+.drop-cap::first-letter {
+    font-family: var(--f-head);
+    font-size: 4.5rem;
+    color: var(--c-gold);
+    float: left;
+    line-height: 0.8;
+    padding-top: 4px;
+    padding-right: 8px;
+    padding-bottom: 5px;
+}
+
+/* Subtle link hover for tags */
+.hover-gold {
+    transition: color 0.3s ease;
+}
+
+.hover-gold:hover {
+    color: var(--c-gold) !important;
+}
+
+/* Minimalist Social Sharing Buttons */
+.btn-social-stroke {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 35px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    color: var(--c-body);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-social-stroke:hover {
+    border-color: var(--c-gold);
+    color: var(--c-gold);
+    transform: translateY(-2px);
+}
+
+.border-top-delicate {
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================================================== CONTACT PAGE STYLES ==================== */
+
+
+/* ==================== ULTRA-LUXURY CONTACT CARDS ==================== */
+
+.ultra-luxury-card {
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    /* Removes the bouncy shadow completely, keeps it flat and editorial */
+    box-shadow: none;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Delicate Icon Containment */
+/* Delicate Icon Containment */
+.icon-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 1px solid rgba(209, 178, 70, 0.3);
+    /* Faint gold ring */
+
+    /* FIX 1: Explicitly force the Gold color here */
+    color: var(--c-gold) !important;
+
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* FIX 2: Ensure the SVG renders properly on all screens */
+.icon-circle svg {
+    stroke-width: 1.2;
+    /* Thickened slightly so it's visible but still luxurious */
+    width: 26px;
+    height: 26px;
+}
+
+/* Sophisticated Hover State */
+.ultra-luxury-card:hover {
+    border-color: rgba(209, 178, 70, 0.4);
+}
+
+.ultra-luxury-card:hover .icon-circle {
+    background-color: var(--c-gold);
+    border-color: var(--c-gold);
+    color: #fff !important;
+    /* Forces the icon to turn white on hover */
+    transform: scale(1.05);
+}
+
+/* Elegant Underlined Link CTA */
+.cta-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 40%;
+    width: 20%;
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.05);
+    /* Very faint separator line */
+    transition: all 0.5s ease;
+}
+
+.ultra-luxury-card:hover .cta-wrapper::before {
+    background-color: var(--c-gold);
+    width: 40%;
+    left: 30%;
+}
+
+.luxury-link {
+    position: relative;
+    padding-bottom: 2px;
+}
+
+.luxury-link::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--c-primary);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ultra-luxury-card:hover .luxury-link::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* General Transition Utility */
+.transition-all {
+    transition: all 0.4s ease;
+}
+
+
+
+
+
+
+/* ==================== PREMIUM FORM STYLING ==================== */
+
+/* Container and base input setup */
+.luxury-input-group {
+    margin-bottom: 5px;
+}
+
+.luxury-input {
+    border: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+    background: transparent;
+    padding: 10px 0;
+    font-size: 14px;
+    font-family: var(--f-body);
+    color: var(--c-primary);
+    transition: all 0.3s ease;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Animate the bottom border to Gold on focus */
+.luxury-input:focus {
+    border-bottom-color: var(--c-gold);
+}
+
+/* Floating Label Logic */
+.luxury-input-group label {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+/* When input is focused OR has text inside it */
+.luxury-input:focus~label,
+.luxury-input:not(:placeholder-shown)~label {
+    top: -15px;
+    font-size: 10px;
+    color: var(--c-gold);
+    font-weight: 600;
+}
+
+/* Custom Checkbox */
+.luxury-checkbox .form-check-input {
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 0;
+    /* Square edges for premium feel */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.luxury-checkbox .form-check-input:checked {
+    background-color: var(--c-gold);
+    border-color: var(--c-gold);
+}
+
+/* Elegant Underline Hover for Privacy links */
+.hover-underline {
+    text-decoration: none;
+}
+
+.hover-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--c-gold);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+}
+
+.hover-underline:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* Submit Button Hover */
+.luxury-submit-btn {
+    background-color: var(--c-primary);
+    border: 1px solid var(--c-primary);
+    color: #fff;
+}
+
+.luxury-submit-btn:hover {
+    background-color: var(--c-gold);
+    border-color: var(--c-gold);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(209, 178, 70, 0.2);
+}
+
+
+
+
+/* ==================== CONTACT FORM PARALLAX BACKGROUND ==================== */
+
+.contact-parallax-bg {
+    position: relative;
+    padding: 120px 0;
+    /* Huge padding to show off the background image */
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    /* Creates the luxurious Parallax scroll effect */
+}
+
+/* Deep, rich overlay to make the white form card pop */
+.parallax-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(26, 21, 20, 0.7);
+    /* Uses your deep var(--c-primary) as an overlay */
+    z-index: 1;
+}
+
+/* Editorial Drop Shadow for the Form Card */
+.form-card-shadow {
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
+    /* Massive, soft shadow for depth */
+    z-index: 2;
+}
+
+/* Mobile Adjustment for Parallax */
+@media (max-width: 768px) {
+    .contact-parallax-bg {
+        padding: 60px 15px;
+        /* Less padding on mobile */
+        background-attachment: scroll;
+        /* Fixed attachment can be buggy on iOS, scroll is safer */
+    }
+
+    .form-card-shadow {
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
+}
