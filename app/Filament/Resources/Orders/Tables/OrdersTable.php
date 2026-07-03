@@ -23,7 +23,7 @@ class OrdersTable
                     ->searchable(),
                 TextColumn::make('delivery_type')
                     ->badge()
-                    ->color(fn (string $state): string => $state === 'direct' ? 'success' : 'gray'),
+                    ->color(fn ($state): string => $state === 'direct' ? 'success' : 'gray'),
                 TextColumn::make('shipping_postcode')
                     ->label('Postcode')
                     ->searchable(),
@@ -32,8 +32,9 @@ class OrdersTable
                     ->sortable(),
                 TextColumn::make('payment_status')
                     ->badge()
-                    ->color(function (string $state): string {
-                        return match ($state) {
+                    ->color(function ($state): string {
+                        $value = $state instanceof \BackedEnum ? $state->value : $state;
+                        return match ($value) {
                             'pending' => 'warning',
                             'paid' => 'success',
                             'failed' => 'danger',
@@ -42,12 +43,16 @@ class OrdersTable
                     }),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(function (string $state): string {
-                        return match ($state) {
-                            'pending' => 'warning',
+                    ->color(function ($state): string {
+                        $value = $state instanceof \BackedEnum ? $state->value : $state;
+                        return match ($value) {
+                            'pending', 'pending_payment' => 'warning',
+                            'confirmed' => 'success',
                             'processing' => 'info',
-                            'shipped' => 'primary',
-                            'delivered', 'completed' => 'success',
+                            'packed' => 'primary',
+                            'ready' => 'info',
+                            'out_for_delivery' => 'primary',
+                            'delivered' => 'success',
                             'cancelled' => 'danger',
                             default => 'gray',
                         };
