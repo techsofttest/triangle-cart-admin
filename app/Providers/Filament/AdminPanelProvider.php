@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
+            ->path('/')
             ->login()
             ->spa(true)
             ->brandLogo(asset('images/logo/logo.webp'))
@@ -36,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->middleware(['throttle:filament-login'])
             ->colors([
                 'primary' => Color::hex('#0747ac'),
-            ])
+            ])  
             ->navigationGroups([
                 NavigationGroup::make()
                      ->label('Ecommerce'),

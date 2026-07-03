@@ -2420,6 +2420,50 @@ input[type="search"]::-webkit-search-cancel-button:hover {
     overflow: hidden;
 }
 
+.luxury-carousel .carousel-inner {
+    display: flex;
+    gap: 1rem;
+    transition: transform 600ms ease;
+    will-change: transform;
+}
+
+.luxury-carousel .carousel-item {
+    flex: 0 0 calc((100% - 4rem) / 5);
+    max-width: calc((100% - 4rem) / 5);
+}
+
+@media (max-width: 1200px) {
+    .luxury-carousel .carousel-item {
+        flex-basis: calc((100% - 3rem) / 4);
+        max-width: calc((100% - 3rem) / 4);
+    }
+}
+
+@media (max-width: 992px) {
+    .luxury-carousel .carousel-item {
+        flex-basis: calc((100% - 2rem) / 3);
+        max-width: calc((100% - 2rem) / 3);
+    }
+}
+
+@media (max-width: 768px) {
+    .luxury-carousel .carousel-item {
+        flex-basis: calc((100% - 1rem) / 2);
+        max-width: calc((100% - 1rem) / 2);
+    }
+}
+
+@media (max-width: 576px) {
+    .luxury-carousel .carousel-inner {
+        gap: 0.75rem;
+    }
+
+    .luxury-carousel .carousel-item {
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+}
+
 .product-main-img {
     aspect-ratio: 4 / 3;
     object-fit: cover;

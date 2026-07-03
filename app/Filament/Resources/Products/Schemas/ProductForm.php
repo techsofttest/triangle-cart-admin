@@ -31,7 +31,7 @@ class ProductForm
 
                     Grid::make(3)->schema([
 
-                        Grid::make(3)->schema([
+                        Grid::make(4)->schema([
 
                             Toggle::make('is_active')
                                 ->label('Active')
@@ -41,6 +41,16 @@ class ProductForm
                             Toggle::make('is_featured')
                                 ->label('Featured')
                                 ->inline(false),
+
+                            Toggle::make('requires_direct_delivery')
+                                ->label('Direct Delivery')
+                                ->inline(false),
+
+                            Toggle::make('allows_courier')
+                            ->label('Courier Delivery')
+                            ->inline(false),
+
+                                
 
                         ])->columnSpanFull(),
 

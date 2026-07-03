@@ -19,10 +19,13 @@ class OrdersTable
                 TextColumn::make('order_number')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('first_name')
-                    ->searchable()
-                    ->label('Customer'),
-                TextColumn::make('email')
+                TextColumn::make('customer_name')
+                    ->searchable(),
+                TextColumn::make('delivery_type')
+                    ->badge()
+                    ->color(fn (string $state): string => $state === 'direct' ? 'success' : 'gray'),
+                TextColumn::make('shipping_postcode')
+                    ->label('Postcode')
                     ->searchable(),
                 TextColumn::make('grand_total')
                     ->money('INR')

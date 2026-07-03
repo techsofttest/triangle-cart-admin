@@ -61,6 +61,10 @@ class CategoryForm
                             ->image()
                             ->disk('public'),
 
+                        FileUpload::make('icon')
+                            ->image()
+                            ->disk('public'),
+
                     ])->columnSpanFull(),
 
                 Section::make('SEO Settings')

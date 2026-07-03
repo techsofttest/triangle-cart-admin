@@ -1,0 +1,34 @@
+<?php
+
+use App\Http\Controllers\Api\CustomerDashboardController;
+use App\Http\Controllers\Api\CheckoutController;
+use App\Http\Controllers\Api\DeliveryEligibilityController;
+use App\Http\Controllers\Api\StorefrontController;
+use App\Http\Controllers\Api\CustomerAddressController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/storefront/home', [StorefrontController::class, 'home']);
+Route::get('/storefront/header', [StorefrontController::class, 'header']);
+Route::get('/storefront/categories', [StorefrontController::class, 'categories']);
+Route::get('/storefront/products', [StorefrontController::class, 'products']);
+Route::get('/storefront/products/{product:slug}', [StorefrontController::class, 'product']);
+Route::get('/storefront/top-offers', [StorefrontController::class, 'topOffers']);
+
+Route::post('/customer/login', [CustomerAddressController::class, 'login']);
+Route::post('/customer/register', [CustomerAddressController::class, 'register']);
+Route::post('/delivery/check', [DeliveryEligibilityController::class, 'check']);
+Route::post('/checkout', [CheckoutController::class, 'create']);
+Route::post('/checkout/retry', [CheckoutController::class, 'retry']);
+Route::post('/webhooks/stripe', [\App\Http\Controllers\Api\StripeWebhookController::class, 'handle']);
+
+Route::middleware(['web', 'auth:customer'])->group(function () {
+    Route::get('/me', [CustomerDashboardController::class, 'me']);
+    Route::get('/customer/dashboard-summary', [CustomerDashboardController::class, 'dashboardSummary']);
+    
+    Route::get('/customer/addresses', [CustomerAddressController::class, 'index']);
+    Route::post('/customer/addresses', [CustomerAddressController::class, 'store']);
+    Route::put('/customer/addresses/{id}', [CustomerAddressController::class, 'update']);
+    Route::delete('/customer/addresses/{id}', [CustomerAddressController::class, 'destroy']);
+    Route::post('/customer/addresses/{id}/default-shipping', [CustomerAddressController::class, 'setDefaultShipping']);
+    Route::post('/customer/addresses/{id}/default-billing', [CustomerAddressController::class, 'setDefaultBilling']);
+});

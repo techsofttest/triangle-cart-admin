@@ -3,24 +3,34 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CustomerAddress extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
-        'user_id',
-        'name',
+        'customer_id',
+        'label',
+        'contact_name',
         'phone',
-        'address_line1',
-        'address_line2',
+        'address_line_1',
+        'address_line_2',
+        'suburb',
         'city',
         'state',
+        'postcode',
         'country',
-        'postal_code',
-        'is_default'
+        'latitude',
+        'longitude',
+        'google_place_id',
+        'delivery_notes',
+        'is_default_shipping',
+        'is_default_billing'
     ];
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'user_id');
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 }

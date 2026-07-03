@@ -20,7 +20,9 @@ class Customer extends Authenticatable implements MustVerifyEmail
         'last_login_at',
         'status',
         'otp',
-        'otp_expires_at'
+        'otp_expires_at',
+        'default_shipping_address_id',
+        'default_billing_address_id'
     ];
 
     protected $hidden = [
@@ -38,6 +40,16 @@ class Customer extends Authenticatable implements MustVerifyEmail
 
     public function addresses()
     {
-        return $this->hasMany(CustomerAddress::class, 'user_id');
+        return $this->hasMany(CustomerAddress::class, 'customer_id');
+    }
+
+    public function defaultShippingAddress()
+    {
+        return $this->belongsTo(CustomerAddress::class, 'default_shipping_address_id');
+    }
+
+    public function defaultBillingAddress()
+    {
+        return $this->belongsTo(CustomerAddress::class, 'default_billing_address_id');
     }
 }

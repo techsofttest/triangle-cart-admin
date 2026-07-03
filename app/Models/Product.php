@@ -21,6 +21,8 @@ class Product extends Model
         'featured_image',
         'is_featured',
         'is_active',
+        'requires_direct_delivery',
+        'allows_courier',
         'meta_title',
         'meta_description',
     ];
@@ -28,6 +30,8 @@ class Product extends Model
     protected $casts = [
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'requires_direct_delivery' => 'boolean',
+        'allows_courier' => 'boolean',
         'expiry_date' => 'date',
     ];
 

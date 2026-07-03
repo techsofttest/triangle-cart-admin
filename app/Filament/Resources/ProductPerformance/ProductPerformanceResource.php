@@ -17,7 +17,7 @@ use Filament\Forms\Components\Select;
 use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\ProductPerformance\Pages\ListProductPerformance;
 
-class ProductPerformanceResource extends Resource
+class ProductPerformanceResource extends Resource   
 {
     protected static ?string $model = Product::class;
 
@@ -89,7 +89,7 @@ class ProductPerformanceResource extends Resource
                     }),
             ])
             ->filters([
-                Filter::make('period')
+                Filter::make('period') 
                     ->form([
                         Select::make('period')
                             ->label('Time Period')
@@ -124,6 +124,7 @@ class ProductPerformanceResource extends Resource
 
                 Filter::make('performance')
                     ->form([
+
                         Select::make('sort_by')
                             ->label('Sort by Performance')
                             ->options([

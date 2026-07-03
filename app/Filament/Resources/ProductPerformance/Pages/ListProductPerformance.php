@@ -12,5 +12,6 @@ class ListProductPerformance extends ListRecords
     protected function getHeaderActions(): array
     {
         return [];
+        
     }
 }
