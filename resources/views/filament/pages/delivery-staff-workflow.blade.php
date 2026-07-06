@@ -467,6 +467,37 @@
                     </div>
                 </div>
             </div>
+
+
+
+            @once
+                <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+                <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+            @endonce
+
+            <!-- JavaScript helper to capture GPS coordinates -->
+            <script>
+                function getLocationAndSubmit() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                @this.set('gpsLatitude', position.coords.latitude);
+                                @this.set('gpsLongitude', position.coords.longitude);
+                                @this.call('submitDeliverySuccess');
+                            },
+                            (error) => {
+                                console.warn('Geolocation capture failed: ', error);
+                                // Fallback without GPS
+                                @this.call('submitDeliverySuccess');
+                            },
+                            { timeout: 5000 }
+                        );
+                    } else {
+                        // Fallback if not supported
+                        @this.call('submitDeliverySuccess');
+                    }
+                }
+            </script>
         @endif
 
         <!-- Mark Failed Modal Form -->
@@ -501,38 +532,4 @@
             </div>
         @endif
     </div>
-
-    <!-- Leaflet (loaded once, regardless of Livewire re-renders) -->
-    @once
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    @endonce
-
-    <!-- GPS capture helper (loaded once, reliably re-initializes via @script regardless of modal state) -->
-    @once
-        @script
-        <script>
-            window.getLocationAndSubmit = function () {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (position) => {
-                            $wire.set('gpsLatitude', position.coords.latitude);
-                            $wire.set('gpsLongitude', position.coords.longitude);
-                            $wire.call('submitDeliverySuccess');
-                        },
-                        (error) => {
-                            console.warn('Geolocation capture failed: ', error);
-                            // Fallback without GPS
-                            $wire.call('submitDeliverySuccess');
-                        },
-                        { timeout: 5000 }
-                    );
-                } else {
-                    // Fallback if not supported
-                    $wire.call('submitDeliverySuccess');
-                }
-            }
-        </script>
-        @endscript
-    @endonce
 </x-filament-panels::page>
