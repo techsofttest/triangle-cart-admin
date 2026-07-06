@@ -16,6 +16,11 @@ class ExpiringProductsWidget extends BaseWidget
     
     protected static ?string $heading = 'Products Expiring Soon';
 
+    public static function canView(): bool
+    {
+        return auth()->user()?->can('products.view') ?? false;
+    }
+
     public function table(Table $table): Table
     {
         return $table

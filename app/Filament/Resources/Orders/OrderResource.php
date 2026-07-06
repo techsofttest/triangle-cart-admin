@@ -31,8 +31,6 @@ class OrderResource extends Resource
         return OrderForm::configure($schema);
     }
 
-
-
     public static function table(Table $table): Table
     {
         return OrdersTable::configure($table);
@@ -51,7 +49,7 @@ class OrderResource extends Resource
             'index' => ListOrders::route('/'),
             'create' => CreateOrder::route('/create'),
             'view' => ViewOrder::route('/{record}'),
-            //'edit' => EditOrder::route('/{record}/edit'),
+            'edit' => EditOrder::route('/{record}/edit'),
         ];
     }
 }

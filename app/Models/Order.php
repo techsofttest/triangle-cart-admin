@@ -43,4 +43,10 @@ class Order extends Model
     {
         return $this->hasMany(PaymentTransaction::class);
     }
+
+    public function deliverySessionOrders()
+    {
+        return $this->hasMany(DeliverySessionOrder::class);
+    }
 }
+

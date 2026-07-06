@@ -18,8 +18,9 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-
 use Filament\Navigation\NavigationGroup;
+use Filament\Support\Assets\Js;
+use Filament\Support\Assets\Css;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -30,7 +31,6 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('/')
             ->login()
-            ->spa(true)
             ->brandLogo(asset('images/logo/logo.webp'))
             ->brandLogoHeight('3rem')
             ->middleware(['throttle:filament-login'])
@@ -53,6 +53,13 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 // Widgets are automatically discovered
+            ])
+            ->assets([
+                Css::make('leaflet-css', 'npm/leaflet/dist/leaflet.css'),
+                Css::make('delivery-map-css', resource_path('css/filament/delivery-map.css')),
+                Css::make('app-css', resource_path('css/app.css')),
+                Js::make('leaflet-js', 'npm/leaflet/dist/leaflet.js'),
+                Js::make('delivery-map-js', resource_path('js/filament/delivery-map.js'))->defer(),
             ])
             ->middleware([
                 EncryptCookies::class,

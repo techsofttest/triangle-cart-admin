@@ -25,4 +25,14 @@ return [
         'fee' => 9.99,
         'free_threshold' => 50.00,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Store/Warehouse Coordinates (Default origin for delivery route optimization)
+    |--------------------------------------------------------------------------
+    |*/
+    'store_coordinates' => [
+        'latitude' => env('STORE_LATITUDE', -37.8136),
+        'longitude' => env('STORE_LONGITUDE', 144.9631),
+    ],
 ];
