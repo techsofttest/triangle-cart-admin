@@ -20,7 +20,8 @@ class DeliveryDashboard extends Page
 
     protected static ?string $navigationLabel = 'Delivery Dashboard';
     protected static ?string $title = 'Delivery Operations Dashboard';
-    protected static string|null|\UnitEnum $navigationGroup = 'Ecommerce';
+    protected static string|null|\UnitEnum $navigationGroup = 'Delivery';
+    protected static ?int $navigationSort = 1;
 
     public static function canAccess(): bool
     {

@@ -17,6 +17,7 @@ class DeliveryDateForm
                     ->label('Delivery Date')
                     ->required()
                     ->unique(ignoreRecord: true)
+                    ->minDate(today())
                     ->columnSpanFull(),
                 
                 Repeater::make('timeSlots')
@@ -27,7 +28,7 @@ class DeliveryDateForm
                             ->seconds(false),
                         TimePicker::make('end_time')
                             ->required()
-                            ->seconds(false),
+                            ->seconds(false)
                     ])
                     ->columns(2)
                     ->collapsible()

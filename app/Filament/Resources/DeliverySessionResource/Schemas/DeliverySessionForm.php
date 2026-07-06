@@ -10,29 +10,34 @@ use Filament\Schemas\Components\Grid;
 use App\Models\TimeSlot;
 use Carbon\Carbon;
 
+
 class DeliverySessionForm
 {
     public static function configure(Schema $schema): Schema
-    {
+    { 
         return $schema
-            ->schema([
-                Grid::make(2)
-                    ->schema([
-                        DatePicker::make('delivery_date')
-                            ->label('Delivery Date')
-                            ->required()
-                            ->default(now()),
-                            
-                        Select::make('delivery_slot_id')
-                            ->label('Time Slot')
-                            ->required()
-                            ->options(function () {
-                                return TimeSlot::with('deliveryDate')->get()->mapWithKeys(function ($slot) {
-                                    $dateStr = $slot->deliveryDate ? Carbon::parse($slot->deliveryDate->date)->format('Y-m-d') : 'No Date';
-                                    return [$slot->id => "{$dateStr} : {$slot->start_time} - {$slot->end_time}"];
-                                });
-                            }),
-                            
+                    ->components([
+                      DatePicker::make('delivery_date')
+                    ->label('Delivery Date')
+                    ->required()
+                    ->default(today())
+                    ->native(false),
+    
+                    Select::make('delivery_slot_id')
+                    ->label('Time Slot')
+                    ->required()
+                    ->options(function () {
+                        return TimeSlot::query()
+                            ->whereHas('deliveryDate', fn ($query) => $query->whereDate('date', today()))
+                            ->orderBy('start_time')
+                            ->get()
+                            ->mapWithKeys(fn ($slot) => [
+                                $slot->id => Carbon::parse($slot->start_time)->format('g:i A')
+                                    . ' - '
+                                    . Carbon::parse($slot->end_time)->format('g:i A'),
+                            ]);
+                    }),
+                         
                         Select::make('status')
                             ->required()
                             ->options([
@@ -43,18 +48,15 @@ class DeliverySessionForm
                                 'completed' => 'Completed',
                             ])
                             ->default('draft'),
-
-                        Grid::make(2)
-                            ->schema([
-                                DateTimePicker::make('started_at')
-                                    ->disabled()
-                                    ->dehydrated(false),
-                                DateTimePicker::make('completed_at')
-                                    ->disabled()
-                                    ->dehydrated(false),
-                            ])
-                            ->columnSpan(2),
-                    ])
+                        
+                            DateTimePicker::make('started_at')
+                                ->disabled()
+                                ->dehydrated(false),
+                            DateTimePicker::make('completed_at')
+                                ->disabled()
+                                ->dehydrated(false),
+                           
+                    
             ]);
     }
 }

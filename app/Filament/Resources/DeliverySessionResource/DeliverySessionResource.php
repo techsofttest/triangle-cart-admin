@@ -24,7 +24,8 @@ class DeliverySessionResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'delivery_date';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Ecommerce';
+    protected static string|UnitEnum|null $navigationGroup = 'Delivery';
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

@@ -39,6 +39,8 @@ class AdminPanelProvider extends PanelProvider
             ])  
             ->navigationGroups([
                 NavigationGroup::make()
+                    ->label('Delivery'),
+                NavigationGroup::make()
                      ->label('Ecommerce'),
                 NavigationGroup::make()
                     ->label('Content Management'),

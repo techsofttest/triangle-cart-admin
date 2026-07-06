@@ -24,7 +24,8 @@ class DeliveryStaffWorkflow extends Page
 
     protected static ?string $navigationLabel = 'Driver Portal';
     protected static ?string $title = 'Driver Delivery Portal';
-    protected static string|null|\UnitEnum $navigationGroup = 'Ecommerce';
+    protected static string|null|\UnitEnum $navigationGroup = 'Delivery';
+    protected static ?int $navigationSort = 3;
 
     public static function canAccess(): bool
     {
