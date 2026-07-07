@@ -18,14 +18,15 @@ Route::get('/storefront/products', [StorefrontController::class, 'products']);
 Route::get('/storefront/products/{product:slug}', [StorefrontController::class, 'product']);
 Route::get('/storefront/top-offers', [StorefrontController::class, 'topOffers']);
 
-Route::post('/customer/login', [CustomerAddressController::class, 'login']);
-Route::post('/customer/register', [CustomerAddressController::class, 'register']);
 Route::post('/delivery/check', [DeliveryEligibilityController::class, 'check']);
 Route::post('/checkout', [CheckoutController::class, 'create']);
 Route::post('/checkout/retry', [CheckoutController::class, 'retry']);
 Route::post('/webhooks/stripe', [\App\Http\Controllers\Api\StripeWebhookController::class, 'handle']);
 
 Route::middleware(['web'])->group(function () {
+    Route::post('/customer/login', [CustomerAddressController::class, 'login']);
+    Route::post('/customer/register', [CustomerAddressController::class, 'register']);
+    
     Route::get('/customer/debug-session', function (\Illuminate\Http\Request $request) {
         return response()->json([
             'session_id' => session()->getId(),
