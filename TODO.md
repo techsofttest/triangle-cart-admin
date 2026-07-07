@@ -59,3 +59,11 @@
 - [ ] Payment Timeline visualization in Order Resource
 - [ ] Searchable Payment Records in Admin
 - [ ] Refund functionality from Admin Panel
+
+# TODO - AI-first Knowledge Base
+
+- [ ] Create missing `docs/ai/*.md` files (database/models/services/repositories/authz/auth/workflows/modules/api/frontend/filament/payments/warehouse/delivery/notifications/integrations/indexes/glossary/changelog)
+- [ ] Update existing `docs/ai/*.md` (README/architecture/conventions/coding-rules/project) to link to indexes + module docs
+- [ ] Ensure no broken cross-links inside `docs/ai`
+- [ ] Add “AI-first” navigation rules to `docs/ai/README.md`
+

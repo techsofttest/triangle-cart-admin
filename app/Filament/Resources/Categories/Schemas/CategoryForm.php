@@ -51,6 +51,26 @@ class CategoryForm
                                 ->hidden()
                                 ->unique(ignoreRecord: true)
                                 ->dehydrated(),
+
+                            Toggle::make('home_featured')
+                                ->label('Featured on Home Page')
+                                ->helperText('Limit to maximum 2 categories at a time.')
+                                ->default(false)
+                                ->rules([
+                                    function ($get, $record) {
+                                        return function ($attribute, $value, $fail) use ($record) {
+                                            if ($value) {
+                                                $query = Category::where('home_featured', true);
+                                                if ($record) {
+                                                    $query->where('id', '!=', $record->id);
+                                                }
+                                                if ($query->count() >= 2) {
+                                                    $fail('Only 2 categories can be featured on the home page at a time.');
+                                                }
+                                            }
+                                        };
+                                    }
+                                ]),
                         ]),
 
                         Textarea::make('description')

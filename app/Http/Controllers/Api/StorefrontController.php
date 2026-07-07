@@ -404,6 +404,33 @@ class StorefrontController extends Controller
             ->map(fn (HomePageSection $section) => $this->homeSectionPayload($section))
             ->values();
 
+        $featuredCategories = Category::query()
+            ->where('home_featured', true)
+            ->where('is_active', true)
+            ->get()
+            ->map(function (Category $category) {
+                $categoryIds = Category::query()
+                    ->where('id', $category->id)
+                    ->orWhere('parent_id', $category->id)
+                    ->pluck('id');
+
+                $products = Product::query()
+                    ->with(['brand', 'category', 'variants', 'reviews', 'images'])
+                    ->whereIn('category_id', $categoryIds)
+                    ->where('is_active', true)
+                    ->latest()
+                    ->take(4)
+                    ->get();
+
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'products' => $products->map(fn (Product $product) => $this->productPayload($product))->values(),
+                ];
+            })
+            ->values();
+
         return response()->json([
             'home_advertisement' => $homeAdvertisement ? [
                 'id' => $homeAdvertisement->id,
@@ -416,6 +443,7 @@ class StorefrontController extends Controller
             'products' => $products->map(fn (Product $product) => $this->productPayload($product))->values(),
             'brands' => $brands,
             'sections' => $sections,
+            'featured_categories' => $featuredCategories,
         ]);
     }
 

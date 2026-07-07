@@ -36,6 +36,25 @@ class CategoriesTable
                     ->label('Active')
                     ->sortable(),
 
+                ToggleColumn::make('home_featured')
+                    ->label('Home Featured')
+                    ->sortable()
+                    ->rules([
+                        function ($record) {
+                            return function ($attribute, $value, $fail) use ($record) {
+                                if ($value) {
+                                    $query = \App\Models\Category::where('home_featured', true);
+                                    if ($record) {
+                                        $query->where('id', '!=', $record->id);
+                                    }
+                                    if ($query->count() >= 2) {
+                                        $fail('Only 2 categories can be featured on the home page at a time.');
+                                    }
+                                }
+                            };
+                        }
+                    ]),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

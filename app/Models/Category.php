@@ -16,6 +16,7 @@ class Category extends Model
         'slug',
         'sort_order',
         'is_active',
+        'home_featured',
         'meta_title',
         'meta_description',
         'meta_keywords',
@@ -23,6 +24,7 @@ class Category extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
+        'home_featured' => 'boolean',
     ];
 
     protected static function booted()
