@@ -480,11 +480,11 @@
             </h1>
 
             <div class="order-detail-status-badges">
-                <span class="order-status-badge order-status-{{ $this->record->status }}">
-                    {{ ucfirst($this->record->status) }}
+                <span class="order-status-badge order-status-{{ $this->record->status->value }}">
+                    {{ ucfirst($this->record->status->value) }}
                 </span>
-                <span class="order-status-badge order-status-{{ $this->record->payment_status }}">
-                    {{ ucfirst($this->record->payment_status) }}
+                <span class="order-status-badge order-status-{{ $this->record->payment_status->value }}">
+                    {{ ucfirst($this->record->payment_status->value) }}
                 </span>
             </div>
         </div>
@@ -584,7 +584,7 @@
 
                 <div class="order-info-row">
                     <span>Status</span>
-                    <span>{{ ucfirst($this->record->payment_status) }}</span>
+                    <span>{{ ucfirst($this->record->payment_status->value) }}</span>
                 </div>
 
                 <div class="order-info-row">

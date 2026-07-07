@@ -25,6 +25,18 @@ Route::post('/checkout', [CheckoutController::class, 'create']);
 Route::post('/checkout/retry', [CheckoutController::class, 'retry']);
 Route::post('/webhooks/stripe', [\App\Http\Controllers\Api\StripeWebhookController::class, 'handle']);
 
+Route::middleware(['web'])->group(function () {
+    Route::get('/customer/debug-session', function (\Illuminate\Http\Request $request) {
+        return response()->json([
+            'session_id' => session()->getId(),
+            'customer_id' => session()->get('customer_id'),
+            'auth_check' => \Illuminate\Support\Facades\Auth::guard('customer')->check(),
+            'user' => \Illuminate\Support\Facades\Auth::guard('customer')->user(),
+            'cookies' => $request->cookies->all(),
+        ]);
+    });
+});
+
 Route::middleware(['web', 'auth:customer'])->group(function () {
     Route::get('/me', [CustomerDashboardController::class, 'me']);
     Route::get('/customer/dashboard-summary', [CustomerDashboardController::class, 'dashboardSummary']);

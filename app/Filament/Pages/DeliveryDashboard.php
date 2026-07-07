@@ -16,6 +16,8 @@ class DeliveryDashboard extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPresentationChartLine;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     protected string $view = 'filament.pages.delivery-dashboard';
 
     protected static ?string $navigationLabel = 'Delivery Dashboard';
