@@ -7,6 +7,10 @@ use App\Http\Controllers\Api\StorefrontController;
 use App\Http\Controllers\Api\CustomerAddressController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/login', function () {
+    return response()->json(['message' => 'Unauthenticated.'], 401);
+})->name('login');
+
 Route::get('/storefront/home', [StorefrontController::class, 'home']);
 Route::get('/storefront/header', [StorefrontController::class, 'header']);
 Route::get('/storefront/categories', [StorefrontController::class, 'categories']);
