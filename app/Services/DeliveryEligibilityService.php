@@ -96,7 +96,7 @@ class DeliveryEligibilityService
             return [];
         }
 
-        $leadTimeHours = config('delivery.minimum_lead_hours', 24);
+        $leadTimeHours = config('delivery.minimum_lead_hours', 1);
         $earliestTime = Carbon::now()->addHours($leadTimeHours);
 
         $deliveryDates = DeliveryDate::query()
