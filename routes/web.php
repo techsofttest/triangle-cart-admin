@@ -15,3 +15,6 @@ Route::post('/customer/logout', function (Request $request) {
 
     return redirect()->back();
 });
+
+Route::post('/webhooks/stripe', [\App\Http\Controllers\Api\StripeWebhookController::class, 'handle']);
+
