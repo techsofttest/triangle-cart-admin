@@ -304,7 +304,18 @@ class StorefrontController extends Controller
             ->where('is_active', true);
 
         if ($categorySlug = $request->string('category')->toString()) {
-            $query->whereHas('category', fn ($q) => $q->where('slug', $categorySlug));
+
+            $category = Category::where('slug', $categorySlug)->first();
+
+            if ($category) {
+
+                $categoryIds = Category::query()
+                    ->where('id', $category->id)
+                    ->orWhere('parent_id', $category->id)
+                    ->pluck('id');
+
+                $query->whereIn('category_id', $categoryIds);
+            }
         }
 
         if ($brandSlug = $request->string('brand')->toString()) {
