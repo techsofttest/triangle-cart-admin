@@ -47,8 +47,8 @@ class CheckoutController extends Controller
         $shippingInfo = $this->deliveryEligibilityService->calculateShipping($postcode, $subtotal);
         $shippingCost = $shippingInfo['shipping_cost'] ?? 0;
         $discount = 0;
-        $tax = ($subtotal - $discount) * 0.10;
-        $grandTotal = $subtotal - $discount + $shippingCost + $tax;
+        $tax = 0;
+        $grandTotal = $subtotal - $discount + $shippingCost;
 
         DB::beginTransaction();
         try {
