@@ -32,7 +32,7 @@ return [
     |--------------------------------------------------------------------------
     |*/
     'store_coordinates' => [
-        'latitude' => env('STORE_LATITUDE', -37.8136),
-        'longitude' => env('STORE_LONGITUDE', 144.9631),
+        'latitude' => env('STORE_LATITUDE', -35.39926983575099),
+        'longitude' => env('STORE_LONGITUDE', 149.1039048482348),
     ],
 ];
