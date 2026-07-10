@@ -276,7 +276,7 @@ class StorefrontController extends Controller
         return response()->json([
             'brand' => [
                 'name' => config('app.name'),
-                'logo' => asset('images/logo/brand-logo-nobg.png'),
+                'logo' => asset('images/logo/brand-logo-nobg.png?v1'),
             ],
             'links' => [
                 ['label' => 'Home', 'href' => '/'],
