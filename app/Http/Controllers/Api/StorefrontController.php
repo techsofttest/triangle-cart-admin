@@ -71,13 +71,50 @@ class StorefrontController extends Controller
         ];
     }
 
+    private function getCategoryImageUrl(Category $category): ?string
+    {
+        if ($category->image) {
+            return $this->assetUrl($category->image);
+        }
+
+        // Try to get a product directly in this category
+        $product = Product::query()
+            ->where('category_id', $category->id)
+            ->whereNotNull('featured_image')
+            ->where('is_active', true)
+            ->first();
+
+        if ($product) {
+            return $this->assetUrl($product->featured_image);
+        }
+
+        // Try to get a product from any child categories (subcategories)
+        $childIds = Category::query()
+            ->where('parent_id', $category->id)
+            ->pluck('id');
+
+        if ($childIds->isNotEmpty()) {
+            $product = Product::query()
+                ->whereIn('category_id', $childIds)
+                ->whereNotNull('featured_image')
+                ->where('is_active', true)
+                ->first();
+
+            if ($product) {
+                return $this->assetUrl($product->featured_image);
+            }
+        }
+
+        return null;
+    }
+
     private function categoryPayload(Category $category): array
     {
         return [
             'id' => $category->id,
             'name' => $category->name,
             'slug' => $category->slug,
-            'image_url' => $this->assetUrl($category->image),
+            'image_url' => $this->getCategoryImageUrl($category),
             'icon_url' => $this->assetUrl($category->icon),
             'href' => '/category/' . $category->slug,
         ];
@@ -250,14 +287,14 @@ class StorefrontController extends Controller
                 'id' => $category->id,
                 'name' => $category->name,
                 'slug' => $category->slug,
-                'image_url' => $this->assetUrl($category->image),
+                'image_url' => $this->getCategoryImageUrl($category),
                 'icon_url' => $this->assetUrl($category->icon),
                 'product_count' => $category->products_count,
                 'children' => $category->children->map(fn (Category $child) => [
                     'id' => $child->id,
                     'name' => $child->name,
                     'slug' => $child->slug,
-                    'image_url' => $this->assetUrl($child->image),
+                    'image_url' => $this->getCategoryImageUrl($child),
                     'icon_url' => $this->assetUrl($child->icon),
                 ])->values(),
             ];
@@ -288,7 +325,7 @@ class StorefrontController extends Controller
                 'name' => $category->name,
                 'slug' => $category->slug,
                 'href' => '/category/' . $category->slug,
-                'image_url' => $this->assetUrl($category->image),
+                'image_url' => $this->getCategoryImageUrl($category),
                 'icon_url' => $this->assetUrl($category->icon),
             ])->values(),
         ]);

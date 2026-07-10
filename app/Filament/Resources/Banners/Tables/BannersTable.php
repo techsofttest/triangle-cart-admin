@@ -23,8 +23,6 @@ class BannersTable
                     ->disk('public'),
                 ToggleColumn::make('is_active')
                     ->label('Active'),
-                TextColumn::make('sort_order')
-                    ->sortable(),
             ])
             ->filters([
                 //

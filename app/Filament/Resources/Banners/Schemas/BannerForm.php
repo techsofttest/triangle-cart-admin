@@ -21,12 +21,6 @@ class BannerForm
                     ->required(),
                 TextInput::make('url')
                     ->url(),
-                Toggle::make('is_active')
-                    ->label('Active')
-                    ->default(true),
-                TextInput::make('sort_order')
-                    ->numeric()
-                    ->default(0),
             ]);
     }
 }
