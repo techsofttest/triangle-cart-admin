@@ -16,7 +16,7 @@ class OperationalStatsWidget extends BaseWidget
 
     public static function canView(): bool
     {
-        return auth()->user()?->can('orders.view') ?? false;
+        return false;
     }
 
     protected function getStats(): array
