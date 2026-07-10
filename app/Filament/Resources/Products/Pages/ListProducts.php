@@ -30,7 +30,7 @@ class ListProducts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\Action::make('import_images')
+            /*\Filament\Actions\Action::make('import_images')
                 ->label('Import Images (ZIP)')
                 ->icon('heroicon-o-photo')
                 ->color('warning')
@@ -124,7 +124,7 @@ class ListProducts extends ListRecords
                             ->danger()
                             ->send();
                     }
-                }),
+                }), */
             CreateAction::make(),
         ];
     }

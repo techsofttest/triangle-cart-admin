@@ -68,17 +68,10 @@ class SessionOrdersRelationManager extends RelationManager
                     ->icon('heroicon-o-arrow-down-tray')
                     ->action(function () {
                         $session = $this->getOwnerRecord();
-                        
-                        // Pull orders matching delivery_date, delivery_slot_id, paid status
-                        $orders = Order::where('delivery_date', $session->delivery_date)
-                            ->where('delivery_slot_id', $session->delivery_slot_id)
-                            ->where('payment_status', PaymentStatus::PAID)
-                            ->whereNotIn('id', function ($query) {
-                                $query->select('order_id')->from('delivery_session_orders');
-                            })
-                            ->get();
+                        $service = app(\App\Services\DeliverySessionService::class);
+                        $count = $service->pullOrders($session);
 
-                        if ($orders->isEmpty()) {
+                        if ($count === 0) {
                             Notification::make()
                                 ->title('No new paid orders found for this slot.')
                                 ->info()
@@ -86,18 +79,8 @@ class SessionOrdersRelationManager extends RelationManager
                             return;
                         }
 
-                        $seq = DeliverySessionOrder::where('delivery_session_id', $session->id)->max('stop_sequence') ?? 0;
-                        
-                        foreach ($orders as $order) {
-                            $session->sessionOrders()->create([
-                                'order_id' => $order->id,
-                                'stop_sequence' => ++$seq,
-                                'status' => 'pending',
-                            ]);
-                        }
-
                         Notification::make()
-                            ->title('Successfully pulled ' . $orders->count() . ' orders.')
+                            ->title('Successfully pulled ' . $count . ' orders.')
                             ->success()
                             ->send();
                     }),
@@ -108,49 +91,15 @@ class SessionOrdersRelationManager extends RelationManager
                     ->icon('heroicon-o-map')
                     ->action(function () {
                         $session = $this->getOwnerRecord();
-                        $orders = $session->sessionOrders()->with('order')->get();
-                        
-                        if ($orders->isEmpty()) {
+                        $service = app(\App\Services\DeliverySessionService::class);
+                        $result = $service->optimizeRoute($session);
+
+                        if (!$result) {
                             Notification::make()
                                 ->title('No orders to optimize.')
                                 ->warning()
                                 ->send();
                             return;
-                        }
-
-                        $destinations = [];
-                        foreach ($orders as $sessionOrder) {
-                            $order = $sessionOrder->order;
-                            // Make sure we have lat/lng
-                            $lat = $order->shipping_latitude;
-                            $lng = $order->shipping_longitude;
-                            
-                            // Fallback if not set: try to parse suburb or use default
-                            if (!$lat || !$lng) {
-                                $lat = config('delivery.store_coordinates.latitude', -37.8136) + (rand(-50, 50) / 1000);
-                                $lng = config('delivery.store_coordinates.longitude', 144.9631) + (rand(-50, 50) / 1000);
-                            }
-
-                            $destinations[] = [
-                                'id' => $sessionOrder->id,
-                                'lat' => (float)$lat,
-                                'lng' => (float)$lng,
-                            ];
-                        }
-
-                        $origin = [
-                            'lat' => (float)config('delivery.store_coordinates.latitude', -37.8136),
-                            'lng' => (float)config('delivery.store_coordinates.longitude', 144.9631),
-                        ];
-
-                        $routesService = app(GoogleRoutesService::class);
-                        $optimized = $routesService->optimizeRoute($origin, $destinations);
-
-                        foreach ($optimized as $opt) {
-                            DeliverySessionOrder::where('id', $opt['id'])->update([
-                                'stop_sequence' => $opt['stop_sequence'],
-                                'eta' => $opt['eta'],
-                            ]);
                         }
 
                         Notification::make()

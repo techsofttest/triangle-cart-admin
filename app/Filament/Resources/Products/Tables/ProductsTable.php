@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\Products\Tables;
 
+use App\Filament\Imports\ProductImporter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ImportAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -75,6 +77,33 @@ class ProductsTable
                 EditAction::make(),
             ])
 
+            ->headerActions([
+                \Filament\Actions\Action::make('import_products')
+                    ->label('Import Products')
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->form([
+                        \Filament\Forms\Components\FileUpload::make('file')
+                            ->label('Excel / CSV File')
+                            ->required()
+                            ->disk('local')
+                            ->directory('imports')
+                    ])
+                    ->action(function (array $data) {
+                        $filePath = \Illuminate\Support\Facades\Storage::disk('local')->path($data['file']);
+                        
+                        $import = new \App\Imports\ProductExcelImport();
+                        \Maatwebsite\Excel\Facades\Excel::import($import, $filePath);
+
+                        $summary = $import->getService()->getLogger()->getFormattedSummary();
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Import Completed')
+                            ->body($summary)
+                            ->success()
+                            ->send();
+                    })
+            ])
+
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
@@ -82,3 +111,4 @@ class ProductsTable
             ]);
     }
 }
+

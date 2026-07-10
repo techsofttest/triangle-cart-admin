@@ -25,6 +25,15 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\Payments\PaymentGatewayInterface::class,
             \App\Services\Payments\StripePaymentService::class
         );
+
+        // Register import services as singletons so caches persist across rows
+        $this->app->singleton(\App\Services\Import\BrandResolver::class);
+        $this->app->singleton(\App\Services\Import\CategoryResolver::class);
+        $this->app->singleton(\App\Services\Import\ProductResolver::class);
+        $this->app->singleton(\App\Services\Import\VariantResolver::class);
+        $this->app->singleton(\App\Services\Import\ImageResolver::class);
+        $this->app->singleton(\App\Services\Import\ImportLogger::class);
+        $this->app->singleton(\App\Services\Import\ProductImportService::class);
     }
 
     /**

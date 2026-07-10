@@ -10,7 +10,7 @@ return [
     | can be fulfilled. For example, 24 hours.
     |
     */
-    'minimum_lead_hours' => 24,
+    'minimum_lead_hours' => 1,
 
     /*
     |--------------------------------------------------------------------------

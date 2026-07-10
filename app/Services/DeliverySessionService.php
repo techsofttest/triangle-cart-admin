@@ -1,0 +1,109 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\DeliverySession;
+use App\Models\Order;
+use App\Models\DeliverySessionOrder;
+use App\Enums\PaymentStatus;
+
+class DeliverySessionService
+{
+    public function __construct(
+        protected GoogleRoutesService $routesService
+    ) {}
+
+    /**
+     * Pull new paid orders for a delivery session's date and slot.
+     *
+     * @param DeliverySession $session
+     * @return int Number of pulled orders
+     */
+    public function pullOrders(DeliverySession $session): int
+    {
+        $orders = Order::where('delivery_date', $session->delivery_date)
+            ->where('delivery_slot_id', $session->delivery_slot_id)
+            ->where('payment_status', PaymentStatus::PAID)
+            ->whereNotIn('id', function ($query) {
+                $query->select('order_id')->from('delivery_session_orders');
+            })
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return 0;
+        }
+
+        $seq = DeliverySessionOrder::where('delivery_session_id', $session->id)->max('stop_sequence') ?? 0;
+        
+        foreach ($orders as $order) {
+            $session->sessionOrders()->create([
+                'order_id' => $order->id,
+                'stop_sequence' => ++$seq,
+                'status' => 'pending',
+            ]);
+        }
+
+        return $orders->count();
+    }
+
+    /**
+     * Optimize the route sequence for all orders in a delivery session.
+     *
+     * @param DeliverySession $session
+     * @return bool Success status
+     */
+    public function optimizeRoute(DeliverySession $session): bool
+    {
+        $orders = $session->sessionOrders()->with('order')->get();
+        
+        if ($orders->isEmpty()) {
+            return false;
+        }
+
+        $destinations = [];
+        foreach ($orders as $sessionOrder) {
+            $order = $sessionOrder->order;
+            $lat = $order->shipping_latitude;
+            $lng = $order->shipping_longitude;
+            
+            if (!$lat || !$lng) {
+                $lat = config('delivery.store_coordinates.latitude', -37.8136) + (rand(-50, 50) / 1000);
+                $lng = config('delivery.store_coordinates.longitude', 144.9631) + (rand(-50, 50) / 1000);
+            }
+
+            $destinations[] = [
+                'id' => $sessionOrder->id,
+                'lat' => (float)$lat,
+                'lng' => (float)$lng,
+            ];
+        }
+
+        $origin = [
+            'lat' => (float)config('delivery.store_coordinates.latitude', -37.8136),
+            'lng' => (float)config('delivery.store_coordinates.longitude', 144.9631),
+        ];
+
+        $optimized = $this->routesService->optimizeRoute($origin, $destinations);
+
+        foreach ($optimized as $opt) {
+            DeliverySessionOrder::where('id', $opt['id'])->update([
+                'stop_sequence' => $opt['stop_sequence'],
+                'eta' => $opt['eta'],
+            ]);
+        }
+
+        return true;
+    }
+
+    /**
+     * Pull slot orders and optimize the route for a delivery session.
+     *
+     * @param DeliverySession $session
+     * @return void
+     */
+    public function pullAndOptimize(DeliverySession $session): void
+    {
+        $this->pullOrders($session);
+        $this->optimizeRoute($session);
+    }
+}

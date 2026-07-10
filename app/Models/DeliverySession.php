@@ -6,8 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Services\DeliverySessionService;
+
 class DeliverySession extends Model
 {
+    protected static function booted(): void
+    {
+        static::created(function (DeliverySession $session) {
+            app(DeliverySessionService::class)->pullAndOptimize($session);
+        });
+    }
     protected $fillable = [
         'delivery_date',
         'delivery_slot_id',
