@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\DeliveryEligibilityController;
 use App\Http\Controllers\Api\StorefrontController;
 use App\Http\Controllers\Api\CustomerAddressController;
+use App\Http\Controllers\Api\CouponController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', function () {
@@ -20,6 +21,7 @@ Route::get('/storefront/top-offers', [StorefrontController::class, 'topOffers'])
 Route::get('/storefront/faqs', [StorefrontController::class, 'faqs']);
 
 Route::post('/delivery/check', [DeliveryEligibilityController::class, 'check']);
+Route::post('/coupons/validate', [CouponController::class, 'validate']);
 Route::post('/checkout', [CheckoutController::class, 'create']);
 Route::post('/checkout/retry', [CheckoutController::class, 'retry']);
 Route::post('/webhooks/stripe', [\App\Http\Controllers\Api\StripeWebhookController::class, 'handle']);

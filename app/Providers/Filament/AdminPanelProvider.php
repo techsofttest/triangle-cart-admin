@@ -31,8 +31,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('/')
             ->login()
-            ->brandLogo(asset('images/logo/logo.webp'))
-            ->brandLogoHeight('3rem')
+            ->brandLogo(asset('images/logo/logo.webp?v1'))
+            ->brandLogoHeight('2rem')
             ->middleware(['throttle:filament-login'])
             ->colors([
                 'primary' => Color::hex('#0747ac'),

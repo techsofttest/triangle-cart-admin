@@ -47,10 +47,15 @@ class StockManagementResource extends Resource
         return $table
             ->query(
                 Product::query()
-                    ->with(['variants'])
+                    ->with(['variants' => function ($query) {
+                        $query->orderBy('expiry_date', 'asc')->orderBy('id', 'asc');
+                    }])
                     ->withSum('variants as stock_on_hand_total', 'stock')
                     ->withSum('variants as stock_in_order_total', 'stock_in_order')
-                    ->orderBy('stock_on_hand_total', 'asc')
+                    ->withMin('variants as earliest_expiry_date', 'expiry_date')
+                    ->orderByRaw('CASE WHEN earliest_expiry_date IS NULL THEN 1 ELSE 0 END ASC')
+                    ->orderByRaw('CASE WHEN earliest_expiry_date < CURDATE() THEN 0 ELSE 1 END ASC')
+                    ->orderBy('earliest_expiry_date', 'asc')
             )
             ->columns([
                 ImageColumn::make('featured_image')
@@ -68,13 +73,6 @@ class StockManagementResource extends Resource
                 TextColumn::make('sku')
                     ->label('SKU')
                     ->searchable(),
-
-                TextColumn::make('stock_in_order_total')
-                    ->label('Stock In Order')
-                    ->sortable()
-                    ->html()
-                    ->getStateUsing(fn ($record) => $record->stock_in_order_total ?? 0)
-                    ->formatStateUsing(fn ($state) => "<span style='color:#f97316;font-weight:700;'>{$state}</span>"),
 
                 TextColumn::make('stock_on_hand_total')
                     ->label('Stock In Hand')
@@ -96,6 +94,7 @@ class StockManagementResource extends Resource
 
                 TextColumn::make('expiry_date')
                     ->label('Expiry Date')
+                    ->getStateUsing(fn ($record) => $record->earliest_expiry_date)
                     ->formatStateUsing(function ($state) {
                         if (!$state) return 'N/A';
                         $days = \Carbon\Carbon::today()->startOfDay()->diffInDays(\Carbon\Carbon::parse($state)->startOfDay(), false);
@@ -103,8 +102,7 @@ class StockManagementResource extends Resource
                         if ($days == 0) return 'Today';
                         if ($days == 1) return 'Tomorrow';
                         return $days . ' days';
-                    })
-                    ->sortable(),
+                    }),
             ])
             ->filters([])
             ->recordActions([])

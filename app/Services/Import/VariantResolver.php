@@ -6,7 +6,7 @@ use App\Models\ProductVariant;
 
 class VariantResolver
 {
-    /** @var array<string, ProductVariant> Keyed by lowercase SKU */
+    /** @var array<string, ProductVariant> Keyed by lowercase "productId:sku" */
     protected array $cache = [];
 
     /**
@@ -16,7 +16,7 @@ class VariantResolver
     {
         $this->cache = [];
         foreach (ProductVariant::all() as $variant) {
-            $this->cache[strtolower(trim($variant->sku))] = $variant;
+            $this->cache[$this->cacheKey((int) $variant->product_id, (string) $variant->sku)] = $variant;
         }
     }
 
@@ -28,23 +28,35 @@ class VariantResolver
      */
     public function resolve(array $attributes): array
     {
-        $sku = strtolower(trim($attributes['sku']));
+        $productId = (int) ($attributes['product_id'] ?? 0);
+        $sku = trim((string) ($attributes['sku'] ?? ''));
+        $cacheKey = $this->cacheKey($productId, $sku);
 
-        if (isset($this->cache[$sku])) {
-            $variant = $this->cache[$sku];
+        if (isset($this->cache[$cacheKey])) {
+            $variant = $this->cache[$cacheKey];
             $variant->update($attributes);
             return ['variant' => $variant, 'is_new' => false];
         }
 
-        $isNew = !ProductVariant::where('sku', trim($attributes['sku']))->exists();
+        $isNew = !ProductVariant::where('product_id', $productId)
+            ->where('sku', $sku)
+            ->exists();
 
         $variant = ProductVariant::updateOrCreate(
-            ['sku' => trim($attributes['sku'])],
+            [
+                'product_id' => $productId,
+                'sku' => $sku,
+            ],
             $attributes
         );
 
-        $this->cache[$sku] = $variant;
+        $this->cache[$cacheKey] = $variant;
 
         return ['variant' => $variant, 'is_new' => $isNew];
+    }
+
+    protected function cacheKey(int $productId, string $sku): string
+    {
+        return $productId . ':' . strtolower(trim($sku));
     }
 }

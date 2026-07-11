@@ -13,6 +13,8 @@ class ProductVariant extends Model
         'size',
         'buying_price',
         'margin',
+        'tax_percentage',
+        'expiry_date',
         'selling_price',
         'stock',
         'stock_in_order',
@@ -21,6 +23,7 @@ class ProductVariant extends Model
     protected $casts = [
         'buying_price' => 'decimal:2',
         'margin' => 'decimal:2',
+        'tax_percentage' => 'decimal:2',
         'selling_price' => 'decimal:2',
     ];
 

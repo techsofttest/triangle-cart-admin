@@ -11,6 +11,7 @@ use App\Models\HomePageSection;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
 class StorefrontController extends Controller
@@ -34,7 +35,8 @@ class StorefrontController extends Controller
 
     private function productPayload(Product $product): array
     {
-        $variant = $product->variants->first();
+        $inStockVariants = $product->variants->filter(fn ($variant) => (int) $variant->stock > 0);
+        $variant = $inStockVariants->first();
         $price = $variant ? (float) $variant->selling_price : 0.0;
         $reviews = $product->reviews;
         $rating = round((float) ($reviews->avg('review_rating') ?: 0), 1);
@@ -63,7 +65,7 @@ class StorefrontController extends Controller
             'is_active' => (bool) $product->is_active,
             'rating' => $rating,
             'review_count' => $reviews->count(),
-            'variants' => $product->variants->map(fn ($variant) => $this->variantPayload($variant))->values(),
+            'variants' => $inStockVariants->map(fn ($variant) => $this->variantPayload($variant))->values(),
             'description' => $product->description,
             'key_features' => $product->key_features,
             'meta_title' => $product->meta_title,
@@ -120,6 +122,17 @@ class StorefrontController extends Controller
         ];
     }
 
+    private function getCategoryIds(Category $category): array
+    {
+        $ids = [$category->id];
+
+        foreach ($category->children as $child) {
+            $ids = array_merge($ids, $this->getCategoryIds($child));
+        }
+
+        return array_values(array_unique($ids));
+    }
+
     private function brandPayload(Brand $brand): array
     {
         $firstProduct = $brand->products->first();
@@ -139,7 +152,7 @@ class StorefrontController extends Controller
         return Product::query()
             ->with(['brand', 'category', 'variants', 'images', 'reviews'])
             ->where('is_active', true)
-            ->whereHas('variants')
+            ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
             ->get()
             ->filter(function (Product $product) {
                 $minPrice = (float) ($product->min_price ?? 0);
@@ -176,6 +189,7 @@ class StorefrontController extends Controller
                 ->with(['brand', 'category', 'variants', 'reviews', 'images'])
                 ->whereIn('id', $section->product_ids)
                 ->where('is_active', true)
+                ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
                 ->get()
                 ->sortBy(fn (Product $product) => array_search($product->id, $section->product_ids, true));
 
@@ -185,6 +199,7 @@ class StorefrontController extends Controller
                 ->with(['brand', 'category', 'variants', 'reviews', 'images'])
                 ->where('is_active', true)
                 ->where('is_featured', true)
+                ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
                 ->latest()
                 ->take($limit)
                 ->get()
@@ -194,6 +209,7 @@ class StorefrontController extends Controller
             $items = Product::query()
                 ->with(['brand', 'category', 'variants', 'reviews', 'images'])
                 ->where('is_active', true)
+                ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
                 ->latest()
                 ->take($limit)
                 ->get()
@@ -335,25 +351,25 @@ class StorefrontController extends Controller
     {
         $perPage = (int) $request->integer('per_page', 12);
         $perPage = max(1, min($perPage, 48));
+        $minProducts = max(18, $perPage);
 
-        $query = Product::query()
+        $baseQuery = Product::query()
             ->with(['brand', 'category', 'variants', 'reviews', 'images'])
-            ->where('is_active', true);
+            ->where('is_active', true)
+            ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0));
+
+        $categoryIds = null;
 
         if ($categorySlug = $request->string('category')->toString()) {
-
-            $category = Category::where('slug', $categorySlug)->first();
+            $category = Category::query()->where('slug', $categorySlug)->first();
 
             if ($category) {
-
-                $categoryIds = Category::query()
-                    ->where('id', $category->id)
-                    ->orWhere('parent_id', $category->id)
-                    ->pluck('id');
-
-                $query->whereIn('category_id', $categoryIds);
+                $categoryIds = $this->getCategoryIds($category);
             }
         }
+
+        $query = (clone $baseQuery)
+            ->when($categoryIds, fn ($query) => $query->whereIn('category_id', $categoryIds));
 
         if ($brandSlug = $request->string('brand')->toString()) {
             $query->whereHas('brand', fn ($q) => $q->where('slug', $brandSlug));
@@ -369,6 +385,7 @@ class StorefrontController extends Controller
         }
 
         $sort = $request->string('sort', 'latest')->toString();
+
         $query->when($sort === 'price_low', function ($q) {
                 return $q->orderBy(
                     \App\Models\ProductVariant::select('selling_price')
@@ -392,15 +409,36 @@ class StorefrontController extends Controller
             ->when($sort === 'featured', fn ($q) => $q->orderByDesc('is_featured'))
             ->when($sort === 'latest' || ! in_array($sort, ['price_low', 'price_high', 'name_asc', 'name_desc', 'featured'], true), fn ($q) => $q->latest());
 
-        $products = $query->paginate($perPage);
+        $products = $query->get();
+
+        if ($products->count() < $minProducts && ! $request->has('brand') && ! $request->has('search') && $categoryIds) {
+            $alreadyIncludedIds = $products->pluck('id')->all();
+
+            $fallbackProducts = (clone $baseQuery)
+                ->whereNotIn('id', $alreadyIncludedIds)
+                ->latest()
+                ->take($minProducts - $products->count())
+                ->get();
+
+            $products = $products->merge($fallbackProducts)->take($minProducts)->values();
+        }
+
+        $page = (int) $request->integer('page', 1);
+        $paginator = new LengthAwarePaginator(
+            $products->forPage($page, $perPage),
+            $products->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return response()->json([
-            'data' => $products->getCollection()->map(fn (Product $product) => $this->productPayload($product))->values(),
+            'data' => $paginator->getCollection()->map(fn (Product $product) => $this->productPayload($product))->values(),
             'meta' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
             ],
         ]);
     }
@@ -417,6 +455,7 @@ class StorefrontController extends Controller
         $products = Product::query()
             ->with(['brand', 'category', 'variants', 'reviews', 'images'])
             ->where('is_active', true)
+            ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
             ->latest()
             ->take(18)
             ->get();

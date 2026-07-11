@@ -17,14 +17,27 @@ class ListProducts extends ListRecords
     {
         $tabs = ['all' => Tab::make('All Products')];
 
-        $categories = Category::all();
+        $categories = Category::query()->with('children')->get();
 
         foreach ($categories as $category) {
+            $categoryIds = $this->getCategoryIds($category);
+
             $tabs[$category->slug] = Tab::make($category->name)
-                ->modifyQueryUsing(fn($query) => $query->where('prod_cat_id', $category->id));
+                ->modifyQueryUsing(fn($query) => $query->whereIn('category_id', $categoryIds));
         }
 
         return $tabs;
+    }
+
+    protected function getCategoryIds(Category $category): array
+    {
+        $ids = [$category->id];
+
+        foreach ($category->children as $child) {
+            $ids = array_merge($ids, $this->getCategoryIds($child));
+        }
+
+        return array_values(array_unique($ids));
     }
 
     protected function getHeaderActions(): array

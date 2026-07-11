@@ -22,7 +22,9 @@ class ProductExporter extends Exporter
             ExportColumn::make('stock_in_order_total')
                 ->label('Stock In Order')
                 ->getStateUsing(fn ($record) => $record->variants->sum('stock_in_order')),
-            ExportColumn::make('expiry_date'),
+            ExportColumn::make('variants.expiry_date')
+                ->label('Expiry Date')
+                ->getStateUsing(fn ($record) => $record->variants->first()?->expiry_date),
         ];
     }
 

@@ -6,7 +6,6 @@ use Filament\Schemas\Schema;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Schemas\Components\Grid;
 use App\Models\TimeSlot;
 use Carbon\Carbon;
 
@@ -20,8 +19,10 @@ class DeliverySessionForm
                       DatePicker::make('delivery_date')
                     ->label('Delivery Date')
                     ->required()
-                    ->default(today())
-                    ->native(false),
+                    ->default(Carbon::today()->toDateString())
+                    ->native(false)
+                    ->disabled()
+                    ->dehydrated(false),
     
                     Select::make('delivery_slot_id')
                     ->label('Time Slot')
@@ -41,13 +42,10 @@ class DeliverySessionForm
                         Select::make('status')
                             ->required()
                             ->options([
-                                'draft' => 'Draft',
-                                'preparing' => 'Preparing',
-                                'ready' => 'Ready',
                                 'in_progress' => 'In Progress',
                                 'completed' => 'Completed',
                             ])
-                            ->default('draft'),
+                            ->default('in_progress'),
                         
                             DateTimePicker::make('started_at')
                                 ->disabled()

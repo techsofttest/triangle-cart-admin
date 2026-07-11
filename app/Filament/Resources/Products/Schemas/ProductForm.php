@@ -101,14 +101,6 @@ class ProductForm
                         TextInput::make('supplier_code')
                             ->label('Supplier Code'),
 
-                        TextInput::make('tax_percentage')
-                            ->label('General Tax %')
-                            ->numeric()
-                            ->minValue(0)
-                            ->maxValue(100)
-                            ->default(0)
-                            ->suffix('%'),
-
                     ])->columnSpanFull(),
 
                 ])->columnSpanFull(),
@@ -134,12 +126,7 @@ class ProductForm
                                     ->placeholder('e.g. 1, 500g, XL'),
 
                                 TextInput::make('stock')
-                                    ->label('Stock In Hand')
-                                    ->numeric()
-                                    ->default(0),
-
-                                TextInput::make('stock_in_order')
-                                    ->label('Stock In Order')
+                                    ->label('Stock')
                                     ->numeric()
                                     ->default(0),
 
@@ -171,6 +158,29 @@ class ProductForm
                                         }
                                     }),
 
+                                TextInput::make('tax_percentage')
+                                    ->label('Tax %')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->suffix('%')
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(function ($state, $get, $set) {
+                                        $buying = floatval($get('buying_price'));
+                                        $margin = floatval($get('margin'));
+                                        $tax = floatval($state);
+                                        if ($buying > 0 && ($margin > 0 || $tax > 0)) {
+                                            $priceAfterTax = $buying * (1 + ($tax / 100));
+                                            $sellingPrice = $priceAfterTax * (1 + ($margin / 100));
+                                            $set('selling_price', round($sellingPrice, 2));
+                                        }
+                                    }),
+
+                                DatePicker::make('expiry_date')
+                                    ->label('Expiry Date')
+                                    ->nullable(),
+
                                 TextInput::make('selling_price')
                                     ->label('Selling Price')
                                     ->numeric()
@@ -194,9 +204,6 @@ class ProductForm
                         ->disk('public')
                         ->image(),
 
-                    DatePicker::make('expiry_date')
-                        ->label('Expiry Date')
-                        ->nullable(),
                 ])->columnSpanFull(),
 
             /* ================= DETAILS ================= */

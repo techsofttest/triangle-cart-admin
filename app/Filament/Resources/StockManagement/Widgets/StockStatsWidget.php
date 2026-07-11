@@ -14,7 +14,7 @@ class StockStatsWidget extends BaseWidget
     {
         $totalInStock = Product::whereHas('variants', fn($q) => $q->where('stock', '>', 0))->count();
         $totalInOrder = ProductVariant::sum('stock_in_order');
-        $totalExpired = Product::whereNotNull('expiry_date')->where('expiry_date', '<', Carbon::today())->count();
+        $totalExpired = ProductVariant::whereNotNull('expiry_date')->where('expiry_date', '<', Carbon::today())->count();
 
         return [
             Stat::make('Total In Stock Products', $totalInStock),

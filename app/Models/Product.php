@@ -12,12 +12,10 @@ class Product extends Model
         'name',
         'slug',
         'brand_id',
-        'tax_percentage',
         'supplier_code',
         'category_id',
         'key_features',
         'description',
-        'expiry_date',
         'featured_image',
         'is_featured',
         'is_active',
@@ -32,7 +30,6 @@ class Product extends Model
         'is_active' => 'boolean',
         'requires_direct_delivery' => 'boolean',
         'allows_courier' => 'boolean',
-        'expiry_date' => 'date',
     ];
 
     protected static function booted()

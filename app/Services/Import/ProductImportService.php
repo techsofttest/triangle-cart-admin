@@ -96,10 +96,9 @@ class ProductImportService
                 'name' => trim($row['product_name']),
                 'brand_id' => $brand->id,
                 'category_id' => $subCategory->id,
-                'tax_percentage' => $this->priceCalculator->parseGst($row['gst'] ?? null),
+                'supplier_code' => $row['supplier_code'] ?? null,
                 'key_features' => $row['key_features'] ?? null,
                 'description' => $row['product_description'] ?? null,
-                'expiry_date' => !empty($row['expiry_date']) ? $row['expiry_date'] : null,
                 'is_featured' => $isFeatured,
                 'is_active' => true,
                 'requires_direct_delivery' => true,
@@ -135,6 +134,8 @@ class ProductImportService
                 'size' => $row['size'] ?? null,
                 'buying_price' => $buyingPrice,
                 'margin' => $marginPercent,
+                'tax_percentage' => $gstPercent,
+                'expiry_date' => $this->parseDateValue($row['expiry_date'] ?? null),
                 'selling_price' => $sellingPrice,
                 'stock' => (int) ($row['stock'] ?? 0),
             ];
@@ -182,6 +183,63 @@ class ProductImportService
     /**
      * Validate required fields for a row.
      */
+    protected function parseDateValue(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        if (is_numeric($value)) {
+            $numericValue = (float) $value;
+
+            if ($numericValue > 1000000000) {
+                return \Carbon\Carbon::createFromTimestamp((int) $numericValue)->format('Y-m-d');
+            }
+
+            if ($numericValue > 0) {
+                if (class_exists(\PhpOffice\PhpSpreadsheet\Shared\Date::class)) {
+                    try {
+                        $excelDate = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($numericValue);
+                        if ($excelDate instanceof \DateTimeInterface) {
+                            return $excelDate->format('Y-m-d');
+                        }
+                    } catch (\Throwable $e) {
+                        // Fall back to a timestamp-based parse if the value is not an Excel serial date.
+                    }
+                }
+
+                return \Carbon\Carbon::createFromTimestamp((int) $numericValue)->format('Y-m-d');
+            }
+        }
+
+        if (is_string($value)) {
+            $trimmed = trim($value);
+            if ($trimmed === '') {
+                return null;
+            }
+
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $trimmed)) {
+                return $trimmed;
+            }
+
+            if (preg_match('/^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}$/', $trimmed)) {
+                return \Carbon\Carbon::parse($trimmed)->format('Y-m-d');
+            }
+
+            if (preg_match('/^\d+$/', $trimmed)) {
+                return \Carbon\Carbon::createFromTimestamp((int) $trimmed)->format('Y-m-d');
+            }
+
+            return \Carbon\Carbon::parse($trimmed)->format('Y-m-d');
+        }
+
+        return null;
+    }
+
     protected function validateRow(array $row): void
     {
         $required = ['product_sku', 'product_name', 'brand', 'category', 'sub_category', 'variant_sku', 'buying_price'];

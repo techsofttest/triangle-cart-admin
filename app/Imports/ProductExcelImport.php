@@ -35,6 +35,7 @@ class ProductExcelImport implements ToArray, WithHeadingRow, WithChunkReading
             'category'            => trim((string) ($excelRow['category'] ?? '')),
             'sub_category'        => trim((string) ($excelRow['sub_category'] ?? '')),
             'variant_sku'         => trim((string) ($excelRow['varient_sku'] ?? $excelRow['variant_sku'] ?? '')),
+            'supplier_code'       => trim((string) ($excelRow['supplier_code'] ?? $excelRow['supplier'] ?? '')),
             'unit'                => $excelRow['unit'] ?? null,
             'size'                => $excelRow['size'] ?? null,
             'buying_price'        => $excelRow['buying_price'] ?? null,
