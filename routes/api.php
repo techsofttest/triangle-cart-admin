@@ -17,6 +17,7 @@ Route::get('/storefront/categories', [StorefrontController::class, 'categories']
 Route::get('/storefront/products', [StorefrontController::class, 'products']);
 Route::get('/storefront/products/{product:slug}', [StorefrontController::class, 'product']);
 Route::get('/storefront/top-offers', [StorefrontController::class, 'topOffers']);
+Route::get('/storefront/faqs', [StorefrontController::class, 'faqs']);
 
 Route::post('/delivery/check', [DeliveryEligibilityController::class, 'check']);
 Route::post('/checkout', [CheckoutController::class, 'create']);

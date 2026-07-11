@@ -62,7 +62,7 @@ class CheckoutController extends Controller
                 // billing details
                 'first_name' => explode(' ', ($deliveryDetails['contact_name'] ?? $deliveryDetails['name'] ?? 'Guest'), 2)[0] ?? 'Guest',
                 'last_name' => explode(' ', ($deliveryDetails['contact_name'] ?? $deliveryDetails['name'] ?? 'Guest'), 2)[1] ?? '',
-                'email' => $request->input('customer_email') ?? ($deliveryDetails['email'] ?? 'customer@example.com'),
+                'email' => $request->input('customer_email') ?? ($deliveryDetails['email'] ?? null),
                 'phone' => $request->input('customer_phone') ?? ($deliveryDetails['phone'] ?? ''),
                 'country' => $deliveryDetails['country'] ?? 'Australia',
                 'address' => $deliveryDetails['address_line_1'] ?? ($deliveryDetails['address'] ?? ''),

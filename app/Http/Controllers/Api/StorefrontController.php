@@ -499,4 +499,14 @@ class StorefrontController extends Controller
     {
         return response()->json($this->topOfferPayloads());
     }
+
+    public function faqs(): JsonResponse
+    {
+        $faqs = \App\Models\Faq::query()
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        return response()->json($faqs);
+    }
 }

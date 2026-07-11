@@ -513,7 +513,9 @@
                     @foreach ($this->record->items as $item)
                         <div class="order-product-item">
                             @php
-                                $productImage = $item->product ? asset('storage/' . $item->product->prod_image) : asset('images/placeholder.png');
+                                $productImage = ($item->product && $item->product->featured_image)
+                                    ? \Illuminate\Support\Facades\Storage::disk('public')->url($item->product->featured_image)
+                                    : asset('images/placeholder.png');
                             @endphp
                             <img
                                 src="{{ $productImage }}"
@@ -611,7 +613,7 @@
 
                 <div class="order-info-row">
                     <span>Email</span>
-                    <span>{{ $this->record->email }}</span>
+                    <span>{{ $this->record->email ?? $this->record->customer_email ?? $this->record->customer?->email ?? '—' }}</span>
                 </div>
 
                 <div class="order-info-row">
