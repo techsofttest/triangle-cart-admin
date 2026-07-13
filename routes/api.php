@@ -51,4 +51,5 @@ Route::middleware(['web', 'auth:customer'])->group(function () {
     Route::delete('/customer/addresses/{id}', [CustomerAddressController::class, 'destroy']);
     Route::post('/customer/addresses/{id}/default-shipping', [CustomerAddressController::class, 'setDefaultShipping']);
     Route::post('/customer/addresses/{id}/default-billing', [CustomerAddressController::class, 'setDefaultBilling']);
+    Route::post('/customer/change-password', [CustomerDashboardController::class, 'changePassword']);
 });

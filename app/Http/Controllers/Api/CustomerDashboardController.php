@@ -9,6 +9,7 @@ use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerDashboardController extends Controller
 {
@@ -33,7 +34,31 @@ class CustomerDashboardController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'profile_image' => $user->profile_image ? asset('storage/' . $user->profile_image) : null,
+            'registered_at' => optional($user->created_at)->toDateString(),
         ]);
+    }
+
+    public function changePassword(Request $request): JsonResponse
+    {
+        $user = $this->getAuthenticatedCustomer($request);
+
+        if (!($user instanceof Customer)) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $validated = $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect.'], 422);
+        }
+
+        $user->password = $validated['new_password'];
+        $user->save();
+
+        return response()->json(['message' => 'Password updated successfully.']);
     }
 
     public function dashboardSummary(Request $request): JsonResponse
