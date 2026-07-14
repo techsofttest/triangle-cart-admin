@@ -69,7 +69,7 @@ class CheckoutController extends Controller
         DB::beginTransaction();
         try {
             $order = Order::create([
-                'order_number' => 'ORD-' . Str::upper(Str::random(10)),
+                'order_number' => 'TCT-' . Str::upper(Str::random(10)),
                 'customer_id' => $request->input('customer_id'),
                 'customer_name' => $request->input('customer_name') ?? ($deliveryDetails['contact_name'] ?? $deliveryDetails['name'] ?? null),
                 'customer_email' => $request->input('customer_email') ?? ($deliveryDetails['email'] ?? null),
@@ -120,6 +120,10 @@ class CheckoutController extends Controller
                 'coupon_code' => $couponCode,
                 'discount' => $discount,
                 'grand_total' => $grandTotal,
+            ]);
+
+            $order->update([
+                'order_number' => 'TC-' . str_pad($order->id, 6, '0', STR_PAD_LEFT),
             ]);
 
             // Create order items

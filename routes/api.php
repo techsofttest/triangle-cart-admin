@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\DeliveryEligibilityController;
 use App\Http\Controllers\Api\StorefrontController;
 use App\Http\Controllers\Api\CustomerAddressController;
 use App\Http\Controllers\Api\CouponController;
+use App\Http\Controllers\Api\CmsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', function () {
@@ -19,6 +20,7 @@ Route::get('/storefront/products', [StorefrontController::class, 'products']);
 Route::get('/storefront/products/{product:slug}', [StorefrontController::class, 'product']);
 Route::get('/storefront/top-offers', [StorefrontController::class, 'topOffers']);
 Route::get('/storefront/faqs', [StorefrontController::class, 'faqs']);
+Route::get('/cms/{slug}', [CmsController::class, 'show']);
 
 Route::post('/delivery/check', [DeliveryEligibilityController::class, 'check']);
 Route::post('/coupons/validate', [CouponController::class, 'validate']);

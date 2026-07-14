@@ -551,24 +551,24 @@
                 <div class="order-detail-summary">
                     <div class="order-summary-row">
                         <span>Subtotal</span>
-                        <span>₹{{ number_format($this->record->subtotal, 2) }}</span>
+                        <span>${{ number_format($this->record->subtotal, 2) }}</span>
                     </div>
 
                     <div class="order-summary-row">
                         <span>Shipping</span>
-                        <span>₹{{ number_format($this->record->shipping_cost, 2) }}</span>
+                        <span>${{ number_format($this->record->shipping_cost, 2) }}</span>
                     </div>
 
                     @if($this->record->discount > 0)
                     <div class="order-summary-row">
                         <span>Discount ({{ $this->record->coupon_code }})</span>
-                        <span style="color: #d32f2f;">-₹{{ number_format($this->record->discount, 2) }}</span>
+                        <span style="color: #d32f2f;">-${{ number_format($this->record->discount, 2) }}</span>
                     </div>
                     @endif
 
                     <div class="order-summary-row order-summary-total">
                         <span>Total</span>
-                        <span>₹{{ number_format($this->record->grand_total, 2) }}</span>
+                        <span>${{ number_format($this->record->grand_total, 2) }}</span>
                     </div>
                 </div>
             </div>
@@ -591,7 +591,7 @@
 
                 <div class="order-info-row">
                     <span>Amount</span>
-                    <span>₹{{ number_format($this->record->grand_total, 2) }}</span>
+                    <span>${{ number_format($this->record->grand_total, 2) }}</span>
                 </div>
             </div>
 
@@ -625,7 +625,7 @@
             {{-- SHIPPING ADDRESS --}}
             <div class="order-detail-card">
                 <div class="order-detail-card-header">
-                    <h2 class="order-detail-card-title">Shipping address</h2>
+                    <h2 class="order-detail-card-title">Address</h2>
                 </div>
 
                 <div class="order-address-block">
@@ -639,7 +639,7 @@
                 </div>
             </div>
 
-            {{-- BILLING ADDRESS --}}
+            {{-- BILLING ADDRESS 
             <div class="order-detail-card">
                 <div class="order-detail-card-header">
                     <h2 class="order-detail-card-title">Billing address</h2>
@@ -662,6 +662,10 @@
                     </div>
                 @endif
             </div>
+
+            --}}
+
+
 
         </div>
     </div>

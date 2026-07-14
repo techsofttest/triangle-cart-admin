@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Cms\Schemas;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
 use Filament\Schemas\Schema;
 
 class CmsForm
@@ -13,16 +14,29 @@ class CmsForm
     {
         return $schema
             ->components([
-                TextInput::make('page')
-                    ->required(),
                 TextInput::make('title')
-                    ->required(),
-                Textarea::make('content')
+                    ->required()
+                    ->live(onBlur: true),
+                
+                TextInput::make('slug')
+                    ->required()
+                    ->readOnly(),
+
+                RichEditor::make('content')
                     ->required()
                     ->columnSpanFull(),
+
                 FileUpload::make('image')
                     ->disk('public')
-                    ->image(),
+                    ->image()
+                    ->nullable(),
+
+                TextInput::make('meta_title')
+                    ->nullable(),
+
+                Textarea::make('description')
+                    ->label('Meta Description')
+                    ->nullable(),
             ]);
     }
 }

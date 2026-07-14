@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Cms;
 
-use App\Filament\Resources\Cms\Pages\CreateCms;
 use App\Filament\Resources\Cms\Pages\EditCms;
 use App\Filament\Resources\Cms\Pages\ListCms;
 use App\Filament\Resources\Cms\Pages\ViewCms;
@@ -42,6 +41,16 @@ class CmsResource extends Resource
         return CmsTable::configure($table);
     }
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -53,7 +62,6 @@ class CmsResource extends Resource
     {
         return [
             'index' => ListCms::route('/'),
-            'create' => CreateCms::route('/create'),
             'view' => ViewCms::route('/{record}'),
             'edit' => EditCms::route('/{record}/edit'),
         ];

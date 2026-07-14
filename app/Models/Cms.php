@@ -6,6 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cms extends Model
 {
-    //
-    protected $fillable = ['page', 'title', 'content', 'image'];
+    protected $table = 'cms';
+
+    protected $fillable = [
+        'slug',
+        'title',
+        'content',
+        'image',
+        'meta_title',
+        'description',
+    ];
 }
