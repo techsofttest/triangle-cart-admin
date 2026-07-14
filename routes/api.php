@@ -54,4 +54,5 @@ Route::middleware(['web', 'auth:customer'])->group(function () {
     Route::post('/customer/addresses/{id}/default-shipping', [CustomerAddressController::class, 'setDefaultShipping']);
     Route::post('/customer/addresses/{id}/default-billing', [CustomerAddressController::class, 'setDefaultBilling']);
     Route::post('/customer/change-password', [CustomerDashboardController::class, 'changePassword']);
+    Route::get('/customer/orders/{id}', [CustomerDashboardController::class, 'showOrder']);
 });

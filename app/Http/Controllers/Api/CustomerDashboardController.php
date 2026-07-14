@@ -73,10 +73,10 @@ class CustomerDashboardController extends Controller
         $activeStatuses = ['processing', 'shipped', 'out_for_delivery', 'delivered'];
         $activeStatuses = array_map(fn ($s) => strtolower($s), $activeStatuses);
 
-        $totalOrders = Order::query()->where('user_id', $user->id)->count();
+        $totalOrders = Order::query()->where('customer_id', $user->id)->count();
 
         $activeOrders = Order::query()
-            ->where('user_id', $user->id)
+            ->where('customer_id', $user->id)
             ->whereIn('status', $activeStatuses)
             ->count();
 
@@ -85,7 +85,7 @@ class CustomerDashboardController extends Controller
             ->count();
 
         $last5Orders = Order::query()
-            ->where('user_id', $user->id)
+            ->where('customer_id', $user->id)
             ->orderByDesc('created_at')
             ->limit(5)
             ->get(['id', 'order_number', 'created_at', 'status', 'grand_total']);
@@ -106,6 +106,61 @@ class CustomerDashboardController extends Controller
                 'status' => $o->status,
                 'grand_total' => (float) $o->grand_total,
             ])->values(),
+        ]);
+    }
+
+    public function showOrder(Request $request, $id): JsonResponse
+    {
+        $user = $this->getAuthenticatedCustomer($request);
+
+        if (!($user instanceof Customer)) {
+            return response()->json(['error' => 'Unauthenticated'], 401);
+        }
+
+        $order = Order::with(['items.product.brand'])->where('customer_id', $user->id)->find($id);
+
+        if (!$order) {
+            return response()->json(['error' => 'Order not found'], 404);
+        }
+
+        $timeSlot = null;
+        if ($order->delivery_slot_id) {
+            $slot = \App\Models\TimeSlot::find($order->delivery_slot_id);
+            if ($slot) {
+                $timeSlot = "{$slot->start_time} - {$slot->end_time}";
+            }
+        }
+
+        return response()->json([
+            'id' => $order->id,
+            'order_number' => $order->order_number,
+            'date' => optional($order->created_at)->format('F j, Y'),
+            'status' => $order->status->value ?? $order->status,
+            'payment_status' => $order->payment_status->value ?? $order->payment_status,
+            'payment_method' => $order->payment_method,
+            'subtotal' => (float)$order->subtotal,
+            'shipping_cost' => (float)$order->shipping_cost,
+            'discount' => (float)$order->discount,
+            'grand_total' => (float)$order->grand_total,
+            'delivery_type' => $order->delivery_type,
+            'delivery_date' => $order->delivery_date,
+            'time_slot' => $timeSlot,
+            'address' => [
+                'name' => $order->customer_name,
+                'type' => 'Delivery Address',
+                'street' => trim($order->address . ' ' . $order->apartment),
+                'suburb' => trim($order->city . ', ' . $order->state . ' ' . $order->pin_code),
+                'phone' => $order->phone,
+            ],
+            'items' => $order->items->map(fn($item) => [
+                'id' => $item->id,
+                'name' => $item->product_name,
+                'price' => (float)$item->price,
+                'quantity' => $item->quantity,
+                'weight' => $item->variant_details ?? '',
+                'image' => $item->product && $item->product->featured_image ? asset('storage/' . $item->product->featured_image) : null,
+                'brand' => $item->product && $item->product->brand ? $item->product->brand->name : 'General',
+            ])
         ]);
     }
 }

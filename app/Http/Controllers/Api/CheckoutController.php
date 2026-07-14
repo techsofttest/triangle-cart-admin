@@ -48,11 +48,12 @@ class CheckoutController extends Controller
         $shippingInfo = $this->deliveryEligibilityService->calculateShipping($postcode, $subtotal);
         $shippingCost = $shippingInfo['shipping_cost'] ?? 0;
 
+        $customerId = $request->input('customer_id') ?: (\Illuminate\Support\Facades\Auth::guard('customer')->id());
+
         $discount = 0;
         $couponCode = $request->input('coupon_code');
         if ($couponCode) {
             $customer = null;
-            $customerId = $request->input('customer_id') ?: (\Illuminate\Support\Facades\Auth::guard('customer')->id());
             if ($customerId) {
                 $customer = \App\Models\Customer::find($customerId);
             }
@@ -69,8 +70,8 @@ class CheckoutController extends Controller
         DB::beginTransaction();
         try {
             $order = Order::create([
-                'order_number' => 'TCT-' . Str::upper(Str::random(10)),
-                'customer_id' => $request->input('customer_id'),
+                'order_number' => 'TEMP-' . Str::upper(Str::random(10)),
+                'customer_id' => $customerId,
                 'customer_name' => $request->input('customer_name') ?? ($deliveryDetails['contact_name'] ?? $deliveryDetails['name'] ?? null),
                 'customer_email' => $request->input('customer_email') ?? ($deliveryDetails['email'] ?? null),
                 'customer_phone' => $request->input('customer_phone') ?? ($deliveryDetails['phone'] ?? null),
