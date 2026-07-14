@@ -28,6 +28,7 @@ class CheckoutController extends Controller
             'cart.*.quantity' => 'required|integer|min:1',
             'cart.*.price' => 'required|numeric|min:0',
             'customer_id' => 'nullable|exists:customers,id',
+            'coupon_code' => 'nullable|string',
             'address' => 'required_without:delivery_details|array',
             'delivery_details' => 'required_without:address|array',
         ]);
@@ -46,9 +47,24 @@ class CheckoutController extends Controller
 
         $shippingInfo = $this->deliveryEligibilityService->calculateShipping($postcode, $subtotal);
         $shippingCost = $shippingInfo['shipping_cost'] ?? 0;
+
         $discount = 0;
+        $couponCode = $request->input('coupon_code');
+        if ($couponCode) {
+            $customer = null;
+            $customerId = $request->input('customer_id') ?: (\Illuminate\Support\Facades\Auth::guard('customer')->id());
+            if ($customerId) {
+                $customer = \App\Models\Customer::find($customerId);
+            }
+            $couponResult = CouponController::checkValidity($couponCode, $subtotal, $customer);
+            if (!$couponResult['valid']) {
+                return response()->json(['error' => 'Coupon validation failed: ' . $couponResult['message']], 422);
+            }
+            $discount = (float) $couponResult['discount'];
+        }
+
         $tax = 0;
-        $grandTotal = $subtotal - $discount + $shippingCost;
+        $grandTotal = max(0, $subtotal - $discount + $shippingCost);
 
         DB::beginTransaction();
         try {
@@ -101,6 +117,7 @@ class CheckoutController extends Controller
                 // pricing totals
                 'subtotal' => $subtotal,
                 'shipping_cost' => $shippingCost,
+                'coupon_code' => $couponCode,
                 'discount' => $discount,
                 'grand_total' => $grandTotal,
             ]);

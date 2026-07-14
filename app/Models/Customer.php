@@ -52,4 +52,9 @@ class Customer extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsTo(CustomerAddress::class, 'default_billing_address_id');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'customer_id');
+    }
 }

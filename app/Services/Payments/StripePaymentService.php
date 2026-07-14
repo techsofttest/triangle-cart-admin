@@ -211,6 +211,21 @@ class StripePaymentService implements PaymentGatewayInterface
             ]),
         ]);
 
+        if ($order->coupon_code) {
+            $coupon = \App\Models\Coupon::where('coupon_code', $order->coupon_code)->first();
+            if ($coupon) {
+                $alreadyLogged = \App\Models\CouponUsage::where('order_id', $order->id)->exists();
+                if (!$alreadyLogged) {
+                    \App\Models\CouponUsage::create([
+                        'coupon_id' => $coupon->id,
+                        'customer_id' => $order->customer_id,
+                        'order_id' => $order->id,
+                        'discount_amount' => $order->discount,
+                    ]);
+                }
+            }
+        }
+
         Log::info("Order {$order->order_number} successfully paid via Stripe.");
     }
 

@@ -44,6 +44,34 @@ class CustomerAddressController extends Controller
         }
     }
 
+    private function setAsDefaultAddress(Customer $customer, CustomerAddress $address): void
+    {
+        DB::beginTransaction();
+        try {
+            CustomerAddress::where('customer_id', $customer->id)
+                ->update([
+                    'is_default_shipping' => false,
+                    'is_default_billing' => false,
+                ]);
+
+            $address->update([
+                'is_default_shipping' => true,
+                'is_default_billing' => true,
+            ]);
+
+            $customer->update([
+                'default_shipping_address_id' => $address->id,
+                'default_billing_address_id' => $address->id,
+            ]);
+
+            $this->syncCustomerDefaultFlags($customer->fresh());
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
     /**
      * Customer Login
      */
@@ -156,14 +184,19 @@ class CustomerAddressController extends Controller
             'delivery_notes' => 'nullable|string',
         ]);
 
-        $isFirst = ($existingCount === 0);
+        $hasDefault = (bool) $customer->default_shipping_address_id || (bool) $customer->default_billing_address_id || CustomerAddress::where('customer_id', $customer->id)
+            ->where(function ($query) {
+                $query->where('is_default_shipping', true)
+                    ->orWhere('is_default_billing', true);
+            })
+            ->exists();
+        $shouldBeDefault = ($existingCount === 0) || !$hasDefault;
 
-        DB::beginTransaction();
         try {
             $address = new CustomerAddress($data);
             $address->customer_id = $customer->id;
-            
-            if ($isFirst) {
+
+            if ($shouldBeDefault) {
                 $address->is_default_shipping = true;
                 $address->is_default_billing = true;
             } else {
@@ -173,17 +206,13 @@ class CustomerAddressController extends Controller
 
             $address->save();
 
-            if ($isFirst) {
-                $customer->update([
-                    'default_shipping_address_id' => $address->id,
-                    'default_billing_address_id' => $address->id,
-                ]);
+            if ($shouldBeDefault) {
+                $customer->refresh();
+                $this->setAsDefaultAddress($customer, $address);
             }
 
-            DB::commit();
             return response()->json($address->fresh(), 201);
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json(['error' => 'Failed to save address: ' . $e->getMessage()], 500);
         }
     }
@@ -258,22 +287,10 @@ class CustomerAddressController extends Controller
 
         $address = CustomerAddress::where('customer_id', $customer->id)->findOrFail($id);
 
-        DB::beginTransaction();
         try {
-            // Reset all customer addresses default shipping to false
-            CustomerAddress::where('customer_id', $customer->id)->update(['is_default_shipping' => false]);
-
-            // Mark selected as default shipping
-            $address->update(['is_default_shipping' => true]);
-
-            // Update customer
-            $customer->update(['default_shipping_address_id' => $address->id]);
-            $this->syncCustomerDefaultFlags($customer->fresh());
-
-            DB::commit();
-            return response()->json(['success' => true, 'address' => $address]);
+            $this->setAsDefaultAddress($customer, $address);
+            return response()->json(['success' => true, 'address' => $address->fresh()]);
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
@@ -290,22 +307,10 @@ class CustomerAddressController extends Controller
 
         $address = CustomerAddress::where('customer_id', $customer->id)->findOrFail($id);
 
-        DB::beginTransaction();
         try {
-            // Reset all customer addresses default billing to false
-            CustomerAddress::where('customer_id', $customer->id)->update(['is_default_billing' => false]);
-
-            // Mark selected as default billing
-            $address->update(['is_default_billing' => true]);
-
-            // Update customer
-            $customer->update(['default_billing_address_id' => $address->id]);
-            $this->syncCustomerDefaultFlags($customer->fresh());
-
-            DB::commit();
-            return response()->json(['success' => true, 'address' => $address]);
+            $this->setAsDefaultAddress($customer, $address);
+            return response()->json(['success' => true, 'address' => $address->fresh()]);
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
