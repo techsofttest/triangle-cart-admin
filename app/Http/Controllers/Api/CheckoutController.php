@@ -29,8 +29,11 @@ class CheckoutController extends Controller
             'cart.*.price' => 'required|numeric|min:0',
             'customer_id' => 'nullable|exists:customers,id',
             'coupon_code' => 'nullable|string',
+            'customer_email' => ['nullable', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
             'address' => 'required_without:delivery_details|array',
+            'address.email' => ['nullable', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
             'delivery_details' => 'required_without:address|array',
+            'delivery_details.email' => ['nullable', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
         ]);
 
         if ($validator->fails()) {

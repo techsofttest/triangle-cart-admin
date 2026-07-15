@@ -78,7 +78,7 @@ class CustomerAddressController extends Controller
     public function login(Request $request): JsonResponse
     {
         $credentials = $request->validate([
-            'email' => 'required|email',
+            'email' => ['required', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
             'password' => 'required',
         ]);
 
@@ -108,7 +108,7 @@ class CustomerAddressController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:customers,email',
+            'email' => ['required', 'email', 'unique:customers,email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:6',
         ]);
