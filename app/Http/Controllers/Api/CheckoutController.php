@@ -43,6 +43,44 @@ class CheckoutController extends Controller
         $deliveryDetails = $request->input('address') ?? $request->input('delivery_details') ?? [];
         $postcode = $deliveryDetails['postcode'] ?? '2000';
 
+        // Validate delivery availability for the cart and postcode
+        $deliveryCheck = $this->deliveryEligibilityService->validateCart($postcode, $request->input('cart') ?? []);
+        if (isset($deliveryCheck['valid']) && ! $deliveryCheck['valid']) {
+            return response()->json(['error' => $deliveryCheck['message'] ?? 'Delivery not available for this postcode.'], 422);
+        }
+
+        // Determine delivery type (direct/courier)
+        $deliveryType = $request->input('delivery_type') ?? ($deliveryCheck['delivery_type'] ?? null);
+
+        // If direct delivery is required, ensure delivery_date and delivery_slot_id are provided and valid
+        if ($deliveryType === 'direct') {
+            $deliveryDate = $request->input('delivery_date');
+            $deliverySlotId = $request->input('delivery_slot_id');
+
+            $slotValid = false;
+            $availableDates = $this->deliveryEligibilityService->getAvailableDatesAndSlots('direct');
+            foreach ($availableDates as $d) {
+                if (($d['date'] ?? null) === $deliveryDate) {
+                    $slots = $d['slots'] ?? [];
+                    foreach ($slots as $s) {
+                        if (($s['id'] ?? null) == $deliverySlotId) {
+                            $slotValid = true;
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            $errors = [];
+            if (! $deliveryDate) $errors['delivery_date'] = ['Delivery date is required for direct delivery.'];
+            if (! $deliverySlotId) $errors['delivery_slot_id'] = ['Delivery slot is required for direct delivery.'];
+            if ($deliverySlotId && ! $slotValid) $errors['delivery_slot_id'] = ['Selected delivery slot is not available.'];
+
+            if (! empty($errors)) {
+                return response()->json(['errors' => $errors], 422);
+            }
+        }
+
         $subtotal = 0;
         foreach ($request->input('cart') as $item) {
             $subtotal += $item['price'] * $item['quantity'];
