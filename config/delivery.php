@@ -22,8 +22,8 @@ return [
     |
     */
     'courier' => [
-        'fee' => 0,
-        'free_threshold' => 0,
+        'fee' => 4.99,
+        'free_threshold' => 30,
     ],
 
     /*

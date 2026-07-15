@@ -79,7 +79,7 @@ class DeliveryEligibilityService
         }
 
         // Courier fallback configuration
-        $courierFee = (float) config('delivery.courier.fee', 9.99);
+        $courierFee = (float) config('delivery.courier.fee', 0);
         $courierThreshold = (float) config('delivery.courier.free_threshold', 50.00);
         $isFree = $subtotal >= $courierThreshold;
 

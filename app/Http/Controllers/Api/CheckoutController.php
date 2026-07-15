@@ -32,8 +32,10 @@ class CheckoutController extends Controller
             'customer_email' => ['nullable', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
             'address' => 'required_without:delivery_details|array',
             'address.email' => ['nullable', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
+            'address.address_line_2' => 'required_with:address|string|max:255',
             'delivery_details' => 'required_without:address|array',
             'delivery_details.email' => ['nullable', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
+            'delivery_details.address_line_2' => 'required_with:delivery_details|string|max:255',
         ]);
 
         if ($validator->fails()) {
