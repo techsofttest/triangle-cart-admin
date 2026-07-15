@@ -18,7 +18,7 @@ class DeliveryPostcodesTable
                 TextColumn::make('postcode')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('warehouse_id')
+                /*TextColumn::make('warehouse_id')
                     ->label('Warehouse')
                     ->sortable(),
                 TextColumn::make('delivery_fee')
@@ -26,7 +26,7 @@ class DeliveryPostcodesTable
                     ->sortable(),
                 TextColumn::make('free_shipping_threshold')
                     ->money('INR')
-                    ->sortable(),
+                    ->sortable(),*/
                 IconColumn::make('is_active')
                     ->boolean()
                     ->label('Active'),

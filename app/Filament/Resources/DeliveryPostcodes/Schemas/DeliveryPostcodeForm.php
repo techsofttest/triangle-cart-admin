@@ -22,7 +22,7 @@ class DeliveryPostcodeForm
                             ->required()
                             ->maxLength(20),
 
-                        TextInput::make('warehouse_id')
+                        /*TextInput::make('warehouse_id')
                             ->label('Warehouse ID')
                             ->numeric()
                             ->nullable(),
@@ -42,6 +42,7 @@ class DeliveryPostcodeForm
                         Toggle::make('is_active')
                             ->label('Active')
                             ->default(true),
+                        */
                     
                 ])->columnspanfull(),
         ]);
