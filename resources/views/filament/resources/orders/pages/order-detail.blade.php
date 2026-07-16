@@ -534,29 +534,27 @@
                                 @endif
                             </div>
 
-                            <div style="align-self: center; margin-right: 1.5rem; display: flex; gap: 0.5rem; align-items: center;">
+                            <div style="align-self: center; margin-right: 1.5rem;">
                                 @if ($item->is_picked)
-                                    <button 
-                                        type="button" 
-                                        wire:click="togglePicked({{ $item->id }})" 
-                                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                                    <x-filament::button
+                                        type="button"
+                                        wire:click="togglePicked({{ $item->id }})"
+                                        color="success"
+                                        icon="heroicon-m-check"
+                                        size="xs"
                                     >
-                                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
-                                        </svg>
                                         Picked
-                                    </button>
+                                    </x-filament::button>
                                 @else
-                                    <button 
-                                        type="button" 
-                                        wire:click="togglePicked({{ $item->id }})" 
-                                        class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 rounded-lg border border-rose-200 hover:bg-rose-100 transition-colors"
+                                    <x-filament::button
+                                        type="button"
+                                        wire:click="togglePicked({{ $item->id }})"
+                                        color="danger"
+                                        icon="heroicon-m-x-mark"
+                                        size="xs"
                                     >
-                                        <svg class="w-3.5 h-3.5 text-rose-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                                        </svg>
                                         Not Picked
-                                    </button>
+                                    </x-filament::button>
                                 @endif
                             </div>
 
