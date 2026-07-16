@@ -24,8 +24,8 @@ Route::get('/cms/{slug}', [CmsController::class, 'show']);
 
 Route::post('/delivery/check', [DeliveryEligibilityController::class, 'check']);
 Route::post('/coupons/validate', [CouponController::class, 'validate'])->middleware('web');
-Route::post('/checkout', [CheckoutController::class, 'create']);
-Route::post('/checkout/retry', [CheckoutController::class, 'retry']);
+Route::post('/checkout', [CheckoutController::class, 'create'])->middleware('web');
+Route::post('/checkout/retry', [CheckoutController::class, 'retry'])->middleware('web');
 Route::post('/webhooks/stripe', [\App\Http\Controllers\Api\StripeWebhookController::class, 'handle']);
 
 Route::middleware(['web'])->group(function () {
