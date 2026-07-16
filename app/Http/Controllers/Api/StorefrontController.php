@@ -347,6 +347,69 @@ class StorefrontController extends Controller
         ]);
     }
 
+    public function search(Request $request): JsonResponse
+    {
+        $search = trim($request->string('q')->toString());
+        $perPage = max(1, min((int) $request->integer('per_page', 24), 100));
+
+        $products = collect();
+        if ($search !== '') {
+            $products = Product::query()
+                ->with(['brand', 'category', 'variants', 'reviews', 'images'])
+                ->where('is_active', true)
+                ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
+                ->where(function ($query) use ($search) {
+                    $query->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('sku', 'like', '%' . $search . '%')
+                        ->orWhereHas('brand', fn ($brandQuery) => $brandQuery->where('name', 'like', '%' . $search . '%'))
+                        ->orWhereHas('category', fn ($categoryQuery) => $categoryQuery->where('name', 'like', '%' . $search . '%'));
+                })
+                ->take($perPage)
+                ->get()
+                ->map(fn (Product $product) => $this->productPayload($product))
+                ->values();
+        }
+
+        $categories = Category::query()
+            ->where('is_active', true)
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('slug', 'like', '%' . $search . '%');
+            })
+            ->orderBy('sort_order')
+            ->take(12)
+            ->get()
+            ->map(fn (Category $category) => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'href' => '/category/' . $category->slug,
+            ])
+            ->values();
+
+        $brands = Brand::query()
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('slug', 'like', '%' . $search . '%');
+            })
+            ->orderBy('name')
+            ->take(12)
+            ->get()
+            ->map(fn (Brand $brand) => [
+                'id' => $brand->id,
+                'name' => $brand->name,
+                'slug' => $brand->slug,
+                'href' => '/brand/' . $brand->slug,
+            ])
+            ->values();
+
+        return response()->json([
+            'products' => $products,
+            'categories' => $categories,
+            'brands' => $brands,
+        ]);
+    }
+
     public function products(Request $request): JsonResponse
     {
         $perPage = (int) $request->integer('per_page', 12);

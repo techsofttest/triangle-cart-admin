@@ -17,6 +17,7 @@ Route::get('/storefront/home', [StorefrontController::class, 'home']);
 Route::get('/storefront/header', [StorefrontController::class, 'header']);
 Route::get('/storefront/categories', [StorefrontController::class, 'categories']);
 Route::get('/storefront/products', [StorefrontController::class, 'products']);
+Route::get('/storefront/search', [StorefrontController::class, 'search']);
 Route::get('/storefront/products/{product:slug}', [StorefrontController::class, 'product']);
 Route::get('/storefront/top-offers', [StorefrontController::class, 'topOffers']);
 Route::get('/storefront/faqs', [StorefrontController::class, 'faqs']);
