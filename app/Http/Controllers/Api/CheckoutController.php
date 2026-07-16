@@ -237,4 +237,48 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'Failed to create payment intent: ' . $e->getMessage()], 500);
         }
     }
+
+    public function paymentStatus(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'order_id' => 'required|exists:orders,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $orderId = $request->input('order_id');
+        $order = Order::find($orderId);
+
+        // Check if this is the first time viewing this status
+        $sessionKey = "payment_status_viewed_{$orderId}";
+        $hasViewed = session()->has($sessionKey);
+
+        // Mark as viewed in session
+        session()->put($sessionKey, true);
+
+        $isSuccess = $order->payment_status === 'paid';
+        $isFailed = $order->payment_status === 'failed';
+        $isProcessing = $order->payment_status === 'processing';
+
+        return response()->json([
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'payment_status' => $order->payment_status->value ?? $order->payment_status,
+            'status' => $order->status,
+            'is_success' => $isSuccess,
+            'is_failed' => $isFailed,
+            'is_processing' => $isProcessing,
+            'is_first_view' => !$hasViewed,
+            'grand_total' => $order->grand_total,
+            'paid_at' => $order->paid_at,
+            'payment_failure_reason' => $order->payment_failure_reason ?? null,
+            'message' => $isSuccess 
+                ? 'Payment successful! Your order has been confirmed.'
+                : ($isFailed 
+                    ? 'Payment failed. Please try again or contact support.'
+                    : 'Payment is being processed. Please wait...'),
+        ]);
+    }
 }

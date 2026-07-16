@@ -155,12 +155,12 @@ class StripePaymentService implements PaymentGatewayInterface
         $order = null;
 
         if ($orderId) {
-            $order = Order::find($orderId);
+            $order = Order::with('items')->find($orderId);
         }
 
         if (!$order) {
             // Find by payment intent ID fallback
-            $order = Order::where('stripe_payment_intent', $paymentIntent->id)->first();
+            $order = Order::with('items')->where('stripe_payment_intent', $paymentIntent->id)->first();
         }
 
         if (!$order) {
@@ -190,13 +190,24 @@ class StripePaymentService implements PaymentGatewayInterface
         ]);
 
         // Reduce inventory inside the transaction (Phase 10: exclusive to webhook processing)
-        foreach ($order->items as $item) {
-            if ($item->variant_id) {
-                $variant = ProductVariant::find($item->variant_id);
-                if ($variant) {
-                    $variant->decrement('stock', $item->quantity);
+        try {
+            foreach ($order->items as $item) {
+                if ($item->variant_id) {
+                    $variant = ProductVariant::find($item->variant_id);
+                    if ($variant) {
+                        $oldStock = $variant->stock;
+                        $variant->decrement('stock', $item->quantity);
+                        Log::info("Stock updated for variant {$item->variant_id}: reduced from {$oldStock} to {$variant->stock} by quantity {$item->quantity}");
+                    } else {
+                        Log::warning("Variant {$item->variant_id} not found for order item {$item->id}");
+                    }
+                } else {
+                    Log::warning("Order item {$item->id} has no variant_id");
                 }
             }
+        } catch (\Exception $e) {
+            Log::error("Error reducing inventory for order {$order->id}: " . $e->getMessage());
+            throw $e;
         }
 
         // Update Order fields
