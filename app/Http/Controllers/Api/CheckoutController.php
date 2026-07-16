@@ -173,17 +173,39 @@ class CheckoutController extends Controller
             // Create order items
             foreach ($request->input('cart') as $item) {
                 $product = \App\Models\Product::find($item['product_id']);
-                $variantDetails = null;
-                if (!empty($item['variant_id'])) {
-                    $variant = \App\Models\ProductVariant::find($item['variant_id']);
-                    if ($variant) {
-                        $variantDetails = $variant->name;
+
+                // Determine variant: prefer provided variant_id / variantId, otherwise pick a sensible fallback
+                $variantId = $item['variant_id'] ?? $item['variantId'] ?? null;
+                if (is_string($variantId)) {
+                    $variantId = trim($variantId);
+                    if ($variantId === '' || strtolower($variantId) === 'null') {
+                        $variantId = null;
                     }
+                }
+
+                $variantDetails = null;
+                $variant = null;
+
+                if ($variantId !== null) {
+                    $variant = \App\Models\ProductVariant::find($variantId);
+                }
+
+                if (!$variant && $product) {
+                    // Ensure variants are loaded and try to pick an in-stock variant first
+                    $product->loadMissing('variants');
+                    $variant = $product->variants->first(fn($v) => (int) $v->stock > 0) ?? $product->variants->first();
+                    if ($variant) {
+                        $variantId = $variant->id;
+                    }
+                }
+
+                if ($variant) {
+                    $variantDetails = $variant->name ?? $variant->sku ?? null;
                 }
 
                 $order->items()->create([
                     'product_id' => $item['product_id'],
-                    'variant_id' => $item['variant_id'] ?? null,
+                    'variant_id' => $variantId !== null ? $variantId : null,
                     'product_name' => $product ? $product->name : 'Product #' . $item['product_id'],
                     'variant_details' => $variantDetails,
                     'quantity' => $item['quantity'],
@@ -241,18 +263,30 @@ class CheckoutController extends Controller
     public function paymentStatus(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'order_id' => 'required|exists:orders,id',
+            'order_id' => 'nullable|exists:orders,id',
+            'order_number' => 'nullable|exists:orders,order_number',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        $order = null;
         $orderId = $request->input('order_id');
-        $order = Order::find($orderId);
+        $orderNumber = $request->input('order_number');
+
+        if ($orderId) {
+            $order = Order::find($orderId);
+        } elseif ($orderNumber) {
+            $order = Order::where('order_number', $orderNumber)->first();
+        }
+
+        if (!$order) {
+            return response()->json(['error' => 'Order not found.'], 404);
+        }
 
         // Check if this is the first time viewing this status
-        $sessionKey = "payment_status_viewed_{$orderId}";
+        $sessionKey = "payment_status_viewed_{$order->id}";
         $hasViewed = session()->has($sessionKey);
 
         // Mark as viewed in session
