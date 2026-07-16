@@ -33,14 +33,11 @@ class FaqResource extends Resource
         return $schema
             ->components([
                 TextInput::make('question')
-                    ->required(),
+                    ->required()
+                    ->columnSpanFull(),
                 Textarea::make('answer')
                     ->required()
                     ->columnSpanFull(),
-                TextInput::make('sort_order')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
             ]);
     }
 
@@ -51,9 +48,6 @@ class FaqResource extends Resource
             ->columns([
                 TextColumn::make('question')
                     ->searchable(),
-                TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -63,6 +57,8 @@ class FaqResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->reorderable('sort_order')
+            ->defaultSort('sort_order')
             ->filters([
                 //
             ])

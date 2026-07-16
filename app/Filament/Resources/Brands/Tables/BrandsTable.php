@@ -17,8 +17,8 @@ class BrandsTable
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
-                ImageColumn::make('logo')
-                    ->disk('public'),
+                /*ImageColumn::make('logo')
+                    ->disk('public'),*/
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

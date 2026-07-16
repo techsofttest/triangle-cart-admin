@@ -15,6 +15,7 @@ class DeliverySessionForm
     public static function configure(Schema $schema): Schema
     { 
         return $schema
+                    ->columns(1)
                     ->components([
                       DatePicker::make('delivery_date')
                     ->label('Delivery Date')

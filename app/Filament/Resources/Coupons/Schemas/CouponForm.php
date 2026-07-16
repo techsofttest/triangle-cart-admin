@@ -13,6 +13,7 @@ class CouponForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 TextInput::make('coupon_code')
                     ->required()
@@ -63,9 +64,9 @@ class CouponForm
                     ->default(0)
                     ->helperText('0 = unlimited'),
 
-                Toggle::make('first_order_only')
+                /*Toggle::make('first_order_only')
                     ->label('First Order Only')
-                    ->default(false),
+                    ->default(false),*/
 
                 Toggle::make('active')
                     ->label('Active')

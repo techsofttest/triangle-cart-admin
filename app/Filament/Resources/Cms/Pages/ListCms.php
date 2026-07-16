@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Cms\Pages;
 
 use App\Filament\Resources\Cms\CmsResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListCms extends ListRecords
@@ -12,8 +11,6 @@ class ListCms extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

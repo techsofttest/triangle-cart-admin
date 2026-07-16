@@ -53,6 +53,7 @@ class StockManagementResource extends Resource
                     ->withSum('variants as stock_on_hand_total', 'stock')
                     ->withSum('variants as stock_in_order_total', 'stock_in_order')
                     ->withMin('variants as earliest_expiry_date', 'expiry_date')
+                    ->orderBy('stock_in_order_total', 'desc')
                     ->orderByRaw('CASE WHEN earliest_expiry_date IS NULL THEN 1 ELSE 0 END ASC')
                     ->orderByRaw('CASE WHEN earliest_expiry_date < CURDATE() THEN 0 ELSE 1 END ASC')
                     ->orderBy('earliest_expiry_date', 'asc')

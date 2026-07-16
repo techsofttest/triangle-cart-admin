@@ -12,16 +12,17 @@ class BrandForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('slug')
                     ->hidden(),
-                FileUpload::make('logo')
+                /*FileUpload::make('logo')
                     ->disk('public')
                     ->image(),
                 RichEditor::make('description')
-                    ->columnSpanFull(),
+                    ->columnSpanFull(),*/
             ]);
     }
 }
