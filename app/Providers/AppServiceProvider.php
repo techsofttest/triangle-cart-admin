@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('filament-login', function (Request $request) {
-            return Limit::perMinute(5)->by(
+            return Limit::perMinute(1000)->by(
                 $request->ip() . '|' . $request->input('email')
             );
         });

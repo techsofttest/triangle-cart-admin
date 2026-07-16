@@ -34,6 +34,11 @@ class ProductsTable
                     ->sortable()
                     ->limit(30),
 
+                TextColumn::make('supplier_code')
+                    ->label('Supplier')
+                    ->searchable(),
+                    
+
                 TextColumn::make('sku')
                     ->label('SKU')
                     ->searchable()
@@ -58,9 +63,9 @@ class ProductsTable
                     ->label('Active')
                     ->sortable(),
 
-                ToggleColumn::make('is_featured')
+                /*ToggleColumn::make('is_featured')
                     ->label('Featured')
-                    ->sortable(),
+                    ->sortable(), */
 
                 TextColumn::make('created_at')
                     ->label('Created')
