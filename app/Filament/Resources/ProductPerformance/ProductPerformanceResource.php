@@ -58,7 +58,6 @@ class ProductPerformanceResource extends Resource
     {
         return $table
             ->defaultSort('period_order_count', 'desc')
-            ->query(static::getEloquentQuery())
             ->columns([
                 TextColumn::make('name')
                     ->label('Product Name')
