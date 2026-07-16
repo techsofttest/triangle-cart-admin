@@ -54,10 +54,10 @@ class ProductsTable
                     ->label('Category')
                     ->sortable(),
 
-                TextColumn::make('variants_count')
+                /*TextColumn::make('variants_count')
                     ->label('Variants')
                     ->counts('variants')
-                    ->sortable(),
+                    ->sortable(),*/
 
                 ToggleColumn::make('is_active')
                     ->label('Active')

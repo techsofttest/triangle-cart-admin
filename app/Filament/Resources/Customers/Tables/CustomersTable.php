@@ -17,6 +17,9 @@ class CustomersTable
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('defaultShippingAddress.phone')
+                    ->searchable()
+                    ->label('Phone'),
                 TextColumn::make('email')
                     ->searchable()
                     ->sortable(),
@@ -31,9 +34,6 @@ class CustomersTable
                         $formatted = [];
                         if ($address->contact_name) {
                             $formatted[] = $address->contact_name;
-                        }
-                        if ($address->phone) {
-                            $formatted[] = $address->phone;
                         }
                         if ($address->address_line_1) {
                             $formatted[] = $address->address_line_1;
@@ -53,7 +53,6 @@ class CustomersTable
                         if ($address->postcode) {
                             $formatted[] = $address->postcode;
                         }
-                        
                         return implode(', ', $formatted);
                     })
                     ->html()
@@ -64,6 +63,7 @@ class CustomersTable
                         }
                         return null;
                     }),
+
                 TextColumn::make('orders_count')
                     ->label('Total Orders')
                     ->getStateUsing(function ($record) {
