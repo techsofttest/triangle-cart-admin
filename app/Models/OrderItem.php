@@ -8,7 +8,11 @@ class OrderItem extends Model
 {
     protected $fillable = [
         'order_id', 'product_id', 'variant_id', 'product_name',
-        'variant_details', 'quantity', 'price', 'line_total'
+        'variant_details', 'quantity', 'price', 'line_total', 'is_picked'
+    ];
+
+    protected $casts = [
+        'is_picked' => 'boolean',
     ];
 
     public function order()

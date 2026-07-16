@@ -12,6 +12,16 @@ class ViewOrder extends ViewRecord
     
     protected string $view = 'filament.resources.orders.pages.order-detail';
 
+    public function togglePicked($itemId)
+    {
+        $item = \App\Models\OrderItem::find($itemId);
+        if ($item) {
+            $item->update([
+                'is_picked' => !$item->is_picked
+            ]);
+        }
+    }
+
     protected function getHeaderActions(): array
     {
         return [
