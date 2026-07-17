@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Announcement;
 use App\Models\Brand;
 use App\Models\Advertisement;
 use App\Models\Banner;
@@ -582,6 +583,14 @@ class StorefrontController extends Controller
             })
             ->values();
 
+        $announcements = Announcement::query()
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (Announcement $announcement) => [
+                'id' => $announcement->id,
+                'text' => $announcement->text,
+            ])->values();
+
         return response()->json([
             'home_advertisement' => $homeAdvertisement ? [
                 'id' => $homeAdvertisement->id,
@@ -595,6 +604,7 @@ class StorefrontController extends Controller
             'brands' => $brands,
             'sections' => $sections,
             'featured_categories' => $featuredCategories,
+            'announcements' => $announcements,
         ]);
     }
 
