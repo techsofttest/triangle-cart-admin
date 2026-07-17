@@ -63,9 +63,9 @@ class ProductsTable
                     ->label('Active')
                     ->sortable(),
 
-                /*ToggleColumn::make('is_featured')
+                ToggleColumn::make('is_featured')
                     ->label('Featured')
-                    ->sortable(), */
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Created')

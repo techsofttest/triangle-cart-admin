@@ -518,9 +518,10 @@ class StorefrontController extends Controller
         $products = Product::query()
             ->with(['brand', 'category', 'variants', 'reviews', 'images'])
             ->where('is_active', true)
+            ->where('is_featured', true)
             ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
             ->latest()
-            ->take(18)
+            ->take(15)
             ->get();
 
         $homeAdvertisement = Advertisement::query()

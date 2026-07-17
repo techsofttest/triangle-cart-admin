@@ -38,9 +38,9 @@ class ProductForm
                                 ->default(true)
                                 ->inline(false),
 
-                            /*Toggle::make('is_featured')
+                            Toggle::make('is_featured')
                                 ->label('Featured')
-                                ->inline(false),*/
+                                ->inline(false),
 
                             Toggle::make('requires_direct_delivery')
                                 ->label('Direct Delivery')
