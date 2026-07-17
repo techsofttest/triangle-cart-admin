@@ -21,7 +21,7 @@ class DeliveryEligibilityService
             if ((! $item->allows_courier || $item->requires_direct_delivery) && ! $serviceable) {
                 return [
                     'valid' => false,
-                    'message' => sprintf('%s is not available for delivery to this postcode.', $item->name),
+                    'message' => "Delivery not available for the selected postcode",
                 ];
             }
         }
