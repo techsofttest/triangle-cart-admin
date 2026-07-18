@@ -91,7 +91,13 @@ class CheckoutController extends Controller
         $shippingInfo = $this->deliveryEligibilityService->calculateShipping($postcode, $subtotal);
         $shippingCost = $shippingInfo['shipping_cost'] ?? 0;
 
-        $customerId = $request->input('customer_id') ?: (\Illuminate\Support\Facades\Auth::guard('customer')->id());
+        $customerId = $request->input('customer_id');
+        if (! $customerId) {
+            $customerId = session()->get('customer_id');
+        }
+        if (! $customerId) {
+            $customerId = \Illuminate\Support\Facades\Auth::guard('customer')->id();
+        }
 
         $discount = 0;
         $couponCode = $request->input('coupon_code');
