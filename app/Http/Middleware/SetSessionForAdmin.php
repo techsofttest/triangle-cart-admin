@@ -14,7 +14,7 @@ class SetSessionForAdmin
     {
         $host = $request->getHost();
 
-        if (Str::startsWith($host, 'admin.')) {
+        if (Str::contains($host, 'admin')) {
             config([
                 'session.cookie' => env('ADMIN_SESSION_COOKIE', 'admin_session'),
                 'session.domain' => env('ADMIN_SESSION_DOMAIN', $request->getHost()),

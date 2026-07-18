@@ -28,7 +28,7 @@ class OrdersTable
                     ->label('Postcode')
                     ->searchable(),
                 TextColumn::make('grand_total')
-                    ->money('INR')
+                    ->money('AUD')
                     ->sortable(),
                 TextColumn::make('payment_status')
                     ->badge()
