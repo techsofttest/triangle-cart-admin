@@ -88,7 +88,6 @@ class CustomerAddressController extends Controller
             return response()->json(['message' => 'Invalid email or password'], 422);
         }
 
-        Auth::guard('web')->login($customer);
         Auth::guard('customer')->login($customer);
         session()->put('customer_id', $customer->id);
 
@@ -121,7 +120,6 @@ class CustomerAddressController extends Controller
             'status' => 1,
         ]);
 
-        Auth::guard('web')->login($customer);
         Auth::guard('customer')->login($customer);
         session()->put('customer_id', $customer->id);
 

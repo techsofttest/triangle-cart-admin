@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 
 Route::post('/customer/logout', function (Request $request) {
     Auth::guard('customer')->logout();
-    Auth::guard('web')->logout();
 
     $request->session()->forget('customer_id');
     $request->session()->invalidate();
