@@ -95,8 +95,7 @@ class CustomerDashboardController extends Controller
             'active_orders' => $activeOrders,
             'saved_addresses_count' => $savedAddressesCount,
 
-            // Placeholders for Phase 1 UI.
-            'wishlist_count' => 0,
+            'wishlist_count' => $user->wishlistItems()->count(),
             'reward_points' => 0,
 
             'last_5_orders' => $last5Orders->map(fn (Order $o) => [

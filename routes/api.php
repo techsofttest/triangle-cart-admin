@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\StorefrontController;
 use App\Http\Controllers\Api\CustomerAddressController;
 use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\CmsController;
+use App\Http\Controllers\Api\CustomerWishlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', function () {
@@ -57,4 +58,9 @@ Route::middleware(['web', 'auth:customer'])->group(function () {
     Route::post('/customer/addresses/{id}/default-billing', [CustomerAddressController::class, 'setDefaultBilling']);
     Route::post('/customer/change-password', [CustomerDashboardController::class, 'changePassword']);
     Route::get('/customer/orders/{id}', [CustomerDashboardController::class, 'showOrder']);
+
+    // Wishlist Routes
+    Route::get('/customer/wishlist', [CustomerWishlistController::class, 'index']);
+    Route::post('/customer/wishlist', [CustomerWishlistController::class, 'store']);
+    Route::delete('/customer/wishlist/{productId}', [CustomerWishlistController::class, 'destroy']);
 });
