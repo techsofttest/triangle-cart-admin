@@ -360,10 +360,16 @@ class StorefrontController extends Controller
                 ->where('is_active', true)
                 ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
                 ->where(function ($query) use ($search) {
-                    $query->where('name', 'like', '%' . $search . '%')
-                        ->orWhere('sku', 'like', '%' . $search . '%')
-                        ->orWhereHas('brand', fn ($brandQuery) => $brandQuery->where('name', 'like', '%' . $search . '%'))
-                        ->orWhereHas('category', fn ($categoryQuery) => $categoryQuery->where('name', 'like', '%' . $search . '%'));
+                    $keywords = array_filter(explode(' ', $search));
+                    foreach ($keywords as $keyword) {
+                        $query->where(function ($q) use ($keyword) {
+                            $q->where('name', 'like', '%' . $keyword . '%')
+                                ->orWhere('sku', 'like', '%' . $keyword . '%')
+                                ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', '%' . $keyword . '%'))
+                                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', '%' . $keyword . '%'))
+                                ->orWhereHas('category', fn ($c) => $c->where('name', 'like', '%' . $keyword . '%'));
+                        });
+                    }
                 })
                 ->take($perPage)
                 ->get()
@@ -374,8 +380,13 @@ class StorefrontController extends Controller
         $categories = Category::query()
             ->where('is_active', true)
             ->where(function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('slug', 'like', '%' . $search . '%');
+                $keywords = array_filter(explode(' ', $search));
+                foreach ($keywords as $keyword) {
+                    $query->where(function ($q) use ($keyword) {
+                        $q->where('name', 'like', '%' . $keyword . '%')
+                            ->orWhere('slug', 'like', '%' . $keyword . '%');
+                    });
+                }
             })
             ->orderBy('sort_order')
             ->take(12)
@@ -390,8 +401,13 @@ class StorefrontController extends Controller
 
         $brands = Brand::query()
             ->where(function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('slug', 'like', '%' . $search . '%');
+                $keywords = array_filter(explode(' ', $search));
+                foreach ($keywords as $keyword) {
+                    $query->where(function ($q) use ($keyword) {
+                        $q->where('name', 'like', '%' . $keyword . '%')
+                            ->orWhere('slug', 'like', '%' . $keyword . '%');
+                    });
+                }
             })
             ->orderBy('name')
             ->take(12)
