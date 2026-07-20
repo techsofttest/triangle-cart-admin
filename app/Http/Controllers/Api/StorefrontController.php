@@ -464,6 +464,15 @@ class StorefrontController extends Controller
             });
         }
 
+        $featuredFilter = $request->string('featured')->toString();
+        if ($featuredFilter !== '') {
+            if (in_array(strtolower($featuredFilter), ['1', 'true', 'yes'], true)) {
+                $query->where('is_featured', true);
+            } elseif (in_array(strtolower($featuredFilter), ['0', 'false', 'no'], true)) {
+                $query->where('is_featured', false);
+            }
+        }
+
         $sort = $request->string('sort', 'latest')->toString();
 
         $query->when($sort === 'price_low', function ($q) {
