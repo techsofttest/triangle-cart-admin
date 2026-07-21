@@ -19,6 +19,11 @@ class OrdersTable
                 TextColumn::make('order_number')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('assignedStaff.name')
+                    ->label('Assigned Staff')
+                    ->placeholder('-')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('customer_name')
                     ->searchable(),
                 TextColumn::make('delivery_type')
@@ -57,11 +62,6 @@ class OrdersTable
                             default => 'gray',
                         };
                     }),
-                TextColumn::make('assignedStaff.name')
-                    ->label('Assigned Staff')
-                    ->placeholder('-')
-                    ->searchable()
-                    ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Date')
                     ->dateTime()
