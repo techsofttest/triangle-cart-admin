@@ -23,6 +23,7 @@ class DeliverySessionService
     {
         $orders = Order::where('delivery_date', $session->delivery_date)
             ->where('delivery_slot_id', $session->delivery_slot_id)
+            ->where('assigned_staff_id', $session->staff_id)
             ->where('payment_status', PaymentStatus::PAID)
             ->whereNotIn('id', function ($query) {
                 $query->select('order_id')->from('delivery_session_orders');
@@ -83,7 +84,8 @@ class DeliverySessionService
             'lng' => (float)config('delivery.store_coordinates.longitude', 144.9631),
         ];
 
-        $optimized = $this->routesService->optimizeRoute($origin, $destinations);
+        $result = $this->routesService->optimizeRoute($origin, $destinations);
+        $optimized = $result['destinations'] ?? [];
 
         foreach ($optimized as $opt) {
             DeliverySessionOrder::where('id', $opt['id'])->update([
@@ -91,6 +93,12 @@ class DeliverySessionService
                 'eta' => $opt['eta'],
             ]);
         }
+
+        $session->update([
+            'estimated_distance_km' => $result['distance_km'] ?? null,
+            'estimated_duration_minutes' => $result['duration_minutes'] ?? null,
+            'route_generated_at' => now(),
+        ]);
 
         return true;
     }

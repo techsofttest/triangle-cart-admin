@@ -57,6 +57,11 @@ class OrdersTable
                             default => 'gray',
                         };
                     }),
+                TextColumn::make('assignedStaff.name')
+                    ->label('Assigned Staff')
+                    ->placeholder('-')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Date')
                     ->dateTime()
@@ -70,13 +75,71 @@ class OrdersTable
                         'paid' => 'Paid',
                         'failed' => 'Failed',
                     ]),
+                \Filament\Tables\Filters\SelectFilter::make('assigned_staff_id')
+                    ->label('Assigned Staff')
+                    ->options(function () {
+                        return \App\Models\User::where('role', 'staff')
+                            ->orWhereHas('roles', fn ($q) => $q->where('name', 'Staff'))
+                            ->orWhereHas('permissions', fn ($q) => $q->where('name', 'delivery.driver'))
+                            ->pluck('name', 'id');
+                    }),
+                \Filament\Tables\Filters\Filter::make('unassigned')
+                    ->label('Unassigned Orders')
+                    ->query(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->whereNull('assigned_staff_id')),
             ])
             ->recordActions([
                 ViewAction::make(),
+                \Filament\Actions\Action::make('assignStaff')
+                    ->label('Assign Staff')
+                    ->icon('heroicon-o-user')
+                    ->visible(fn () => auth()->user()?->can('orders.assign') ?? false)
+                    ->form([
+                        \Filament\Forms\Components\Select::make('assigned_staff_id')
+                            ->label('Staff Member')
+                            ->options(function () {
+                                return \App\Models\User::where('role', 'staff')
+                                    ->orWhereHas('roles', fn ($q) => $q->where('name', 'Staff'))
+                                    ->orWhereHas('permissions', fn ($q) => $q->where('name', 'delivery.driver'))
+                                    ->pluck('name', 'id');
+                            })
+                            ->placeholder('Select a staff member')
+                            ->required(),
+                    ])
+                    ->action(function (\App\Models\Order $record, array $data): void {
+                        $record->update([
+                            'assigned_staff_id' => $data['assigned_staff_id'],
+                            'assigned_at' => now(),
+                            'assigned_by' => auth()->id(),
+                        ]);
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    //DeleteBulkAction::make(),
+                    \Filament\Actions\BulkAction::make('bulkAssignStaff')
+                        ->label('Assign Staff')
+                        ->icon('heroicon-o-user')
+                        ->visible(fn () => auth()->user()?->can('orders.assign') ?? false)
+                        ->form([
+                            \Filament\Forms\Components\Select::make('assigned_staff_id')
+                                ->label('Staff Member')
+                                ->options(function () {
+                                    return \App\Models\User::where('role', 'staff')
+                                        ->orWhereHas('roles', fn ($q) => $q->where('name', 'Staff'))
+                                        ->orWhereHas('permissions', fn ($q) => $q->where('name', 'delivery.driver'))
+                                        ->pluck('name', 'id');
+                                })
+                                ->placeholder('Select a staff member')
+                                ->required(),
+                        ])
+                        ->action(function (\Illuminate\Support\Collection $records, array $data): void {
+                            $records->each(function ($record) use ($data) {
+                                $record->update([
+                                    'assigned_staff_id' => $data['assigned_staff_id'],
+                                    'assigned_at' => now(),
+                                    'assigned_by' => auth()->id(),
+                                ]);
+                            });
+                        }),
                 ]),
             ]);
     }

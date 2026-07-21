@@ -39,6 +39,15 @@ class DeliverySessionForm
                                     . Carbon::parse($slot->end_time)->format('g:i A'),
                             ]);
                     }),
+
+                    Select::make('staff_id')
+                        ->relationship('staff', 'name', function ($query) {
+                            $query->where('role', 'staff')
+                                ->orWhereHas('roles', fn ($q) => $q->where('name', 'Staff'))
+                                ->orWhereHas('permissions', fn ($q) => $q->where('name', 'delivery.driver'));
+                        })
+                        ->label('Staff')
+                        ->required(),
                          
                         Select::make('status')
                             ->required()

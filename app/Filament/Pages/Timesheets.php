@@ -2,6 +2,9 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\TaskType;
+use App\Models\Timesheet;
+use App\Models\User;
 use Filament\Pages\Page;
 use BackedEnum;
 use Filament\Tables\Table;
@@ -17,6 +20,7 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\Radio;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 
 class Timesheets extends Page implements HasTable
 {
@@ -33,147 +37,133 @@ class Timesheets extends Page implements HasTable
     protected string $view = 'filament.pages.timesheets';
 
     /**
-     * Get the default/dummy timesheet records.
-     */
-    protected function getDefaultRecords(): array
-    {
-        return [
-            [
-                'id' => 1,
-                'date' => '2026-06-12',
-                'person' => 'Joe',
-                'task' => 'Order Packing',
-                'description' => 'Pack orders',
-                'start_time' => '13:00:00',
-                'end_time' => '14:00:00',
-            ],
-            [
-                'id' => 2,
-                'date' => '2026-06-12',
-                'person' => 'Joe',
-                'task' => 'Delivery',
-                'description' => 'Deliver products',
-                'start_time' => '14:00:00',
-                'end_time' => '15:00:00',
-            ],
-        ];
-    }
-
-    /**
-     * Get the current records stored in the session.
-     */
-    protected function getSessionRecords(): array
-    {
-        if (!session()->has('timesheets_demo_data')) {
-            session()->put('timesheets_demo_data', $this->getDefaultRecords());
-        }
-
-        return session()->get('timesheets_demo_data');
-    }
-
-    /**
-     * Save the records back to the session.
-     */
-    protected function saveSessionRecords(array $records): void
-    {
-        session()->put('timesheets_demo_data', $records);
-    }
-
-    /**
      * Helper to format time range.
      */
-    public static function formatTimeRange(array $record): string
+    public static function formatTimeRange(Timesheet $record): string
     {
-        $start = isset($record['start_time']) ? Carbon::parse($record['start_time'])->format('g:i A') : '';
-        if (empty($record['end_time'])) {
+        $start = $record->start_time->format('g:i A');
+        
+        if (empty($record->end_time)) {
             return "{$start} - Running";
         }
-        $end = Carbon::parse($record['end_time'])->format('g:i A');
+
+        $end = $record->end_time->format('g:i A');
         return "{$start} - {$end}";
     }
 
     /**
      * Helper to calculate duration.
      */
-    public static function calculateDuration(array $record): string
+    public static function calculateDuration(Timesheet $record): string
     {
-        if (empty($record['end_time'])) {
+        if (empty($record->end_time)) {
             return 'Running';
         }
 
-        $start = Carbon::parse($record['start_time']);
-        $end = Carbon::parse($record['end_time']);
+        $start = $record->start_time;
+        $end = $record->end_time;
 
         // Handle overnight crossing if any
         if ($end->lt($start)) {
-            $end->addDay();
+            $end = $end->addDay();
         }
 
         $diffMinutes = $start->diffInMinutes($end);
-        
+
         if ($diffMinutes < 60) {
-            return "{$diffMinutes}-Mins";
+            $minuteLabel = $diffMinutes === 1 ? 'Minute' : 'Minutes';
+            return "{$diffMinutes} {$minuteLabel}";
         }
 
-        $hours = round($diffMinutes / 60, 1);
-        $hourLabel = $hours == 1 ? 'Hour' : 'Hours';
-        
-        // Match specific format requirement if exact hour
-        if (fmod($hours, 1) == 0) {
-            $hours = (int)$hours;
+        $hours = $diffMinutes / 60;
+        $roundedHours = round($hours, 1);
+
+        if (fmod($hours, 1) === 0.0) {
+            $hourLabel = $hours === 1 ? 'hour' : 'hours';
+            return "{$hours} {$hourLabel}";
         }
 
-        return "{$hours}-{$hourLabel}";
+        $hourLabel = $roundedHours === 1.0 ? 'hour' : 'hours';
+        return "{$roundedHours} {$hourLabel}";
+    }
+
+    /**
+     * Get staff users for dropdown.
+     */
+    protected function getStaffUsers(): array
+    {
+        return User::role('Staff')
+            ->pluck('name', 'id')
+            ->toArray();
+    }
+
+    /**
+     * Get task options from enum.
+     */
+    protected function getTaskOptions(): array
+    {
+        $options = [];
+        foreach (TaskType::cases() as $task) {
+            $options[$task->value] = $task->getLabel();
+        }
+        return $options;
+    }
+
+    /**
+     * Parse date + time from form inputs robustly to avoid format errors.
+     */
+    protected function parseDateTimeFromForm(?string $date, $time): ?Carbon
+    {
+        if (empty($date) || empty($time)) {
+            return null;
+        }
+
+        $datetime = $date . ' ' . $time;
+
+        $formats = ['Y-m-d H:i:s', 'Y-m-d H:i'];
+        foreach ($formats as $fmt) {
+            try {
+                return Carbon::createFromFormat($fmt, $datetime);
+            } catch (\Exception $e) {
+                // try next
+            }
+        }
+
+        try {
+            return Carbon::parse($datetime);
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->records(function () {
-                $records = $this->getSessionRecords();
-
-                // Apply filters manually
-                $dateFilterState = $this->getTableFilterState('date');
-                if (!empty($dateFilterState['date'])) {
-                    $dateFilter = $dateFilterState['date'];
-                    $records = array_filter($records, fn ($rec) => $rec['date'] === $dateFilter);
-                }
-
-                $personFilterState = $this->getTableFilterState('person');
-                if (!empty($personFilterState['person'])) {
-                    $personFilter = $personFilterState['person'];
-                    $records = array_filter($records, fn ($rec) => $rec['person'] === $personFilter);
-                }
-
-                // Sort by ID or date/time descending to show latest entries first
-                usort($records, function ($a, $b) {
-                    return $b['id'] <=> $a['id'];
-                });
-
-                return $records;
-            })
+            ->query(Timesheet::query())
+            ->defaultSort('id', 'desc')
             ->columns([
                 TextColumn::make('date')
                     ->label('Date')
                     ->date('d-m-Y'),
-                TextColumn::make('person')
+                TextColumn::make('staffUser.name')
                     ->label('Staff')
                     ->badge()
                     ->color('info'),
                 TextColumn::make('task')
                     ->label('Task')
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->formatStateUsing(fn ($state) => $state instanceof TaskType ? $state->getLabel() : TaskType::from($state)->getLabel()),
                 TextColumn::make('description')
                     ->label('Description')
                     ->limit(50),
                 TextColumn::make('time_range')
                     ->label('Time')
-                    ->state(fn (array $record) => static::formatTimeRange($record)),
+                    ->state(fn (Timesheet $record) => static::formatTimeRange($record)),
                 TextColumn::make('duration')
                     ->label('Duration')
                     ->badge()
-                    ->color(fn (array $record) => empty($record['end_time']) ? 'warning' : 'success')
-                    ->state(fn (array $record) => static::calculateDuration($record)),
+                    ->color(fn (Timesheet $record) => empty($record->end_time) ? 'warning' : 'success')
+                    ->state(fn (Timesheet $record) => static::calculateDuration($record)),
             ])
             ->headerActions([
                 // Add Timesheet Action
@@ -183,25 +173,13 @@ class Timesheets extends Page implements HasTable
                     ->modalHeading('Add Timesheet Manually / Timer')
                     ->modalWidth('lg')
                     ->form([
-                        Select::make('person')
-                            ->label('Select Person')
-                            ->options([
-                                'Joe' => 'Joe',
-                                'Jane' => 'Jane',
-                                'Bob' => 'Bob',
-                                'Alice' => 'Alice',
-                            ])
-                            ->required()
-                            ->default('Joe'),
+                        Select::make('staff_user_id')
+                            ->label('Select Staff Member')
+                            ->options($this->getStaffUsers())
+                            ->required(),
                         Select::make('task')
                             ->label('Select Task')
-                            ->options([
-                                'Order Packing' => 'Order Packing',
-                                'Delivery' => 'Delivery',
-                                'Inventory Count' => 'Inventory Count',
-                                'Customer Support' => 'Customer Support',
-                                'General Maintenance' => 'General Maintenance',
-                            ])
+                            ->options($this->getTaskOptions())
                             ->required(),
                         Textarea::make('description')
                             ->label('Task Description')
@@ -230,33 +208,25 @@ class Timesheets extends Page implements HasTable
                             ->visible(fn (callable $get) => $get('entry_mode') === 'manual'),
                     ])
                     ->action(function (array $data) {
-                        $records = $this->getSessionRecords();
-                        $newId = count($records) > 0 ? max(array_column($records, 'id')) + 1 : 1;
-
                         if ($data['entry_mode'] === 'timer') {
-                            $newRecord = [
-                                'id' => $newId,
+                            Timesheet::create([
+                                'staff_user_id' => $data['staff_user_id'],
+                                'task' => $data['task'],
+                                'description' => $data['description'],
                                 'date' => now()->toDateString(),
-                                'person' => $data['person'],
-                                'task' => $data['task'],
-                                'description' => $data['description'],
-                                'start_time' => now()->format('H:i:s'),
+                                'start_time' => now(),
                                 'end_time' => null,
-                            ];
+                            ]);
                         } else {
-                            $newRecord = [
-                                'id' => $newId,
-                                'date' => $data['date'],
-                                'person' => $data['person'],
+                            Timesheet::create([
+                                'staff_user_id' => $data['staff_user_id'],
                                 'task' => $data['task'],
                                 'description' => $data['description'],
-                                'start_time' => $data['start_time'],
-                                'end_time' => $data['end_time'] ?: null,
-                            ];
+                                'date' => $data['date'],
+                                'start_time' => $this->parseDateTimeFromForm($data['date'], $data['start_time']),
+                                'end_time' => $this->parseDateTimeFromForm($data['date'], $data['end_time']),
+                            ]);
                         }
-
-                        $records[] = $newRecord;
-                        $this->saveSessionRecords($records);
 
                         Notification::make()
                             ->title($data['entry_mode'] === 'timer' ? 'Timer started!' : 'Timesheet entry added!')
@@ -264,15 +234,15 @@ class Timesheets extends Page implements HasTable
                             ->send();
                     }),
 
-                // Dummy Export Action
+                // Export Action (for future use in phase 2)
                 Action::make('export')
                     ->label('Export')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('gray')
                     ->action(function () {
                         Notification::make()
-                            ->title('Timesheets exported successfully! (Demo Export)')
-                            ->success()
+                            ->title('Timesheets exported successfully! (Coming in Phase 2)')
+                            ->info()
                             ->send();
                     }),
             ])
@@ -283,16 +253,11 @@ class Timesheets extends Page implements HasTable
                     ->icon('heroicon-o-stop')
                     ->color('danger')
                     ->button()
-                    ->visible(fn (array $record) => empty($record['end_time']))
-                    ->action(function (array $record) {
-                        $records = $this->getSessionRecords();
-                        foreach ($records as &$rec) {
-                            if ($rec['id'] === $record['id']) {
-                                $rec['end_time'] = now()->format('H:i:s');
-                                break;
-                            }
-                        }
-                        $this->saveSessionRecords($records);
+                    ->visible(fn (Timesheet $record) => empty($record->end_time))
+                    ->action(function (Timesheet $record) {
+                        $record->update([
+                            'end_time' => now(),
+                        ]);
 
                         Notification::make()
                             ->title('Task timer stopped!')
@@ -306,33 +271,22 @@ class Timesheets extends Page implements HasTable
                     ->icon('heroicon-o-pencil')
                     ->modalHeading('Edit Timesheet')
                     ->modalWidth('lg')
-                    ->fillForm(fn (array $record): array => [
-                        'person' => $record['person'],
-                        'task' => $record['task'],
-                        'description' => $record['description'],
-                        'date' => $record['date'],
-                        'start_time' => $record['start_time'],
-                        'end_time' => $record['end_time'],
+                    ->fillForm(fn (Timesheet $record): array => [
+                        'staff_user_id' => $record->staff_user_id,
+                        'task' => $record->task->value,
+                        'description' => $record->description,
+                        'date' => $record->date->toDateString(),
+                        'start_time' => $record->start_time->format('H:i'),
+                        'end_time' => $record->end_time ? $record->end_time->format('H:i') : null,
                     ])
                     ->form([
-                        Select::make('person')
-                            ->label('Select Person')
-                            ->options([
-                                'Joe' => 'Joe',
-                                'Jane' => 'Jane',
-                                'Bob' => 'Bob',
-                                'Alice' => 'Alice',
-                            ])
+                        Select::make('staff_user_id')
+                            ->label('Select Staff Member')
+                            ->options($this->getStaffUsers())
                             ->required(),
                         Select::make('task')
                             ->label('Select Task')
-                            ->options([
-                                'Order Packing' => 'Order Packing',
-                                'Delivery' => 'Delivery',
-                                'Inventory Count' => 'Inventory Count',
-                                'Customer Support' => 'Customer Support',
-                                'General Maintenance' => 'General Maintenance',
-                            ])
+                            ->options($this->getTaskOptions())
                             ->required(),
                         Textarea::make('description')
                             ->label('Task Description')
@@ -346,20 +300,15 @@ class Timesheets extends Page implements HasTable
                         TimePicker::make('end_time')
                             ->label('End Time (Optional)'),
                     ])
-                    ->action(function (array $record, array $data) {
-                        $records = $this->getSessionRecords();
-                        foreach ($records as &$rec) {
-                            if ($rec['id'] === $record['id']) {
-                                $rec['person'] = $data['person'];
-                                $rec['task'] = $data['task'];
-                                $rec['description'] = $data['description'];
-                                $rec['date'] = $data['date'];
-                                $rec['start_time'] = $data['start_time'];
-                                $rec['end_time'] = $data['end_time'] ?: null;
-                                break;
-                            }
-                        }
-                        $this->saveSessionRecords($records);
+                    ->action(function (Timesheet $record, array $data) {
+                        $record->update([
+                            'staff_user_id' => $data['staff_user_id'],
+                            'task' => $data['task'],
+                            'description' => $data['description'],
+                            'date' => $data['date'],
+                            'start_time' => $this->parseDateTimeFromForm($data['date'], $data['start_time']),
+                            'end_time' => $this->parseDateTimeFromForm($data['date'], $data['end_time']),
+                        ]);
 
                         Notification::make()
                             ->title('Timesheet updated!')
@@ -373,10 +322,8 @@ class Timesheets extends Page implements HasTable
                     ->icon('heroicon-o-trash')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->action(function (array $record) {
-                        $records = $this->getSessionRecords();
-                        $records = array_values(array_filter($records, fn ($rec) => $rec['id'] !== $record['id']));
-                        $this->saveSessionRecords($records);
+                    ->action(function (Timesheet $record) {
+                        $record->delete();
 
                         Notification::make()
                             ->title('Timesheet deleted!')
@@ -390,6 +337,13 @@ class Timesheets extends Page implements HasTable
                         DatePicker::make('date')
                             ->label('Filter By Date'),
                     ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['date'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('date', $date),
+                            );
+                    })
                     ->indicateUsing(function (array $data): ?string {
                         if (!$data['date']) {
                             return null;
@@ -397,22 +351,25 @@ class Timesheets extends Page implements HasTable
                         return 'Date: ' . Carbon::parse($data['date'])->format('d-m-Y');
                     }),
 
-                Filter::make('person')
+                Filter::make('staff_user_id')
                     ->form([
-                        Select::make('person')
+                        Select::make('staff_user_id')
                             ->label('Filter By Staff')
-                            ->options([
-                                'Joe' => 'Joe',
-                                'Jane' => 'Jane',
-                                'Bob' => 'Bob',
-                                'Alice' => 'Alice',
-                            ]),
+                            ->options($this->getStaffUsers()),
                     ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['staff_user_id'],
+                                fn (Builder $query, $staffId): Builder => $query->where('staff_user_id', $staffId),
+                            );
+                    })
                     ->indicateUsing(function (array $data): ?string {
-                        if (!$data['person']) {
+                        if (!$data['staff_user_id']) {
                             return null;
                         }
-                        return 'Staff: ' . $data['person'];
+                        $staffName = User::find($data['staff_user_id'])?->name;
+                        return 'Staff: ' . $staffName;
                     }),
             ]);
     }

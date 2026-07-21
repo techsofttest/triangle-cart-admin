@@ -36,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2rem')
             ->middleware(['throttle:filament-login'])
             ->colors([
-                'primary' => Color::hex('#0747ac'),
+                'primary' => Color::hex('#0c9046'),
             ])  
             ->navigationGroups([
                 NavigationGroup::make()
@@ -47,6 +47,8 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Content Management'),
                 NavigationGroup::make()
                     ->label('Master Data'),
+                NavigationGroup::make()
+                    ->label('Staff Management'),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

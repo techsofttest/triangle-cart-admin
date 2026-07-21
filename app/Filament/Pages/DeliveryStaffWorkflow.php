@@ -60,6 +60,7 @@ class DeliveryStaffWorkflow extends Page
         // Get the active session for the logged in staff
         $this->activeSession = DeliverySession::with(['sessionOrders.order.items'])
             ->where('status', 'in_progress')
+            ->where('staff_id', auth()->id())
             ->first();
 
         if ($this->activeSession) {
@@ -198,6 +199,7 @@ class DeliveryStaffWorkflow extends Page
     {
         return DeliverySession::with('timeSlot')
             ->whereIn('status', ['draft', 'preparing', 'ready'])
+            ->where('staff_id', auth()->id())
             ->latest()
             ->get();
     }

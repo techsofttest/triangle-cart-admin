@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DeliverySessionResource\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 
@@ -25,6 +26,12 @@ class DeliverySessionTable
                         if (!$record->timeSlot) return '';
                         return "{$record->timeSlot->start_time} - {$record->timeSlot->end_time}";
                     }),
+
+                TextColumn::make('staff.name')
+                    ->label('Staff')
+                    ->placeholder('-')
+                    ->sortable()
+                    ->searchable(),
                 
                 TextColumn::make('status')
                     ->badge()
@@ -55,6 +62,7 @@ class DeliverySessionTable
                 //
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

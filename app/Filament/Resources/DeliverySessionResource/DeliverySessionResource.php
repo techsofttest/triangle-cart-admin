@@ -5,6 +5,7 @@ namespace App\Filament\Resources\DeliverySessionResource;
 use App\Filament\Resources\DeliverySessionResource\Pages\CreateDeliverySession;
 use App\Filament\Resources\DeliverySessionResource\Pages\EditDeliverySession;
 use App\Filament\Resources\DeliverySessionResource\Pages\ListDeliverySessions;
+use App\Filament\Resources\DeliverySessionResource\Pages\ViewDeliverySession;
 use App\Filament\Resources\DeliverySessionResource\Schemas\DeliverySessionForm;
 use App\Filament\Resources\DeliverySessionResource\Tables\DeliverySessionTable;
 use App\Filament\Resources\DeliverySessionResource\RelationManagers\SessionOrdersRelationManager;
@@ -49,6 +50,7 @@ class DeliverySessionResource extends Resource
         return [
             'index' => ListDeliverySessions::route('/'),
             'create' => CreateDeliverySession::route('/create'),
+            'view' => ViewDeliverySession::route('/{record}'),
             'edit' => EditDeliverySession::route('/{record}/edit'),
         ];
     }

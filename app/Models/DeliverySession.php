@@ -22,13 +22,23 @@ class DeliverySession extends Model
         'status',
         'started_at',
         'completed_at',
+        'staff_id',
+        'estimated_distance_km',
+        'estimated_duration_minutes',
+        'route_generated_at',
     ];
 
     protected $casts = [
         'delivery_date' => 'date',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'route_generated_at' => 'datetime',
     ];
+
+    public function staff(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'staff_id');
+    }
 
     public function timeSlot(): BelongsTo
     {

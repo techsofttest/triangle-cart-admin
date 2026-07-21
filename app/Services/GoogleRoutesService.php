@@ -12,12 +12,16 @@ class GoogleRoutesService
      *
      * @param array $origin ['lat' => float, 'lng' => float]
      * @param array $destinations Array of elements like ['id' => mixed, 'lat' => float, 'lng' => float]
-     * @return array Array of destinations in optimized order, each containing 'stop_sequence' and 'eta'
+     * @return array Array containing 'destinations', 'distance_km', and 'duration_minutes'
      */
     public function optimizeRoute(array $origin, array $destinations): array
     {
         if (empty($destinations)) {
-            return [];
+            return [
+                'destinations' => [],
+                'distance_km' => 0,
+                'duration_minutes' => 0,
+            ];
         }
 
         $apiKey = config('services.google.maps_api_key');
@@ -38,12 +42,6 @@ class GoogleRoutesService
      */
     protected function optimizeWithGoogle(array $origin, array $destinations, string $apiKey): array
     {
-        // For Google Directions, the destination must be a specific point.
-        // We will use the last waypoint as the final destination and optimize all others as intermediate waypoints.
-        // To be safe and simple, we can set the final destination to be the same as the origin (round-trip),
-        // or set the last destination in the list as the final destination and optimize the rest.
-        // Let's use the origin as the destination (round-trip back to store) or the last waypoint.
-        // Let's make it a round-trip back to origin to allow full waypoint optimization:
         $originStr = "{$origin['lat']},{$origin['lng']}";
         
         $waypointParts = [];
@@ -70,13 +68,19 @@ class GoogleRoutesService
                 $optimizedDestinations = [];
                 $currentTime = now()->startOfHour()->addHours(9); // Start delivery at 9:00 AM by default
 
+                $totalDistanceMeters = 0;
+                $totalDurationSeconds = 0;
+                foreach ($route['legs'] as $leg) {
+                    $totalDistanceMeters += $leg['distance']['value'] ?? 0;
+                    $totalDurationSeconds += $leg['duration']['value'] ?? 0;
+                }
+
                 // Map waypoint order
                 foreach ($waypointOrder as $seq => $originalIndex) {
                     if (isset($destinations[$originalIndex])) {
                         $dest = $destinations[$originalIndex];
                         
                         // Estimate ETA based on leg durations
-                        // leg 0 is origin to waypoint 0, leg 1 is waypoint 0 to waypoint 1, etc.
                         $legDuration = $route['legs'][$seq]['duration']['value'] ?? 600; // in seconds
                         // Add some buffer time (e.g. 5 mins per stop)
                         $currentTime = $currentTime->addSeconds($legDuration + 300);
@@ -98,10 +102,16 @@ class GoogleRoutesService
                             'stop_sequence' => $seq++,
                             'eta' => $currentTime->format('h:i A'),
                         ]);
+                        $totalDistanceMeters += 5000;
+                        $totalDurationSeconds += 900;
                     }
                 }
 
-                return $optimizedDestinations;
+                return [
+                    'destinations' => $optimizedDestinations,
+                    'distance_km' => round($totalDistanceMeters / 1000, 2),
+                    'duration_minutes' => (int)round($totalDurationSeconds / 60),
+                ];
             }
         }
 
@@ -118,6 +128,9 @@ class GoogleRoutesService
         $optimized = [];
         $seq = 1;
         $currentTime = now()->startOfHour()->addHours(9); // Start at 9:00 AM
+
+        $totalDistance = 0.0;
+        $totalDuration = 0;
 
         while (!empty($unvisited)) {
             $nearestIndex = null;
@@ -139,7 +152,6 @@ class GoogleRoutesService
                 $nearestDest = $unvisited[$nearestIndex];
                 
                 // Assume average speed of 30 km/h: time (mins) = (distance / 30) * 60 = distance * 2
-                // Limit distance to a reasonable calculation
                 $travelTimeMins = max(3, round($minDistance * 2));
                 // Add 5 minutes buffer for delivery
                 $currentTime = $currentTime->addMinutes($travelTimeMins + 5);
@@ -149,6 +161,9 @@ class GoogleRoutesService
                     'eta' => $currentTime->format('h:i A'),
                 ]);
 
+                $totalDistance += $minDistance;
+                $totalDuration += ($travelTimeMins + 5);
+
                 $currentPoint = $nearestDest;
                 unset($unvisited[$nearestIndex]);
             } else {
@@ -156,7 +171,22 @@ class GoogleRoutesService
             }
         }
 
-        return $optimized;
+        if (!empty($optimized)) {
+            $lastDest = end($optimized);
+            $returnDist = $this->calculateDistance(
+                $lastDest['lat'], $lastDest['lng'],
+                $origin['lat'], $origin['lng']
+            );
+            $returnTimeMins = max(3, round($returnDist * 2));
+            $totalDistance += $returnDist;
+            $totalDuration += $returnTimeMins;
+        }
+
+        return [
+            'destinations' => $optimized,
+            'distance_km' => round($totalDistance, 2),
+            'duration_minutes' => (int)$totalDuration,
+        ];
     }
 
     /**

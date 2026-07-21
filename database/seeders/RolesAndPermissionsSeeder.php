@@ -67,6 +67,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'users.update',
             'users.delete',
 
+            // Staff users permissions
+            'staff-users.view',
+            'staff-users.create',
+            'staff-users.update',
+            'staff-users.delete',
+
             // Delivery operations permissions
             'delivery.manage',
             'delivery.driver',
