@@ -1,6 +1,12 @@
 <x-filament::page>
     @php
         $session = $this->record;
+        
+        if (empty($session->route_polyline)) {
+            app(\App\Services\DeliverySessionService::class)->calculateRouteGeometry($session);
+            $session->refresh();
+        }
+
         $stops = $session->sessionOrders()
             ->with('order')
             ->orderBy('stop_sequence')

@@ -6,6 +6,8 @@ use App\Models\DeliverySession;
 use App\Models\Order;
 use App\Models\DeliverySessionOrder;
 use App\Enums\PaymentStatus;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DeliverySessionService
 {
@@ -114,5 +116,110 @@ class DeliverySessionService
     {
         $this->pullOrders($session);
         $this->optimizeRoute($session);
+    }
+
+    /**
+     * Calculate and save route geometry on-the-fly for delivery sessions missing it.
+     */
+    public function calculateRouteGeometry(DeliverySession $session): void
+    {
+        $stops = $session->sessionOrders()->with('order')->orderBy('stop_sequence')->get();
+        if ($stops->isEmpty()) {
+            return;
+        }
+
+        $destinations = [];
+        foreach ($stops as $so) {
+            $order = $so->order;
+            $lat = $order->shipping_latitude;
+            $lng = $order->shipping_longitude;
+            if (!$lat || !$lng) {
+                $lat = config('delivery.store_coordinates.latitude', -37.8136);
+                $lng = config('delivery.store_coordinates.longitude', 144.9631);
+            }
+            $destinations[] = [
+                'lat' => (float)$lat,
+                'lng' => (float)$lng,
+            ];
+        }
+
+        $origin = [
+            'lat' => (float)config('delivery.store_coordinates.latitude', -37.8136),
+            'lng' => (float)config('delivery.store_coordinates.longitude', 144.9631),
+        ];
+
+        $apiKey = config('services.google.maps_api_key');
+        if (!$apiKey) {
+            return;
+        }
+
+        try {
+            $intermediates = [];
+            foreach ($destinations as $dest) {
+                $intermediates[] = [
+                    'location' => [
+                        'latLng' => [
+                            'latitude' => $dest['lat'],
+                            'longitude' => $dest['lng'],
+                        ],
+                    ],
+                ];
+            }
+
+            $body = [
+                'origin' => [
+                    'location' => [
+                        'latLng' => [
+                            'latitude' => $origin['lat'],
+                            'longitude' => $origin['lng'],
+                        ],
+                    ],
+                ],
+                'destination' => [
+                    'location' => [
+                        'latLng' => [
+                            'latitude' => $origin['lat'],
+                            'longitude' => $origin['lng'],
+                        ],
+                    ],
+                ],
+                'intermediates' => $intermediates,
+                'travelMode' => 'DRIVE',
+                'optimizeWaypointOrder' => false, // NEVER optimize order here
+                'routingPreference' => 'TRAFFIC_UNAWARE',
+                'polylineEncoding' => 'ENCODED_POLYLINE',
+            ];
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'X-Goog-Api-Key' => $apiKey,
+                'X-Goog-FieldMask' => 'routes.polyline.encodedPolyline,routes.legs.duration,routes.legs.distanceMeters',
+            ])->post('https://routes.googleapis.com/directions/v2:computeRoutes', $body);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (!empty($data['routes'][0])) {
+                    $route = $data['routes'][0];
+                    $encodedPolyline = $route['polyline']['encodedPolyline'] ?? null;
+                    
+                    $totalDistanceMeters = 0;
+                    $totalDurationSeconds = 0;
+                    foreach ($route['legs'] ?? [] as $leg) {
+                        $totalDistanceMeters += $leg['distanceMeters'] ?? 0;
+                        $durationStr = $leg['duration'] ?? '0s';
+                        $totalDurationSeconds += (int)str_replace('s', '', $durationStr);
+                    }
+
+                    $session->update([
+                        'route_polyline' => $encodedPolyline,
+                        'estimated_distance_km' => round($totalDistanceMeters / 1000, 2),
+                        'estimated_duration_minutes' => (int)round($totalDurationSeconds / 60),
+                        'route_generated_at' => now(),
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to compute route geometry: ' . $e->getMessage());
+        }
     }
 }
