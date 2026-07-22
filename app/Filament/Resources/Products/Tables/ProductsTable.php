@@ -91,21 +91,47 @@ class ProductsTable
                             ->label('Excel / CSV File')
                             ->required()
                             ->disk('local')
-                            ->directory('imports')
+                            ->directory('imports'),
+                        \Filament\Forms\Components\FileUpload::make('zip')
+                            ->label('Images ZIP (Optional)')
+                            ->acceptedFileTypes(['application/zip', 'application/x-zip-compressed', 'multipart/x-zip'])
+                            ->disk('local')
+                            ->directory('imports'),
                     ])
                     ->action(function (array $data) {
                         $filePath = \Illuminate\Support\Facades\Storage::disk('local')->path($data['file']);
-                        
-                        $import = new \App\Imports\ProductExcelImport();
-                        \Maatwebsite\Excel\Facades\Excel::import($import, $filePath);
+                        $imageService = null;
 
-                        $summary = $import->getService()->getLogger()->getFormattedSummary();
+                        try {
+                            if (!empty($data['zip'])) {
+                                $zipPath = \Illuminate\Support\Facades\Storage::disk('local')->path($data['zip']);
+                                $imageService = app(\App\Services\Import\ImageImportService::class);
+                                $lookup = $imageService->extractZip($zipPath);
+                                app(\App\Services\Import\ImageResolver::class)->setLookup($lookup);
+                            }
 
-                        \Filament\Notifications\Notification::make()
-                            ->title('Import Completed')
-                            ->body($summary)
-                            ->success()
-                            ->send();
+                            $import = new \App\Imports\ProductExcelImport();
+                            \Maatwebsite\Excel\Facades\Excel::import($import, $filePath);
+
+                            $summary = $import->getService()->getLogger()->getFormattedSummary();
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Import Completed')
+                                ->body($summary)
+                                ->success()
+                                ->send();
+                        } finally {
+                            if ($imageService) {
+                                $imageService->cleanup();
+                            }
+                            // Delete uploaded temp files
+                            if (\Illuminate\Support\Facades\Storage::disk('local')->exists($data['file'])) {
+                                \Illuminate\Support\Facades\Storage::disk('local')->delete($data['file']);
+                            }
+                            if (!empty($data['zip']) && \Illuminate\Support\Facades\Storage::disk('local')->exists($data['zip'])) {
+                                \Illuminate\Support\Facades\Storage::disk('local')->delete($data['zip']);
+                            }
+                        }
                     })
             ])
 

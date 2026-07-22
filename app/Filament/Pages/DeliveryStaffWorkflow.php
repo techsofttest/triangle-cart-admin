@@ -197,10 +197,6 @@ class DeliveryStaffWorkflow extends Page
 
     public function getAvailableSessionsProperty()
     {
-        return DeliverySession::with('timeSlot')
-            ->whereIn('status', ['draft', 'preparing', 'ready'])
-            ->where('staff_id', auth()->id())
-            ->latest()
-            ->get();
+        return collect();
     }
 }

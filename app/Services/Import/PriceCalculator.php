@@ -5,21 +5,19 @@ namespace App\Services\Import;
 class PriceCalculator
 {
     /**
-     * Calculate the selling price from buying price, GST percentage, and margin percentage.
+     * Calculate the selling price from buying price and margin percentage.
+     * GST should not be applied here because the Excel margin already includes GST.
      *
      * Formula:
-     *   price_after_gst = buying_price × (1 + gst / 100)
-     *   selling_price   = price_after_gst × (1 + margin / 100)
+     *   selling_price = buying_price × (1 + margin / 100)
      *
      * @param float $buyingPrice
-     * @param float $gstPercent
      * @param float $marginPercent
      * @return float Rounded to 2 decimal places
      */
-    public function calculate(float $buyingPrice, float $gstPercent, float $marginPercent): float
+    public function calculate(float $buyingPrice, float $marginPercent): float
     {
-        $priceAfterGst = $buyingPrice * (1 + $gstPercent / 100);
-        $sellingPrice = $priceAfterGst * (1 + $marginPercent / 100);
+        $sellingPrice = $buyingPrice * (1 + $marginPercent / 100);
 
         return round($sellingPrice, 2);
     }

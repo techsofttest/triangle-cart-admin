@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageResolver
 {
+    /** @var array<string, string> Optional lookup map of lowercase filename -> absolute path */
+    protected array $lookup = [];
+
     /** @var string[] Supported image extensions in priority order */
     protected array $extensions = ['.webp', '.png', '.jpg', '.jpeg', '.avif', '.gif'];
 
@@ -23,6 +26,16 @@ class ImageResolver
     }
 
     /**
+     * Set the in-memory lookup map for images.
+     *
+     * @param array<string, string> $lookup
+     */
+    public function setLookup(array $lookup): void
+    {
+        $this->lookup = $lookup;
+    }
+
+    /**
      * Resolve an image name (without extension) to a file path.
      * Searches the configured directory for a matching file using the priority extension list.
      *
@@ -35,6 +48,23 @@ class ImageResolver
 
         if (empty($imageName)) {
             return null;
+        }
+
+        // Try lookup map first (case-insensitive)
+        if (!empty($this->lookup)) {
+            $key = strtolower($imageName);
+            if (isset($this->lookup[$key])) {
+                $filePath = $this->lookup[$key];
+                if (File::exists($filePath)) {
+                    $ext = '.' . pathinfo($filePath, PATHINFO_EXTENSION);
+                    $destFilename = $imageName . $ext;
+                    $destPath = $this->storagePath . '/' . $destFilename;
+
+                    Storage::disk('public')->put($destPath, File::get($filePath));
+
+                    return $destPath;
+                }
+            }
         }
 
         foreach ($this->extensions as $ext) {

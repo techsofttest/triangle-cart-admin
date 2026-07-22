@@ -124,7 +124,9 @@ class ProductImportService
             $buyingPrice = (float) ($row['buying_price'] ?? 0);
             $gstPercent = $this->priceCalculator->parseGst($row['gst'] ?? null);
             $marginPercent = (float) ($row['margin'] ?? 0);
-            $sellingPrice = $this->priceCalculator->calculate($buyingPrice, $gstPercent, $marginPercent);
+            // GST is stored in `tax_percentage` but should not be applied during price
+            // calculation because the margin from Excel already includes GST.
+            $sellingPrice = $this->priceCalculator->calculate($buyingPrice, $marginPercent);
 
             // Resolve Variant
             $variantAttributes = [

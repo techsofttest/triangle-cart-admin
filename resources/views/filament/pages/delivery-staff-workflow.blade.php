@@ -2,31 +2,13 @@
     <div id="delivery-staff-workflow-root">
         <div class="app-container">
             @if (!$activeSession)
-                <!-- Start Session Screen -->
+                <!-- No Active Session Screen -->
                 <div class="card card-center">
                     <div class="icon-circle icon-circle-blue">
                         <svg width="32" height="32" style="width: 32px; height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
                     </div>
-                    <h2 class="card-title">Start Delivery Shift</h2>
-                    <p class="card-subtitle">Select an assigned delivery session below to start your route guidance and compliance logging.</p>
-
-                    @if (count($this->availableSessions) > 0)
-                        <div class="stack-4">
-                            @foreach ($this->availableSessions as $session)
-                                <button wire:click="startSession({{ $session->id }})" class="btn-session">
-                                    <span class="text-left">
-                                        <span class="session-date">{{ $session->delivery_date->format('l, d M') }}</span>
-                                        <span class="session-time">{{ $session->timeSlot?->start_time }} - {{ $session->timeSlot?->end_time }}</span>
-                                    </span>
-                                    <span class="session-badge">Start →</span>
-                                </button>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="empty-state">
-                            No pending delivery sessions scheduled. Check back later or create one in the admin panel.
-                        </div>
-                    @endif
+                    <h2 class="card-title">No Active Delivery Session</h2>
+                    <p class="card-subtitle">You do not have an active delivery session right now. Please set a delivery session to 'In Progress' in the admin panel to begin.</p>
                 </div>
             @elseif (!$currentStop)
                 <!-- Active Session, All Stops Completed Screen -->
