@@ -38,51 +38,99 @@ class GoogleRoutesService
     }
 
     /**
-     * Optimize using Google Directions API
+     * Optimize using Google Routes API (computeRoutes)
      */
     protected function optimizeWithGoogle(array $origin, array $destinations, string $apiKey): array
     {
-        $originStr = "{$origin['lat']},{$origin['lng']}";
-        
-        $waypointParts = [];
+        // Build waypoints (intermediates) from destinations
+        $intermediates = [];
         foreach ($destinations as $dest) {
-            $waypointParts[] = "{$dest['lat']},{$dest['lng']}";
+            $intermediates[] = [
+                'location' => [
+                    'latLng' => [
+                        'latitude' => $dest['lat'],
+                        'longitude' => $dest['lng'],
+                    ],
+                ],
+            ];
         }
-        
-        $waypointsStr = 'optimize:true|' . implode('|', $waypointParts);
 
-        $response = Http::get('https://maps.googleapis.com/maps/api/directions/json', [
-            'origin' => $originStr,
-            'destination' => $originStr, // round-trip
-            'waypoints' => $waypointsStr,
-            'key' => $apiKey,
-        ]);
+        $body = [
+            'origin' => [
+                'location' => [
+                    'latLng' => [
+                        'latitude' => $origin['lat'],
+                        'longitude' => $origin['lng'],
+                    ],
+                ],
+            ],
+            'destination' => [
+                'location' => [
+                    'latLng' => [
+                        'latitude' => $origin['lat'],
+                        'longitude' => $origin['lng'],
+                    ],
+                ],
+            ],
+            'intermediates' => $intermediates,
+            'travelMode' => 'DRIVE',
+            'optimizeWaypointOrder' => true,
+            'routingPreference' => 'TRAFFIC_UNAWARE',
+            'polylineEncoding' => 'ENCODED_POLYLINE',
+        ];
+
+        $fieldMask = 'routes.optimizedIntermediateWaypointIndex,routes.legs.duration,routes.legs.distanceMeters,routes.polyline.encodedPolyline';
+
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'X-Goog-Api-Key' => $apiKey,
+            'X-Goog-FieldMask' => $fieldMask,
+        ])->post('https://routes.googleapis.com/directions/v2:computeRoutes', $body);
 
         if ($response->successful()) {
             $data = $response->json();
 
-            if (($data['status'] ?? '') === 'OK' && isset($data['routes'][0]['legs'])) {
+            if (!empty($data['routes'][0])) {
                 $route = $data['routes'][0];
-                $waypointOrder = $route['waypoint_order'] ?? []; // Array of indices mapping to the order of waypoints
+                $waypointOrder = $route['optimizedIntermediateWaypointIndex'] ?? [];
+                $legs = $route['legs'] ?? [];
+                $encodedPolyline = $route['polyline']['encodedPolyline'] ?? null;
 
                 $optimizedDestinations = [];
-                $currentTime = now()->startOfHour()->addHours(9); // Start delivery at 9:00 AM by default
+                $currentTime = now()->startOfHour()->addHours(9); // Start delivery at 9:00 AM
 
                 $totalDistanceMeters = 0;
                 $totalDurationSeconds = 0;
-                foreach ($route['legs'] as $leg) {
-                    $totalDistanceMeters += $leg['distance']['value'] ?? 0;
-                    $totalDurationSeconds += $leg['duration']['value'] ?? 0;
+                foreach ($legs as $leg) {
+                    $totalDistanceMeters += $leg['distanceMeters'] ?? 0;
+                    // Duration comes as a string like "1234s"
+                    $durationStr = $leg['duration'] ?? '0s';
+                    $totalDurationSeconds += (int)str_replace('s', '', $durationStr);
                 }
 
                 // Map waypoint order
-                foreach ($waypointOrder as $seq => $originalIndex) {
-                    if (isset($destinations[$originalIndex])) {
-                        $dest = $destinations[$originalIndex];
-                        
-                        // Estimate ETA based on leg durations
-                        $legDuration = $route['legs'][$seq]['duration']['value'] ?? 600; // in seconds
-                        // Add some buffer time (e.g. 5 mins per stop)
+                if (!empty($waypointOrder)) {
+                    foreach ($waypointOrder as $seq => $originalIndex) {
+                        if (isset($destinations[$originalIndex])) {
+                            $dest = $destinations[$originalIndex];
+
+                            // Estimate ETA based on leg durations
+                            $durationStr = $legs[$seq]['duration'] ?? '600s';
+                            $legDuration = (int)str_replace('s', '', $durationStr);
+                            // Add some buffer time (e.g. 5 mins per stop)
+                            $currentTime = $currentTime->addSeconds($legDuration + 300);
+
+                            $optimizedDestinations[] = array_merge($dest, [
+                                'stop_sequence' => $seq + 1,
+                                'eta' => $currentTime->format('h:i A'),
+                            ]);
+                        }
+                    }
+                } else {
+                    // No optimization returned, use original order
+                    foreach ($destinations as $seq => $dest) {
+                        $durationStr = $legs[$seq]['duration'] ?? '600s';
+                        $legDuration = (int)str_replace('s', '', $durationStr);
                         $currentTime = $currentTime->addSeconds($legDuration + 300);
 
                         $optimizedDestinations[] = array_merge($dest, [
@@ -92,11 +140,11 @@ class GoogleRoutesService
                     }
                 }
 
-                // If any waypoint was missed by waypoint_order, append them
-                $usedIndices = array_flip($waypointOrder);
+                // If any waypoint was missed by waypoint order, append them
+                $usedIndices = !empty($waypointOrder) ? array_flip($waypointOrder) : [];
                 $seq = count($optimizedDestinations) + 1;
                 foreach ($destinations as $index => $dest) {
-                    if (!isset($usedIndices[$index])) {
+                    if (!empty($waypointOrder) && !isset($usedIndices[$index])) {
                         $currentTime = $currentTime->addMinutes(15);
                         $optimizedDestinations[] = array_merge($dest, [
                             'stop_sequence' => $seq++,
@@ -111,11 +159,12 @@ class GoogleRoutesService
                     'destinations' => $optimizedDestinations,
                     'distance_km' => round($totalDistanceMeters / 1000, 2),
                     'duration_minutes' => (int)round($totalDurationSeconds / 60),
+                    'encoded_polyline' => $encodedPolyline,
                 ];
             }
         }
 
-        throw new \Exception('Invalid Directions API response: ' . $response->body());
+        throw new \Exception('Invalid Routes API response: ' . $response->body());
     }
 
     /**

@@ -97,6 +97,7 @@ class DeliverySessionService
         $session->update([
             'estimated_distance_km' => $result['distance_km'] ?? null,
             'estimated_duration_minutes' => $result['duration_minutes'] ?? null,
+            'route_polyline' => $result['encoded_polyline'] ?? null,
             'route_generated_at' => now(),
         ]);
 

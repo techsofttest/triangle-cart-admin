@@ -26,6 +26,7 @@ class DeliverySession extends Model
         'estimated_distance_km',
         'estimated_duration_minutes',
         'route_generated_at',
+        'route_polyline',
     ];
 
     protected $casts = [
