@@ -171,10 +171,54 @@
         window.routeMapData = {
             origin: {
                 lat: {{ (float)config('delivery.store_coordinates.latitude', -37.8136) }},
-                lng: {{ (float)config('delivery.store_coordinates.longitude', 144.9631) }}
+                lng: {{ (float)config('delivery.store_coordinates.longitude', 144.9631) }},
+                name: '{{ config('delivery.store_name', 'Main Warehouse') }}',
+                address: '{{ config('delivery.store_address', '12 Main Street, Sydney NSW 2000') }}'
             },
             stops: @json($stopsData)
         };
+
+        // Helper to generate custom SVG markers
+        function getMarkerIcon(type, number, status = 'pending') {
+            if (type === 'warehouse') {
+                const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40" width="100" height="40">
+                  <rect x="5" y="2" width="90" height="24" rx="12" fill="#10B981" stroke="#FFFFFF" stroke-width="2"/>
+                  <path d="M45 26 L50 34 L55 26 Z" fill="#10B981" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M45.5 26.1 L54.5 26.1" fill="none" stroke="#10B981" stroke-width="2"/>
+                  <text x="50" y="17" fill="#FFFFFF" font-size="11" font-weight="bold" font-family="sans-serif" text-anchor="middle">Warehouse</text>
+                </svg>
+                `;
+                return {
+                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+                    anchor: new google.maps.Point(50, 34)
+                };
+            } else {
+                let fillColor = '#3B82F6'; // default blue
+                let textColor = '#3B82F6';
+                let innerCircleColor = '#FFFFFF';
+
+                if (status === 'completed') {
+                    fillColor = '#10B981'; // green
+                    textColor = '#10B981';
+                } else if (status === 'current') {
+                    fillColor = '#F97316'; // orange
+                    textColor = '#F97316';
+                }
+
+                const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 42" width="32" height="42">
+                  <path d="M16 2 C9.37 2 4 7.37 4 14 C4 23 16 38 16 38 C16 38 28 23 28 14 C28 7.37 22.63 2 16 2 Z" fill="${fillColor}" stroke="#FFFFFF" stroke-width="2"/>
+                  <circle cx="16" cy="14" r="9" fill="${innerCircleColor}"/>
+                  <text x="16" y="18" fill="${textColor}" font-size="11" font-weight="bold" font-family="sans-serif" text-anchor="middle">${number}</text>
+                </svg>
+                `;
+                return {
+                    url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+                    anchor: new google.maps.Point(16, 38)
+                };
+            }
+        }
 
         function initMap() {
             const data = window.routeMapData;
@@ -194,18 +238,16 @@
                 position: data.origin,
                 map: map,
                 title: 'Warehouse',
-                icon: {
-                    url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-                }
+                icon: getMarkerIcon('warehouse')
             });
 
             const infoWindow = new google.maps.InfoWindow();
             
             warehouseMarker.addListener('click', () => {
                 infoWindow.setContent(`
-                    <div style="padding: 0.5rem; font-family: sans-serif;">
-                        <h4 style="margin: 0 0 0.25rem 0; color: #10b981; font-weight: 600;">Warehouse</h4>
-                        <p style="margin: 0; font-size: 0.813rem; color: #4b5563;">Starting Point</p>
+                    <div style="padding: 0.5rem; font-family: sans-serif; min-width: 180px;">
+                        <h4 style="margin: 0 0 0.25rem 0; color: #10b981; font-weight: 600; font-size: 1rem;">${data.origin.name}</h4>
+                        <p style="margin: 0; font-size: 0.813rem; color: #4b5563;">${data.origin.address}</p>
                     </div>
                 `);
                 infoWindow.open(map, warehouseMarker);
@@ -221,24 +263,18 @@
                 const marker = new google.maps.Marker({
                     position: stopPos,
                     map: map,
-                    label: {
-                        text: String(stop.sequence),
-                        color: '#ffffff',
-                        fontWeight: 'bold'
-                    },
-                    icon: {
-                        url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
-                    }
+                    title: `Stop #${stop.sequence}`,
+                    icon: getMarkerIcon('delivery', stop.sequence, 'pending')
                 });
 
                 marker.addListener('click', () => {
                     infoWindow.setContent(`
                         <div style="padding: 0.5rem; font-family: sans-serif; min-width: 180px;">
-                            <h4 style="margin: 0 0 0.25rem 0; color: #1e40af; font-weight: 600;">Order #${stop.order_number}</h4>
+                            <div style="font-size: 0.75rem; font-weight: bold; color: #6b7280; text-transform: uppercase; margin-bottom: 0.25rem;">Stop #${stop.sequence}</div>
+                            <h4 style="margin: 0 0 0.5rem 0; color: #1e40af; font-weight: 600; font-size: 1rem;">Order #${stop.order_number}</h4>
                             <p style="margin: 0 0 0.25rem 0; font-size: 0.813rem; color: #374151;"><strong>Customer:</strong> ${stop.customer_name}</p>
-                            <p style="margin: 0 0 0.25rem 0; font-size: 0.813rem; color: #374151;"><strong>Address:</strong> ${stop.address}</p>
-                            <p style="margin: 0 0 0.5rem 0; font-size: 0.813rem; color: #374151;"><strong>ETA:</strong> ${stop.eta}</p>
-                            <a href="${stop.view_url}" style="font-size: 0.75rem; color: #2563eb; text-decoration: underline; font-weight: 500;">View Order Details</a>
+                            <p style="margin: 0 0 0.5rem 0; font-size: 0.813rem; color: #374151;"><strong>Address:</strong> ${stop.address}</p>
+                            <a href="${stop.view_url}" style="font-size: 0.75rem; color: #2563eb; text-decoration: underline; font-weight: 500; display: inline-block;">View Order</a>
                         </div>
                     `);
                     infoWindow.open(map, marker);
