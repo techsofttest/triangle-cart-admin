@@ -47,72 +47,43 @@ class GoogleRoutesService
      */
     protected function getRouteGeometry(array $origin, array $optimizedDestinations, string $apiKey): array
     {
-        $intermediates = [];
+        $originStr = "{$origin['lat']},{$origin['lng']}";
+        
+        $waypointParts = [];
         foreach ($optimizedDestinations as $dest) {
-            $intermediates[] = [
-                'location' => [
-                    'latLng' => [
-                        'latitude' => $dest['lat'],
-                        'longitude' => $dest['lng'],
-                    ],
-                ],
-            ];
+            $waypointParts[] = "{$dest['lat']},{$dest['lng']}";
         }
+        
+        // Pass waypoints without optimize:true to respect our local heuristic sequence
+        $waypointsStr = implode('|', $waypointParts);
 
-        $body = [
-            'origin' => [
-                'location' => [
-                    'latLng' => [
-                        'latitude' => $origin['lat'],
-                        'longitude' => $origin['lng'],
-                    ],
-                ],
-            ],
-            'destination' => [
-                'location' => [
-                    'latLng' => [
-                        'latitude' => $origin['lat'],
-                        'longitude' => $origin['lng'],
-                    ],
-                ],
-            ],
-            'intermediates' => $intermediates,
-            'travelMode' => 'DRIVE',
-            'optimizeWaypointOrder' => false, // NEVER optimize order here
-            'routingPreference' => 'TRAFFIC_UNAWARE',
-            'polylineEncoding' => 'ENCODED_POLYLINE',
-        ];
-
-        $fieldMask = 'routes.polyline.encodedPolyline,routes.legs.duration,routes.legs.distanceMeters';
-
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'X-Goog-Api-Key' => $apiKey,
-            'X-Goog-FieldMask' => $fieldMask,
-        ])->post('https://routes.googleapis.com/directions/v2:computeRoutes', $body);
+        $response = Http::get('https://maps.googleapis.com/maps/api/directions/json', [
+            'origin' => $originStr,
+            'destination' => $originStr, // round-trip
+            'waypoints' => $waypointsStr,
+            'key' => $apiKey,
+        ]);
 
         if ($response->successful()) {
             $data = $response->json();
 
-            if (!empty($data['routes'][0])) {
+            if (($data['status'] ?? '') === 'OK' && !empty($data['routes'][0])) {
                 $route = $data['routes'][0];
                 $legs = $route['legs'] ?? [];
-                $encodedPolyline = $route['polyline']['encodedPolyline'] ?? null;
+                $encodedPolyline = $route['overview_polyline']['points'] ?? null;
 
                 $totalDistanceMeters = 0;
                 $totalDurationSeconds = 0;
                 foreach ($legs as $leg) {
-                    $totalDistanceMeters += $leg['distanceMeters'] ?? 0;
-                    $durationStr = $leg['duration'] ?? '0s';
-                    $totalDurationSeconds += (int)str_replace('s', '', $durationStr);
+                    $totalDistanceMeters += $leg['distance']['value'] ?? 0;
+                    $totalDurationSeconds += $leg['duration']['value'] ?? 0;
                 }
 
-                // Re-calculate ETAs based on Google's leg durations
+                // Re-calculate ETAs based on leg durations
                 $currentTime = now()->startOfHour()->addHours(9); // Start delivery at 9:00 AM
                 $finalDestinations = [];
                 foreach ($optimizedDestinations as $seq => $dest) {
-                    $durationStr = $legs[$seq]['duration'] ?? '600s';
-                    $legDuration = (int)str_replace('s', '', $durationStr);
+                    $legDuration = $legs[$seq]['duration']['value'] ?? 600; // in seconds
                     // Add buffer time (e.g., 5 mins per stop)
                     $currentTime = $currentTime->addSeconds($legDuration + 300);
 
@@ -131,7 +102,7 @@ class GoogleRoutesService
             }
         }
 
-        throw new \Exception('Invalid Routes API response: ' . $response->body());
+        throw new \Exception('Invalid Directions API response: ' . $response->body());
     }
 
     /**

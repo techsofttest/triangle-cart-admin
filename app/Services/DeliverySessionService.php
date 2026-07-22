@@ -154,60 +154,34 @@ class DeliverySessionService
         }
 
         try {
-            $intermediates = [];
+            $originStr = "{$origin['lat']},{$origin['lng']}";
+            
+            $waypointParts = [];
             foreach ($destinations as $dest) {
-                $intermediates[] = [
-                    'location' => [
-                        'latLng' => [
-                            'latitude' => $dest['lat'],
-                            'longitude' => $dest['lng'],
-                        ],
-                    ],
-                ];
+                $waypointParts[] = "{$dest['lat']},{$dest['lng']}";
             }
+            
+            $waypointsStr = implode('|', $waypointParts);
 
-            $body = [
-                'origin' => [
-                    'location' => [
-                        'latLng' => [
-                            'latitude' => $origin['lat'],
-                            'longitude' => $origin['lng'],
-                        ],
-                    ],
-                ],
-                'destination' => [
-                    'location' => [
-                        'latLng' => [
-                            'latitude' => $origin['lat'],
-                            'longitude' => $origin['lng'],
-                        ],
-                    ],
-                ],
-                'intermediates' => $intermediates,
-                'travelMode' => 'DRIVE',
-                'optimizeWaypointOrder' => false, // NEVER optimize order here
-                'routingPreference' => 'TRAFFIC_UNAWARE',
-                'polylineEncoding' => 'ENCODED_POLYLINE',
-            ];
-
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'X-Goog-Api-Key' => $apiKey,
-                'X-Goog-FieldMask' => 'routes.polyline.encodedPolyline,routes.legs.duration,routes.legs.distanceMeters',
-            ])->post('https://routes.googleapis.com/directions/v2:computeRoutes', $body);
+            $response = Http::get('https://maps.googleapis.com/maps/api/directions/json', [
+                'origin' => $originStr,
+                'destination' => $originStr, // round-trip
+                'waypoints' => $waypointsStr,
+                'key' => $apiKey,
+            ]);
 
             if ($response->successful()) {
                 $data = $response->json();
-                if (!empty($data['routes'][0])) {
+                if (($data['status'] ?? '') === 'OK' && !empty($data['routes'][0])) {
                     $route = $data['routes'][0];
-                    $encodedPolyline = $route['polyline']['encodedPolyline'] ?? null;
+                    $legs = $route['legs'] ?? [];
+                    $encodedPolyline = $route['overview_polyline']['points'] ?? null;
                     
                     $totalDistanceMeters = 0;
                     $totalDurationSeconds = 0;
-                    foreach ($route['legs'] ?? [] as $leg) {
-                        $totalDistanceMeters += $leg['distanceMeters'] ?? 0;
-                        $durationStr = $leg['duration'] ?? '0s';
-                        $totalDurationSeconds += (int)str_replace('s', '', $durationStr);
+                    foreach ($legs as $leg) {
+                        $totalDistanceMeters += $leg['distance']['value'] ?? 0;
+                        $totalDurationSeconds += $leg['duration']['value'] ?? 0;
                     }
 
                     $session->update([
