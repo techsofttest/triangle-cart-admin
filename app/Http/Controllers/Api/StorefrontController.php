@@ -148,6 +148,48 @@ class StorefrontController extends Controller
         ];
     }
 
+    private function getClosestKeyword(string $search): ?string
+    {
+        $dictionary = cache()->remember('search_dictionary', now()->addHours(12), function () {
+
+            return collect()
+
+                ->merge(Product::pluck('name'))
+                ->merge(Brand::pluck('name'))
+                ->merge(Category::pluck('name'))
+
+                ->flatMap(function ($text) {
+                    return preg_split('/[\s\-_,()]+/', strtolower($text));
+                })
+
+                ->filter(fn ($word) => strlen($word) >= 3)
+
+                ->unique()
+
+                ->values()
+
+                ->all();
+        });
+
+        $closest = null;
+        $shortest = PHP_INT_MAX;
+
+        foreach ($dictionary as $word) {
+
+            $distance = levenshtein(
+                strtolower($search),
+                strtolower($word)
+            );
+
+            if ($distance < $shortest) {
+                $shortest = $distance;
+                $closest = $word;
+            }
+        }
+
+        return $shortest <= 2 ? $closest : null;
+    }
+
     private function topOfferPayloads(int $limit = 20)
     {
         return Product::query()
@@ -353,6 +395,8 @@ class StorefrontController extends Controller
         $search = trim($request->string('q')->toString());
         $perPage = max(1, min((int) $request->integer('per_page', 24), 100));
 
+        $didYouMean = null;
+
         $products = collect();
         if ($search !== '') {
             $products = Product::query()
@@ -375,6 +419,37 @@ class StorefrontController extends Controller
                 ->get()
                 ->map(fn (Product $product) => $this->productPayload($product))
                 ->values();
+
+            // If no products found, try simple typo correction and re-run search
+            if ($products->isEmpty() && $search !== '') {
+                $corrected = $this->getClosestKeyword($search);
+
+                if ($corrected && strtolower($corrected) !== strtolower($search)) {
+                    $didYouMean = $corrected;
+                    $search = $corrected;
+
+                    $products = Product::query()
+                        ->with(['brand', 'category', 'variants', 'reviews', 'images'])
+                        ->where('is_active', true)
+                        ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
+                        ->where(function ($query) use ($search) {
+                            $keywords = array_filter(explode(' ', $search));
+                            foreach ($keywords as $keyword) {
+                                $query->where(function ($q) use ($keyword) {
+                                    $q->where('name', 'like', '%' . $keyword . '%')
+                                        ->orWhere('sku', 'like', '%' . $keyword . '%')
+                                        ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', '%' . $keyword . '%'))
+                                        ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', '%' . $keyword . '%'))
+                                        ->orWhereHas('category', fn ($c) => $c->where('name', 'like', '%' . $keyword . '%'));
+                                });
+                            }
+                        })
+                        ->take($perPage)
+                        ->get()
+                        ->map(fn (Product $product) => $this->productPayload($product))
+                        ->values();
+                }
+            }
         }
 
         $categories = Category::query()
@@ -424,6 +499,7 @@ class StorefrontController extends Controller
             'products' => $products,
             'categories' => $categories,
             'brands' => $brands,
+            'did_you_mean' => $didYouMean,
         ]);
     }
 
