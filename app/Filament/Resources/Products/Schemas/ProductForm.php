@@ -202,7 +202,8 @@ class ProductForm
                     FileUpload::make('featured_image')
                         ->label('Featured Image')
                         ->disk('public')
-                        ->image(),
+                        ->image()
+                        ->preserveFilenames(),
 
                 ])->columnSpanFull(),
 

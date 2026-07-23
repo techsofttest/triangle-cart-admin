@@ -54,7 +54,6 @@ class CategoryForm
 
                             Toggle::make('home_featured')
                                 ->label('Featured on Home Page')
-                                ->helperText('Limit to maximum 2 categories at a time.')
                                 ->default(false)
                                 ->rules([
                                     function ($get, $record) {
@@ -72,10 +71,6 @@ class CategoryForm
                                     }
                                 ]),
                         ]),
-
-                        Textarea::make('description')
-                            ->default(null)
-                            ->columnSpanFull(),
 
                         FileUpload::make('image')
                             ->image()
