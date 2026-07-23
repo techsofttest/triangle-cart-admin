@@ -85,7 +85,7 @@ class ProductsTable
             ->headerActions([
                 \Filament\Actions\Action::make('import_products')
                     ->label('Import Products')
-                    ->icon('heroicon-o-arrow-up-tray')
+                    ->icon('heroicon-o-arrow-down-tray')
                     ->form([
                         \Filament\Forms\Components\FileUpload::make('file')
                             ->label('Excel / CSV File')

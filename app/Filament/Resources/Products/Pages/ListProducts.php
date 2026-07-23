@@ -45,6 +45,22 @@ class ListProducts extends ListRecords
 
     protected function getHeaderActions(): array
     {
+
+
+        return [
+            Action::make('export_excel')
+                ->label('Export Excel')
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('warning')
+                ->action(function () {
+                    $filename = 'tc-products-' . now()->format('Ymd-His') . '.xlsx';
+
+                    return Excel::download(new ProductExport(), $filename);
+                }),
+            CreateAction::make(),
+        ];
+        
+    
         return [
             /*\Filament\Actions\Action::make('import_images')
                 ->label('Import Images (ZIP)')
