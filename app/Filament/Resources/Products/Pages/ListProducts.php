@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\Products\Pages;
 
+use App\Filament\Exports\ProductExport;
 use App\Filament\Resources\Products\ProductResource;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Maatwebsite\Excel\Facades\Excel;
 
 use App\Models\Category;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -110,7 +113,16 @@ class ListProducts extends ListRecords
                             ->send();
                     }
                 }),
-            \Filament\Actions\Action::make('import_excel')
+            Action::make('export_excel')
+                ->label('Export Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action(function () {
+                    $filename = 'tc-products-' . now()->format('Ymd-His') . '.xlsx';
+
+                    return Excel::download(new ProductExport(), $filename);
+                }),
+            /* \Filament\Actions\Action::make('import_excel')
                 ->label('Import Excel')
                 ->icon('heroicon-o-arrow-up-tray')
                 ->color('success')
