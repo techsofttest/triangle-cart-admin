@@ -298,14 +298,16 @@ class CheckoutController extends Controller
         // Mark as viewed in session
         session()->put($sessionKey, true);
 
-        $isSuccess = $order->payment_status === 'paid';
-        $isFailed = $order->payment_status === 'failed';
-        $isProcessing = $order->payment_status === 'processing';
+        $paymentStatus = $order->payment_status instanceof \App\Enums\PaymentStatus ? $order->payment_status->value : $order->payment_status;
+
+        $isSuccess = $paymentStatus === 'paid';
+        $isFailed = $paymentStatus === 'failed';
+        $isProcessing = $paymentStatus === 'processing';
 
         return response()->json([
             'order_id' => $order->id,
             'order_number' => $order->order_number,
-            'payment_status' => $order->payment_status->value ?? $order->payment_status,
+            'payment_status' => $paymentStatus,
             'status' => $order->status,
             'is_success' => $isSuccess,
             'is_failed' => $isFailed,
