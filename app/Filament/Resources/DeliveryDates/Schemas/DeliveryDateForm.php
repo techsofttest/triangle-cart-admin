@@ -18,6 +18,7 @@ class DeliveryDateForm
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->minDate(today())
+                    ->native(false)
                     ->columnSpanFull(),
                 
                 Repeater::make('timeSlots')
@@ -25,9 +26,18 @@ class DeliveryDateForm
                     ->schema([
                         TimePicker::make('start_time')
                             ->required()
+                            ->native(false)
+                            ->hoursStep(1)
+                            ->minutesStep(30)
+                            ->format('h:i A')
                             ->seconds(false),
                         TimePicker::make('end_time')
                             ->required()
+                            ->after('start_time')
+                            ->native(false)
+                            ->hoursStep(1)
+                            ->minutesStep(30)
+                            ->format('h:i A')
                             ->seconds(false)
                     ])
                     ->columns(2)
