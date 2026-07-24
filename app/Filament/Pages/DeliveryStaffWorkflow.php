@@ -30,7 +30,26 @@ class DeliveryStaffWorkflow extends Page
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        return $user?->can('delivery.driver') || $user?->can('delivery.manage');
+        // Only allow users with the Staff role or explicit delivery.driver permission
+        return $user?->hasRole('Staff') || $user?->role === 'staff' || $user?->can('delivery.driver');
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+        if (! $user) return false;
+
+        return $user->hasRole('Staff') || $user->role === 'staff' || $user->can('delivery.driver');
+    }
+
+    public function mount(): void
+    {
+        $user = auth()->user();
+        if (! ($user && ($user->hasRole('Staff') || $user->role === 'staff' || $user->can('delivery.driver')))) {
+            abort(403);
+        }
+
+        $this->loadActiveSession();
     }
 
     // State properties

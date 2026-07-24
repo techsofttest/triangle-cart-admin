@@ -75,4 +75,17 @@ class AnnouncementResource extends Resource
             'index' => ManageAnnouncements::route('/'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+        if (! $user) return true;
+
+        // Hide announcements for staff accounts
+        if ($user->hasRole('Staff') || $user->role === 'staff') {
+            return false;
+        }
+
+        return true;
+    }
 }

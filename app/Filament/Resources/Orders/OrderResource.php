@@ -51,4 +51,19 @@ class OrderResource extends Resource
             'view' => ViewOrder::route('/{record}')
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+        if (! $user) return true;
+
+        // Hide announcements for staff accounts
+        if ($user->hasRole('Staff') || $user->role === 'staff') {
+            return false;
+        }
+
+        return true;
+    }
+
+
 }

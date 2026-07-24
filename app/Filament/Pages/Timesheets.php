@@ -36,6 +36,27 @@ class Timesheets extends Page implements HasTable
 
     protected string $view = 'filament.pages.timesheets';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        $user = auth()->user();
+        if (! $user) return true;
+
+        // Hide Timesheets navigation for Staff users who are not managers
+        if ($user->hasRole('Staff') || $user->role === 'staff') {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function mount(): void
+    {
+        $user = auth()->user();
+        if ($user && ($user->hasRole('Staff') || $user->role === 'staff')) {
+            abort(403);
+        }
+    }
+
     /**
      * Helper to format time range.
      */
