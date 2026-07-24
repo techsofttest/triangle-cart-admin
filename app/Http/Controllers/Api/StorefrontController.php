@@ -362,12 +362,28 @@ class StorefrontController extends Controller
 
     public function header(): JsonResponse
     {
-        $categories = Category::query()
+        // Get main categories (parent categories) in alphabetical order
+        $mainCategories = Category::query()
             ->whereNull('parent_id')
             ->where('is_active', true)
-            ->orderBy('sort_order')
-            ->limit(6)
+            ->orderBy('name')
             ->get();
+
+        // Get all categories in alphabetical order
+        $allCategories = Category::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        // Map categories to response structure
+        $mapCategory = fn (Category $category) => [
+            'id' => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'href' => '/category/' . $category->slug,
+            'image_url' => $this->getCategoryImageUrl($category),
+            'icon_url' => $this->assetUrl($category->icon),
+        ];
 
         return response()->json([
             'brand' => [
@@ -379,14 +395,10 @@ class StorefrontController extends Controller
                 ['label' => 'Products', 'href' => '/products'],
                 ['label' => 'Categories', 'href' => '/categories'],
             ],
-            'categories' => $categories->map(fn (Category $category) => [
-                'id' => $category->id,
-                'name' => $category->name,
-                'slug' => $category->slug,
-                'href' => '/category/' . $category->slug,
-                'image_url' => $this->getCategoryImageUrl($category),
-                'icon_url' => $this->assetUrl($category->icon),
-            ])->values(),
+            'categories' => [
+                'main' => $mainCategories->map($mapCategory)->values(),
+                'all' => $allCategories->map($mapCategory)->values(),
+            ],
         ]);
     }
 
