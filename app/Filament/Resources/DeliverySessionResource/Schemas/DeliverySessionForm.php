@@ -43,7 +43,7 @@ class DeliverySessionForm
                     Select::make('staff_id')
                         ->relationship('staff', 'name', function ($query) {
                             $user = auth()->user();
-                            if ($user && ($user->hasRole('Staff') || $user->role === 'staff' || $user->can('delivery.driver')) && !$user->can('delivery.manage')) {
+                            if ($user && ($user->hasRole('Staff') || $user->role === 'staff')) {
                                 $query->where('id', $user->id);
                             } else {
                                 $query->where('role', 'staff')
@@ -54,7 +54,7 @@ class DeliverySessionForm
                         ->label('Staff')
                         ->required()
                         ->default(fn () => auth()->id())
-                        ->disabled(fn () => (auth()->user()?->hasRole('Staff') || auth()->user()?->role === 'staff' || auth()->user()?->can('delivery.driver')) && !auth()->user()?->can('delivery.manage'))
+                        ->disabled(fn () => auth()->user()?->hasRole('Staff') || auth()->user()?->role === 'staff')
                         ->dehydrated(true),
                          
                         Select::make('status')

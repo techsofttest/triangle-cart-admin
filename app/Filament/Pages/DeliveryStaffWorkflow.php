@@ -30,8 +30,8 @@ class DeliveryStaffWorkflow extends Page
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        // Only allow users with the Staff role or explicit delivery.driver permission
-        return $user?->hasRole('Staff') || $user?->role === 'staff' || $user?->can('delivery.driver');
+        // Only allow users with the Staff role/login
+        return $user && ($user->hasRole('Staff') || $user->role === 'staff');
     }
 
     public static function shouldRegisterNavigation(): bool
@@ -39,13 +39,13 @@ class DeliveryStaffWorkflow extends Page
         $user = auth()->user();
         if (! $user) return false;
 
-        return $user->hasRole('Staff') || $user->role === 'staff' || $user->can('delivery.driver');
+        return $user->hasRole('Staff') || $user->role === 'staff';
     }
 
     public function mount(): void
     {
         $user = auth()->user();
-        if (! ($user && ($user->hasRole('Staff') || $user->role === 'staff' || $user->can('delivery.driver')))) {
+        if (! ($user && ($user->hasRole('Staff') || $user->role === 'staff'))) {
             abort(403);
         }
 

@@ -61,7 +61,7 @@ class DeliverySessionResource extends Resource
         $query = parent::getEloquentQuery();
         $user = auth()->user();
         
-        if ($user && ($user->hasRole('Staff') || $user->role === 'staff' || $user->can('delivery.driver')) && !$user->can('delivery.manage')) {
+        if ($user && ($user->hasRole('Staff') || $user->role === 'staff')) {
             $query->where('staff_id', $user->id);
         }
         
