@@ -69,11 +69,6 @@ class DeliveryStaffWorkflow extends Page
     public $showDeliveryModal = false;
     public $showFailureModal = false;
 
-    public function mount(): void
-    {
-        $this->loadActiveSession();
-    }
-
     public function loadActiveSession(): void
     {
         // Get the active session for the logged in staff
