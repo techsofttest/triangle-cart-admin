@@ -662,6 +662,43 @@
                 </div>
             </div>
 
+            {{-- DELIVERY DETAILS --}}
+            @if($this->record->delivery_type === 'direct')
+            <div class="order-detail-card">
+                <div class="order-detail-card-header">
+                    <h2 class="order-detail-card-title">Delivery Details</h2>
+                </div>
+
+                <div class="order-info-row">
+                    <span class="order-info-label">Delivery Type</span>
+                    <span class="order-info-value">
+                        <span class="order-status-badge order-status-completed">Direct</span>
+                    </span>
+                </div>
+
+                @if($this->record->delivery_date)
+                <div class="order-info-row">
+                    <span class="order-info-label">Delivery Date</span>
+                    <span class="order-info-value">{{ \Carbon\Carbon::parse($this->record->delivery_date)->format('d M Y') }}</span>
+                </div>
+                @endif
+
+                @if($this->record->deliverySlot)
+                <div class="order-info-row">
+                    <span class="order-info-label">Time Slot</span>
+                    <span class="order-info-value">{{ $this->record->deliverySlot->start_time }} - {{ $this->record->deliverySlot->end_time }}</span>
+                </div>
+                @endif
+
+                @if($this->record->delivery_notes)
+                <div class="order-info-row">
+                    <span class="order-info-label">Delivery Notes</span>
+                    <span class="order-info-value">{{ $this->record->delivery_notes }}</span>
+                </div>
+                @endif
+            </div>
+            @endif
+
             {{-- BILLING ADDRESS 
             <div class="order-detail-card">
                 <div class="order-detail-card-header">

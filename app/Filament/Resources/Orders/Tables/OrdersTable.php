@@ -29,6 +29,22 @@ class OrdersTable
                 TextColumn::make('delivery_type')
                     ->badge()
                     ->color(fn ($state): string => $state === 'direct' ? 'success' : 'gray'),
+                TextColumn::make('delivery_slot_info')
+                    ->label('Delivery Slot')
+                    ->state(function ($record): ?string {
+                        if ($record->delivery_type !== 'direct') {
+                            return null;
+                        }
+                        $parts = [];
+                        if ($record->delivery_date) {
+                            $parts[] = \Carbon\Carbon::parse($record->delivery_date)->format('d M Y');
+                        }
+                        if ($record->deliverySlot) {
+                            $parts[] = $record->deliverySlot->start_time . ' - ' . $record->deliverySlot->end_time;
+                        }
+                        return implode(' | ', $parts) ?: null;
+                    })
+                    ->placeholder('-'),
                 TextColumn::make('shipping_postcode')
                     ->label('Postcode')
                     ->searchable(),

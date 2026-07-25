@@ -60,5 +60,10 @@ class Order extends Model
     {
         return $this->belongsTo(User::class, 'assigned_by');
     }
+
+    public function deliverySlot()
+    {
+        return $this->belongsTo(TimeSlot::class, 'delivery_slot_id');
+    }
 }
 
