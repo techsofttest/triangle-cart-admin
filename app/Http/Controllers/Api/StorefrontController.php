@@ -173,6 +173,7 @@ class StorefrontController extends Controller
 
         $closest = null;
         $shortest = PHP_INT_MAX;
+        $highestPercent = 0;
 
         foreach ($dictionary as $word) {
 
@@ -185,9 +186,22 @@ class StorefrontController extends Controller
                 $shortest = $distance;
                 $closest = $word;
             }
+
+            similar_text(
+                strtolower($search),
+                strtolower($word),
+                $percent
+            );
+
+            if ($percent > $highestPercent) {
+                $highestPercent = $percent;
+                if ($shortest > 2) {
+                    $closest = $word;
+                }
+            }
         }
 
-        return $shortest <= 2 ? $closest : null;
+        return ($shortest <= 2 || $highestPercent >= 80) ? $closest : null;
     }
 
     private function topOfferPayloads(int $limit = 20)
