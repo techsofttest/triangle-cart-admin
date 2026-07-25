@@ -17,6 +17,7 @@ class AdvertisementForm
                     ->required(),
                 TextInput::make('title'),
                 FileUpload::make('banner')
+                    ->helperText('Approx 1920 x 524 pixels')
                     ->image()
                     ->disk('public')
                     ->required(),

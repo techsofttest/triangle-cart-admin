@@ -17,6 +17,7 @@ class BannerForm
                 TextInput::make('name')
                     ->required(),
                 FileUpload::make('image')
+                    ->helperText('Approx 1920 x 524 pixels')
                     ->disk('public')
                     ->image()
                     ->required(),
