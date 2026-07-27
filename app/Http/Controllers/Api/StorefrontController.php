@@ -148,49 +148,52 @@ class StorefrontController extends Controller
         ];
     }
 
-    private function getClosestKeyword(string $search): ?string
+    private function getSearchDictionary(): array
     {
-        $dictionary = cache()->remember('search_dictionary', now()->addHours(12), function () {
-
+        return cache()->remember('search_dictionary', now()->addHours(12), function () {
             return collect()
-
                 ->merge(Product::pluck('name'))
                 ->merge(Brand::pluck('name'))
                 ->merge(Category::pluck('name'))
-
                 ->flatMap(function ($text) {
                     return preg_split('/[\s\-_,()]+/', strtolower($text));
                 })
-
                 ->filter(fn ($word) => strlen($word) >= 3)
-
                 ->unique()
-
                 ->values()
-
                 ->all();
         });
+    }
 
+    private function getSimilarKeywords(string $search, int $limit = 5): array
+    {
         $searchLower = strtolower($search);
-        $bestMatch = null;
-        $bestScore = 0;
 
-        foreach ($dictionary as $word) {
-            $wordLower = strtolower($word);
+        return collect($this->getSearchDictionary())
+            ->map(function ($word) use ($searchLower) {
+                $wordLower = strtolower($word);
+                $distance = levenshtein($searchLower, $wordLower);
+                similar_text($searchLower, $wordLower, $percent);
 
-            $distance = levenshtein($searchLower, $wordLower);
-            similar_text($searchLower, $wordLower, $percent);
+                return [
+                    'word' => $word,
+                    'distance' => $distance,
+                    'percent' => $percent,
+                ];
+            })
+            ->filter(fn ($item) => $item['distance'] <= 2 && $item['percent'] >= 70)
+            ->sortByDesc(fn ($item) => $item['percent'] - ($item['distance'] * 10))
+            ->pluck('word')
+            ->unique()
+            ->filter(fn ($word) => strtolower($word) !== $searchLower)
+            ->take($limit)
+            ->values()
+            ->all();
+    }
 
-            if ($distance <= 2 && $percent >= 70) {
-                $score = $percent - ($distance * 10);
-                if ($score > $bestScore) {
-                    $bestScore = $score;
-                    $bestMatch = $word;
-                }
-            }
-        }
-
-        return $bestMatch;
+    private function getClosestKeyword(string $search): ?string
+    {
+        return $this->getSimilarKeywords($search, 1)[0] ?? null;
     }
 
     private function topOfferPayloads(int $limit = 20)
@@ -421,12 +424,16 @@ class StorefrontController extends Controller
                 ->where(function ($query) use ($search) {
                     $keywords = array_filter(explode(' ', $search));
                     foreach ($keywords as $keyword) {
-                        $query->where(function ($q) use ($keyword) {
-                            $q->where('name', 'like', '%' . $keyword . '%')
-                                ->orWhere('sku', 'like', '%' . $keyword . '%')
-                                ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', '%' . $keyword . '%'))
-                                ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', '%' . $keyword . '%'))
-                                ->orWhereHas('category', fn ($c) => $c->where('name', 'like', '%' . $keyword . '%'));
+                        $expandedKeywords = array_merge([$keyword], $this->getSimilarKeywords($keyword));
+
+                        $query->where(function ($q) use ($expandedKeywords) {
+                            foreach ($expandedKeywords as $searchTerm) {
+                                $q->orWhere('name', 'like', '%' . $searchTerm . '%')
+                                    ->orWhere('sku', 'like', '%' . $searchTerm . '%')
+                                    ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', '%' . $searchTerm . '%'))
+                                    ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', '%' . $searchTerm . '%'))
+                                    ->orWhereHas('category', fn ($c) => $c->where('name', 'like', '%' . $searchTerm . '%'));
+                            }
                         });
                     }
                 })
@@ -435,36 +442,6 @@ class StorefrontController extends Controller
                 ->map(fn (Product $product) => $this->productPayload($product))
                 ->values();
 
-            // If no products found, try simple typo correction and re-run search
-            if ($products->isEmpty() && $search !== '') {
-                $corrected = $this->getClosestKeyword($search);
-
-                if ($corrected && strtolower($corrected) !== strtolower($search)) {
-                    $didYouMean = $corrected;
-                    $search = $corrected;
-
-                    $products = Product::query()
-                        ->with(['brand', 'category', 'variants', 'reviews', 'images'])
-                        ->where('is_active', true)
-                        ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
-                        ->where(function ($query) use ($search) {
-                            $keywords = array_filter(explode(' ', $search));
-                            foreach ($keywords as $keyword) {
-                                $query->where(function ($q) use ($keyword) {
-                                    $q->where('name', 'like', '%' . $keyword . '%')
-                                        ->orWhere('sku', 'like', '%' . $keyword . '%')
-                                        ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', '%' . $keyword . '%'))
-                                        ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', '%' . $keyword . '%'))
-                                        ->orWhereHas('category', fn ($c) => $c->where('name', 'like', '%' . $keyword . '%'));
-                                });
-                            }
-                        })
-                        ->take($perPage)
-                        ->get()
-                        ->map(fn (Product $product) => $this->productPayload($product))
-                        ->values();
-                }
-            }
         }
 
         $categories = Category::query()
@@ -472,9 +449,13 @@ class StorefrontController extends Controller
             ->where(function ($query) use ($search) {
                 $keywords = array_filter(explode(' ', $search));
                 foreach ($keywords as $keyword) {
-                    $query->where(function ($q) use ($keyword) {
-                        $q->where('name', 'like', '%' . $keyword . '%')
-                            ->orWhere('slug', 'like', '%' . $keyword . '%');
+                    $expandedKeywords = array_merge([$keyword], $this->getSimilarKeywords($keyword));
+
+                    $query->where(function ($q) use ($expandedKeywords) {
+                        foreach ($expandedKeywords as $searchTerm) {
+                            $q->orWhere('name', 'like', '%' . $searchTerm . '%')
+                                ->orWhere('slug', 'like', '%' . $searchTerm . '%');
+                        }
                     });
                 }
             })
@@ -493,9 +474,13 @@ class StorefrontController extends Controller
             ->where(function ($query) use ($search) {
                 $keywords = array_filter(explode(' ', $search));
                 foreach ($keywords as $keyword) {
-                    $query->where(function ($q) use ($keyword) {
-                        $q->where('name', 'like', '%' . $keyword . '%')
-                            ->orWhere('slug', 'like', '%' . $keyword . '%');
+                    $expandedKeywords = array_merge([$keyword], $this->getSimilarKeywords($keyword));
+
+                    $query->where(function ($q) use ($expandedKeywords) {
+                        foreach ($expandedKeywords as $searchTerm) {
+                            $q->orWhere('name', 'like', '%' . $searchTerm . '%')
+                                ->orWhere('slug', 'like', '%' . $searchTerm . '%');
+                        }
                     });
                 }
             })
@@ -548,10 +533,19 @@ class StorefrontController extends Controller
 
         if ($search = $request->string('search')->toString()) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('sku', 'like', '%' . $search . '%')
-                    ->orWhereHas('brand', fn ($brandQuery) => $brandQuery->where('name', 'like', '%' . $search . '%'))
-                    ->orWhereHas('category', fn ($categoryQuery) => $categoryQuery->where('name', 'like', '%' . $search . '%'));
+                $keywords = array_filter(explode(' ', $search));
+                foreach ($keywords as $keyword) {
+                    $expandedKeywords = array_merge([$keyword], $this->getSimilarKeywords($keyword));
+
+                    $q->where(function ($q) use ($expandedKeywords) {
+                        foreach ($expandedKeywords as $searchTerm) {
+                            $q->orWhere('name', 'like', '%' . $searchTerm . '%')
+                                ->orWhere('sku', 'like', '%' . $searchTerm . '%')
+                                ->orWhereHas('brand', fn ($brandQuery) => $brandQuery->where('name', 'like', '%' . $searchTerm . '%'))
+                                ->orWhereHas('category', fn ($categoryQuery) => $categoryQuery->where('name', 'like', '%' . $searchTerm . '%'));
+                        }
+                    });
+                }
             });
         }
 
