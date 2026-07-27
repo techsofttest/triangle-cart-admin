@@ -181,7 +181,7 @@ class StorefrontController extends Controller
                     'percent' => $percent,
                 ];
             })
-            ->filter(fn ($item) => $item['distance'] <= 2 && $item['percent'] >= 70)
+            ->filter(fn ($item) => $item['distance'] <= 2 && $item['percent'] >= 90)
             ->sortByDesc(fn ($item) => $item['percent'] - ($item['distance'] * 10))
             ->pluck('word')
             ->unique()
