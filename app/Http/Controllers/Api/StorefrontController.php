@@ -171,37 +171,26 @@ class StorefrontController extends Controller
                 ->all();
         });
 
-        $closest = null;
-        $shortest = PHP_INT_MAX;
-        $highestPercent = 0;
+        $searchLower = strtolower($search);
+        $bestMatch = null;
+        $bestScore = 0;
 
         foreach ($dictionary as $word) {
+            $wordLower = strtolower($word);
 
-            $distance = levenshtein(
-                strtolower($search),
-                strtolower($word)
-            );
+            $distance = levenshtein($searchLower, $wordLower);
+            similar_text($searchLower, $wordLower, $percent);
 
-            if ($distance < $shortest) {
-                $shortest = $distance;
-                $closest = $word;
-            }
-
-            similar_text(
-                strtolower($search),
-                strtolower($word),
-                $percent
-            );
-
-            if ($percent > $highestPercent) {
-                $highestPercent = $percent;
-                if ($shortest > 2) {
-                    $closest = $word;
+            if ($distance <= 2 && $percent >= 70) {
+                $score = $percent - ($distance * 10);
+                if ($score > $bestScore) {
+                    $bestScore = $score;
+                    $bestMatch = $word;
                 }
             }
         }
 
-        return ($shortest <= 2 || $highestPercent >= 80) ? $closest : null;
+        return $bestMatch;
     }
 
     private function topOfferPayloads(int $limit = 20)
