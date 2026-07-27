@@ -22,16 +22,16 @@ class DeliveryPostcodeForm
                             ->required()
                             ->maxLength(20),
 
-                        /*TextInput::make('warehouse_id')
-                            ->label('Warehouse ID')
-                            ->numeric()
-                            ->nullable(),
-
                         TextInput::make('delivery_fee')
                             ->label('Delivery Fee')
                             ->numeric()
                             ->default(0)
-                            ->prefix('₹'),
+                            ->prefix('AUD'),
+
+                        /*TextInput::make('warehouse_id')
+                            ->label('Warehouse ID')
+                            ->numeric()
+                            ->nullable(),
 
                         TextInput::make('free_shipping_threshold')
                             ->label('Free Shipping Threshold')

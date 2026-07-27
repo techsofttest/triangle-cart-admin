@@ -339,7 +339,8 @@ class StorefrontController extends Controller
 
     public function categories(): JsonResponse
     {
-        $categories = Category::query()
+        // Get main categories (parent categories) in sort order
+        $mainCategories = Category::query()
             ->whereNull('parent_id')
             ->where('is_active', true)
             ->withCount('products')
@@ -347,7 +348,18 @@ class StorefrontController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        return response()->json($categories->map(function (Category $category) {
+        // Get child categories (subcategories) in alphabetical order
+        $childCategories = Category::query()
+            ->whereNotNull('parent_id')
+            ->where('is_active', true)
+            ->withCount('products')
+            ->orderBy('name')
+            ->get();
+
+        // Combine main categories first, then child categories
+        $allCategories = $mainCategories->concat($childCategories);
+
+        return response()->json($allCategories->map(function (Category $category) {
             return [
                 'id' => $category->id,
                 'name' => $category->name,
@@ -355,28 +367,29 @@ class StorefrontController extends Controller
                 'image_url' => $this->getCategoryImageUrl($category),
                 'icon_url' => $this->assetUrl($category->icon),
                 'product_count' => $category->products_count,
-                'children' => $category->children->map(fn (Category $child) => [
+                'children' => $category->children?->map(fn (Category $child) => [
                     'id' => $child->id,
                     'name' => $child->name,
                     'slug' => $child->slug,
                     'image_url' => $this->getCategoryImageUrl($child),
                     'icon_url' => $this->assetUrl($child->icon),
-                ])->values(),
+                ])->values() ?? [],
             ];
         }));
     }
 
     public function header(): JsonResponse
     {
-        // Get main categories (parent categories) in alphabetical order
+        // Get main categories (parent categories) in sort order
         $mainCategories = Category::query()
             ->whereNull('parent_id')
             ->where('is_active', true)
-            ->orderBy('name')
+            ->orderBy('sort_order')
             ->get();
 
-        // Get all categories in alphabetical order
-        $allCategories = Category::query()
+        // Get all child categories (subcategories) in alphabetical order
+        $childCategories = Category::query()
+            ->whereNotNull('parent_id')
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
@@ -403,7 +416,7 @@ class StorefrontController extends Controller
             ],
             'categories' => [
                 'main' => $mainCategories->map($mapCategory)->values(),
-                'all' => $allCategories->map($mapCategory)->values(),
+                'all' => $childCategories->map($mapCategory)->values(),
             ],
         ]);
     }
