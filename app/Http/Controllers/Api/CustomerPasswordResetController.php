@@ -37,9 +37,9 @@ class CustomerPasswordResetController extends Controller
 
         $status = Password::broker('customers')->reset(
             $data,
-            function (Customer $customer, array $credentials) {
+            function (Customer $customer, string $password) {
                 $customer->forceFill([
-                    'password' => Hash::make($credentials['password']),
+                    'password' => Hash::make($password),
                 ])->save();
                 event(new PasswordResetCompleted($customer, now()->toDateTimeString()));
             }
