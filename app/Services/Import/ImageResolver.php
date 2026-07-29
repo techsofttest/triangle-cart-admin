@@ -67,19 +67,21 @@ class ImageResolver
             }
         }
 
-        foreach ($this->extensions as $ext) {
-            $filePath = $this->searchDirectory . DIRECTORY_SEPARATOR . $imageName . $ext;
+        foreach (File::files($this->searchDirectory) as $file) {
+			if (
+				strtolower(pathinfo($file->getFilename(), PATHINFO_FILENAME))
+				=== strtolower($imageName)
+			) {
+				$ext = '.' . strtolower($file->getExtension());
 
-            if (File::exists($filePath)) {
-                // Copy to public storage
-                $destFilename = $imageName . $ext;
-                $destPath = $this->storagePath . '/' . $destFilename;
+				$destFilename = $imageName . $ext;
+				$destPath = $this->storagePath . '/' . $destFilename;
 
-                Storage::disk('public')->put($destPath, File::get($filePath));
+				Storage::disk('public')->put($destPath, File::get($file->getRealPath()));
 
-                return $destPath;
-            }
-        }
+				return $destPath;
+			}
+		}
 
         return null;
     }
