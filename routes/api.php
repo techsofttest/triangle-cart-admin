@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\CustomerAddressController;
 use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\CmsController;
 use App\Http\Controllers\Api\CustomerWishlistController;
+use App\Http\Controllers\Api\CustomerVerificationController;
+use App\Http\Controllers\Api\CustomerPasswordResetController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/login', function () {
@@ -26,6 +28,11 @@ Route::get('/cms/{slug}', [CmsController::class, 'show']);
 
 // Contact form endpoint
 Route::post('/contact', [\App\Http\Controllers\Api\ContactController::class, 'store']);
+Route::post('/forgot-password', [CustomerPasswordResetController::class, 'sendLink']);
+Route::post('/reset-password', [CustomerPasswordResetController::class, 'reset']);
+Route::get('/email/verify/{id}/{hash}', [CustomerVerificationController::class, 'verify'])
+    ->middleware('signed')
+    ->name('customer.verification.verify');
 
 Route::post('/delivery/check', [DeliveryEligibilityController::class, 'check']);
 Route::post('/coupons/validate', [CouponController::class, 'validate'])->middleware('web');

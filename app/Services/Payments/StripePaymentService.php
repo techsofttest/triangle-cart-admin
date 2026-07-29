@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Models\Order;
+use App\Events\OrderPaymentSuccessful;
 use App\Models\PaymentTransaction;
 use App\Models\StripeWebhookLog;
 use App\Models\ProductVariant;
@@ -238,6 +239,8 @@ class StripePaymentService implements PaymentGatewayInterface
         }
 
         Log::info("Order {$order->order_number} successfully paid via Stripe.");
+
+        event(new OrderPaymentSuccessful($order->fresh(['items', 'customer'])));
     }
 
     protected function handlePaymentIntentProcessing($paymentIntent, string $eventId): void

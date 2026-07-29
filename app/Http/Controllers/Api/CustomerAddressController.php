@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
+use App\Events\CustomerRegistered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -120,6 +121,7 @@ class CustomerAddressController extends Controller
             'status' => 1,
         ]);
 
+        event(new CustomerRegistered($customer));
         Auth::guard('customer')->login($customer);
         session()->put('customer_id', $customer->id);
 
@@ -169,6 +171,7 @@ class CustomerAddressController extends Controller
             'label' => 'nullable|string|max:50',
             'contact_name' => 'required|string|max:255',
             'phone' => 'required|string|max:50',
+            'email' => ['nullable', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
             'address_line_1' => 'required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
             'suburb' => 'nullable|string|max:100',
@@ -231,6 +234,7 @@ class CustomerAddressController extends Controller
             'label' => 'nullable|string|max:50',
             'contact_name' => 'required|string|max:255',
             'phone' => 'required|string|max:50',
+            'email' => ['nullable', 'email', 'regex:/^[^\s@\/]+@[^\s@\/]+\.[^\s@\/]+$/'],
             'address_line_1' => 'required|string|max:255',
             'address_line_2' => 'nullable|string|max:255',
             'suburb' => 'nullable|string|max:100',

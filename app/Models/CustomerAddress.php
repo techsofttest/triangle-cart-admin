@@ -14,6 +14,7 @@ class CustomerAddress extends Model
         'label',
         'contact_name',
         'phone',
+        'email',
         'address_line_1',
         'address_line_2',
         'suburb',

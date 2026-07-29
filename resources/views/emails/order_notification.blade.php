@@ -1,6 +1,6 @@
 @extends('emails.layouts.master')
 
-@section('title', 'New Quote Request - ' . config('app.name', 'Bell And John'))
+@section('title', 'New Quote Request - ' . config('app.name'))
 
 @section('content')
     <h2>New Quote Request Received</h2>

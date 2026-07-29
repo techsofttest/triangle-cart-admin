@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerAddress;
 use App\Models\Order;
+use App\Events\PasswordResetCompleted;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,6 +58,8 @@ class CustomerDashboardController extends Controller
 
         $user->password = $validated['new_password'];
         $user->save();
+
+        event(new PasswordResetCompleted($user, now()->toDateTimeString()));
 
         return response()->json(['message' => 'Password updated successfully.']);
     }
