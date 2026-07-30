@@ -89,6 +89,13 @@ class CustomerAddressController extends Controller
             return response()->json(['message' => 'Invalid email or password'], 422);
         }
 
+        if (!$customer->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Please verify your email address to complete your account creation. Check your inbox for the verification link.',
+                'email_not_verified' => true,
+            ], 403);
+        }
+
         Auth::guard('customer')->login($customer);
         session()->put('customer_id', $customer->id);
 
@@ -122,16 +129,11 @@ class CustomerAddressController extends Controller
         ]);
 
         event(new CustomerRegistered($customer));
-        Auth::guard('customer')->login($customer);
-        session()->put('customer_id', $customer->id);
 
         return response()->json([
-            'id' => $customer->id,
-            'name' => $customer->name,
-            'email' => $customer->email,
-            'phone' => $customer->phone,
-            'isLoggedIn' => true
-        ]);
+            'message' => 'Account created successfully! Please check your email to verify your account before logging in.',
+            'isLoggedIn' => false,
+        ], 201);
     }
 
     /**
