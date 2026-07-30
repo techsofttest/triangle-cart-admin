@@ -13,7 +13,7 @@ class CustomerOrderPaidMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Order payment received - ' . $this->order->order_number)
+        return $this->subject('Order Placed & Payment Successful - ' . $this->order->order_number)
             ->view('emails.order_paid_customer', ['order' => $this->order]);
     }
 }

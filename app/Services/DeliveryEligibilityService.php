@@ -18,7 +18,7 @@ class DeliveryEligibilityService
         $items = $this->resolveProducts($cartItems);
 
         foreach ($items as $item) {
-            if ((! $item->allows_courier || $item->requires_direct_delivery) && ! $serviceable) {
+            if (! $item->allows_courier && ! $serviceable) {
                 return [
                     'valid' => false,
                     'message' => "Delivery not available for the selected postcode",
