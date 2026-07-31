@@ -1,5 +1,5 @@
 # Checkout Improvements & Direct Delivery Implementation
-
+1
 ## Objective
 
 Enhance the checkout experience by implementing Google Maps Address Autocomplete as the mandatory address selection method, integrating Direct Delivery logic, improving delivery slot selection, and resolving the current checkout issues.
