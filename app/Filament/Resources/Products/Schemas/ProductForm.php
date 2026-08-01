@@ -202,23 +202,11 @@ class ProductForm
             Section::make('Product Media')
                 ->schema([
                     FileUpload::make('featured_image')
-    ->disk('public')
-    ->directory('products')
-    ->image()
-    ->preserveFilenames()
-    ->saveUploadedFileUsing(function ($file, $get) {
-
-        $path = $file->storeAs(
-            'products',
-            $file->getClientOriginalName(),
-            'public'
-        );
-
-        app(ImageCompressionService::class)
-            ->compress('public', $path);
-
-        return $path;
-    }),
+                        ->label('Featured Image')
+                        ->disk('public')
+                        ->image()
+                        ->directory('products')
+                        ->preserveFilenames(),
 
                     Repeater::make('images')
                         ->label('Additional Images')
