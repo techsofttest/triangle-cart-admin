@@ -27,6 +27,7 @@
         })->toArray();
     @endphp
 
+    <div class="delivery-session-detail-root">
     <div class="delivery-session-detail-wrapper" style="display: flex; flex-direction: column; gap: 1.5rem;">
         
         <!-- Header Info / Stats Row -->
@@ -153,8 +154,9 @@
         </div>
 
     </div>
+    </div>
 
-    <!-- Styles for Dark Mode / CSS variables -->
+    @push('styles')
     <style>
         :root {
             --card-bg: #ffffff;
@@ -171,7 +173,9 @@
             border-color: var(--border-color) !important;
         }
     </style>
+    @endpush
 
+    @push('scripts')
     <script>
         window.routeMapData = {
             origin: {
@@ -358,5 +362,6 @@
     </script>
 
     <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=geometry&callback=initMap&v=weekly" async defer></script>
+    @endpush
 
 </x-filament::page>
