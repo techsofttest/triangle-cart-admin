@@ -203,7 +203,26 @@ class ProductForm
                         ->label('Featured Image')
                         ->disk('public')
                         ->image()
+                        ->directory('products')
                         ->preserveFilenames(),
+
+                    Repeater::make('images')
+                        ->label('Additional Images')
+                        ->relationship('images')
+                        ->schema([
+                            FileUpload::make('image_path')
+                                ->label('Image')
+                                ->disk('public')
+                                ->image()
+                                ->directory('products')
+                                ->preserveFilenames(),
+                        ])
+                        ->addActionLabel('Add Image')
+                        ->itemLabel('Image')
+                        ->defaultItems(0)
+                        ->reorderable(false)
+                        ->collapsible()
+                        ->columnSpanFull(),
 
                 ])->columnSpanFull(),
 
