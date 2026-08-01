@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Services\ImageCompressionService;
+
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -200,11 +202,23 @@ class ProductForm
             Section::make('Product Media')
                 ->schema([
                     FileUpload::make('featured_image')
-                        ->label('Featured Image')
-                        ->disk('public')
-                        ->image()
-                        ->directory('products')
-                        ->preserveFilenames(),
+    ->disk('public')
+    ->directory('products')
+    ->image()
+    ->preserveFilenames()
+    ->saveUploadedFileUsing(function ($file, $get) {
+
+        $path = $file->storeAs(
+            'products',
+            $file->getClientOriginalName(),
+            'public'
+        );
+
+        app(ImageCompressionService::class)
+            ->compress('public', $path);
+
+        return $path;
+    }),
 
                     Repeater::make('images')
                         ->label('Additional Images')
