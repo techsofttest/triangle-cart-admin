@@ -20,7 +20,10 @@ class CustomerWishlistController extends Controller
 
     private function formatProduct(Product $product): array
     {
-        $inStockVariants = $product->variants->filter(fn ($variant) => (int) $variant->stock > 0);
+        $inStockVariants = $product->variants
+            ->filter(fn ($variant) => (int) $variant->stock > 0)
+            ->sortBy(fn ($variant) => [(float) $variant->selling_price, (string) ($variant->sku ?? '')])
+            ->values();
         $variant = $inStockVariants->first();
         
         $price = $variant ? (float) $variant->selling_price : 0.0;

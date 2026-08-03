@@ -3,6 +3,8 @@
 namespace Tests\Unit;
 
 use App\Imports\ProductExcelImport;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class ProductExcelImportTest extends TestCase
@@ -65,5 +67,31 @@ class ProductExcelImportTest extends TestCase
         $result = $method->invoke($service, 45292);
 
         $this->assertSame('2024-01-01', $result);
+    }
+
+    public function test_ensure_variant_columns_adds_missing_columns(): void
+    {
+        Schema::dropIfExists('product_variants');
+        Schema::create('product_variants', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('product_id');
+            $table->string('sku')->nullable();
+            $table->timestamps();
+        });
+
+        $service = new \App\Services\Import\ProductImportService(
+            new \App\Services\Import\BrandResolver(),
+            new \App\Services\Import\CategoryResolver(),
+            new \App\Services\Import\ProductResolver(),
+            new \App\Services\Import\VariantResolver(),
+            new \App\Services\Import\ImageResolver(),
+            new \App\Services\Import\PriceCalculator(),
+            new \App\Services\Import\ImportLogger()
+        );
+
+        $service->ensureVariantColumns();
+
+        $this->assertTrue(Schema::hasColumn('product_variants', 'tax_percentage'));
+        $this->assertTrue(Schema::hasColumn('product_variants', 'expiry_date'));
     }
 }

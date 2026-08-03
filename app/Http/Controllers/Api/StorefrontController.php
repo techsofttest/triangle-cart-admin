@@ -36,7 +36,10 @@ class StorefrontController extends Controller
 
     private function productPayload(Product $product): array
     {
-        $inStockVariants = $product->variants->filter(fn ($variant) => (int) $variant->stock > 0);
+        $inStockVariants = $product->variants
+            ->filter(fn ($variant) => (int) $variant->stock > 0)
+            ->sortBy(fn ($variant) => [(float) $variant->selling_price, (string) ($variant->sku ?? '')])
+            ->values();
         $variant = $inStockVariants->first();
         $price = $variant ? (float) $variant->selling_price : 0.0;
         $reviews = $product->reviews;
@@ -694,7 +697,7 @@ class StorefrontController extends Controller
                     ->whereIn('category_id', $categoryIds)
                     ->where('is_active', true)
                     ->latest()
-                    ->take(4)
+                    ->take(5)
                     ->get();
 
                 return [

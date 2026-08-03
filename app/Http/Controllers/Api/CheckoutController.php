@@ -197,9 +197,16 @@ class CheckoutController extends Controller
                 }
 
                 if (!$variant && $product) {
-                    // Ensure variants are loaded and try to pick an in-stock variant first
+                    // Ensure variants are loaded and prefer the cheapest available variant by default
                     $product->loadMissing('variants');
-                    $variant = $product->variants->first(fn($v) => (int) $v->stock > 0) ?? $product->variants->first();
+                    $variant = $product->variants
+                        ->filter(fn ($v) => (int) $v->stock > 0)
+                        ->sortBy(fn ($v) => [(float) $v->selling_price, (string) ($v->sku ?? '')])
+                        ->values()
+                        ->first() ?? $product->variants
+                            ->sortBy(fn ($v) => [(float) $v->selling_price, (string) ($v->sku ?? '')])
+                            ->values()
+                            ->first();
                     if ($variant) {
                         $variantId = $variant->id;
                     }
