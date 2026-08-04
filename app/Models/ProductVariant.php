@@ -16,6 +16,7 @@ class ProductVariant extends Model
         'tax_percentage',
         'expiry_date',
         'selling_price',
+        'striked_price',
         'stock',
         'stock_in_order',
     ];
@@ -25,6 +26,7 @@ class ProductVariant extends Model
         'margin' => 'decimal:2',
         'tax_percentage' => 'decimal:2',
         'selling_price' => 'decimal:2',
+        'striked_price' => 'decimal:2',
     ];
 
     public function product()

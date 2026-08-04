@@ -41,6 +41,7 @@ class ProductExcelImport implements ToArray, WithHeadingRow, WithChunkReading
             'buying_price'        => $excelRow['buying_price'] ?? null,
             'gst'                 => $excelRow['gst'] ?? null,
             'margin'              => $excelRow['margin'] ?? $excelRow['margin_percent'] ?? null,
+            'striked_price'       => $excelRow['striked_price'] ?? $excelRow['striked_price'] ?? null,
             'stock'               => $excelRow['stock'] ?? 0,
             'key_features'        => $excelRow['key_features'] ?? null,
             'product_description' => $excelRow['product_description'] ?? null,

@@ -188,6 +188,14 @@ class ProductForm
                                     ->numeric()
                                     ->default(0)
                                     ->prefix('₹'),
+
+                                TextInput::make('striked_price')
+                                    ->label('Striked Price')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->prefix('₹')
+                                    ->nullable()
+                                    ->helperText('Optional: Show original price with strikethrough'),
                             ]),
                         ])
                         ->addActionLabel('Add Variant')

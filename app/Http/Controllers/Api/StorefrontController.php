@@ -30,6 +30,7 @@ class StorefrontController extends Controller
             'unit' => $variant->unit,
             'size' => $variant->size,
             'price' => (float) $variant->selling_price,
+            'strikedPrice' => $variant->striked_price ? (float) $variant->striked_price : null,
             'stock' => (int) $variant->stock,
         ];
     }
@@ -42,6 +43,7 @@ class StorefrontController extends Controller
             ->values();
         $variant = $inStockVariants->first();
         $price = $variant ? (float) $variant->selling_price : 0.0;
+        $strikedPrice = $variant && $variant->striked_price ? (float) $variant->striked_price : null;
         $reviews = $product->reviews;
         $rating = round((float) ($reviews->avg('review_rating') ?: 0), 1);
 
@@ -63,6 +65,7 @@ class StorefrontController extends Controller
             'featured_image' => $this->assetUrl($product->featured_image),
             'gallery' => $product->images->map(fn ($image) => $this->assetUrl($image->image_path))->values(),
             'price' => $price,
+            'strikedPrice' => $strikedPrice,
             'min_price' => (float) ($product->min_price ?? $price),
             'max_price' => (float) ($product->max_price ?? $price),
             'is_featured' => (bool) $product->is_featured,

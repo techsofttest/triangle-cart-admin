@@ -49,6 +49,36 @@ class ProductExcelImportTest extends TestCase
         $this->assertSame('2026-12-31', $mapped['expiry_date']);
     }
 
+    public function test_map_row_includes_striked_price(): void
+    {
+        $import = new ProductExcelImport();
+        $method = new \ReflectionMethod($import, 'mapRow');
+        $method->setAccessible(true);
+
+        $mapped = $method->invoke($import, [
+            'product_sku' => 'SKU-003',
+            'product_name' => 'Test Product 3',
+            'brand' => 'Test Brand',
+            'category' => 'Food',
+            'sub_category' => 'Spices',
+            'variant_sku' => 'VAR-003',
+            'striked_price' => 199.99,
+        ]);
+
+        $this->assertSame(199.99, $mapped['striked_price']);
+    }
+
+    public function test_normalize_image_value_removes_folder_paths(): void
+    {
+        $resolver = new \App\Services\Import\ImageResolver();
+        $method = new \ReflectionMethod($resolver, 'normalizeImageValue');
+        $method->setAccessible(true);
+
+        $this->assertSame('apple.jpg', $method->invoke($resolver, 'apple.jpg'));
+        $this->assertSame('apple.jpg', $method->invoke($resolver, 'products/apple.jpg'));
+        $this->assertSame('apple.jpg', $method->invoke($resolver, '/products/apple.jpg'));
+    }
+
     public function test_parse_date_value_supports_excel_serial_dates(): void
     {
         $service = new \App\Services\Import\ProductImportService(

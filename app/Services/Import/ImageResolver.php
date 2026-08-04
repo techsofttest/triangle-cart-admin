@@ -44,46 +44,84 @@ class ImageResolver
      */
     public function resolve(string $imageName): ?string
     {
-        $imageName = trim($imageName);
+        $normalizedName = $this->normalizeImageValue($imageName);
 
-        if (empty($imageName)) {
+        if ($normalizedName === '') {
             return null;
         }
 
-        // Try lookup map first (case-insensitive)
-        if (!empty($this->lookup)) {
-            $key = strtolower($imageName);
-            if (isset($this->lookup[$key])) {
-                $filePath = $this->lookup[$key];
-                if (File::exists($filePath)) {
-                    $ext = '.' . pathinfo($filePath, PATHINFO_EXTENSION);
-                    $destFilename = $imageName . $ext;
+        $candidateNames = [$normalizedName];
+        $pathInfo = pathinfo($normalizedName);
+        if (!empty($pathInfo['filename']) && strtolower($pathInfo['filename']) !== strtolower($normalizedName)) {
+            $candidateNames[] = $pathInfo['filename'];
+        }
+
+        $candidates = [];
+        foreach ($candidateNames as $candidateName) {
+            $extension = pathinfo($candidateName, PATHINFO_EXTENSION);
+            if ($extension !== '') {
+                $candidates[] = $candidateName;
+                continue;
+            }
+
+            foreach ($this->extensions as $ext) {
+                $candidates[] = $candidateName . $ext;
+            }
+        }
+
+        $candidates = array_values(array_unique($candidates));
+
+        foreach ($candidates as $candidateName) {
+            if (!empty($this->lookup)) {
+                $key = strtolower($candidateName);
+                if (isset($this->lookup[$key])) {
+                    $filePath = $this->lookup[$key];
+                    if (File::exists($filePath)) {
+                        $destFilename = $this->buildDestinationFilename($normalizedName, pathinfo($filePath, PATHINFO_EXTENSION));
+                        $destPath = $this->storagePath . '/' . $destFilename;
+
+                        Storage::disk('public')->put($destPath, File::get($filePath));
+
+                        return $destPath;
+                    }
+                }
+            }
+
+            foreach (File::files($this->searchDirectory) as $file) {
+                if (strtolower($file->getFilename()) === strtolower($candidateName)) {
+                    $destFilename = $this->buildDestinationFilename($normalizedName, $file->getExtension());
                     $destPath = $this->storagePath . '/' . $destFilename;
 
-                    Storage::disk('public')->put($destPath, File::get($filePath));
+                    Storage::disk('public')->put($destPath, File::get($file->getRealPath()));
 
                     return $destPath;
                 }
             }
         }
 
-        foreach (File::files($this->searchDirectory) as $file) {
-			if (
-				strtolower(pathinfo($file->getFilename(), PATHINFO_FILENAME))
-				=== strtolower($imageName)
-			) {
-				$ext = '.' . strtolower($file->getExtension());
-
-				$destFilename = $imageName . $ext;
-				$destPath = $this->storagePath . '/' . $destFilename;
-
-				Storage::disk('public')->put($destPath, File::get($file->getRealPath()));
-
-				return $destPath;
-			}
-		}
-
         return null;
+    }
+
+    protected function normalizeImageValue(string $imageName): string
+    {
+        $trimmed = trim($imageName);
+
+        if ($trimmed === '') {
+            return '';
+        }
+
+        return ltrim(basename(str_replace('\\', '/', $trimmed)), '/');
+    }
+
+    protected function buildDestinationFilename(string $requestedName, string $foundExtension): string
+    {
+        $requestedExtension = pathinfo($requestedName, PATHINFO_EXTENSION);
+
+        if ($requestedExtension !== '') {
+            return $requestedName;
+        }
+
+        return $requestedName . '.' . strtolower($foundExtension);
     }
 
     /**

@@ -102,6 +102,44 @@ class OrdersTable
                 \Filament\Tables\Filters\Filter::make('unassigned')
                     ->label('Unassigned Orders')
                     ->query(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->whereNull('assigned_staff_id')),
+                \Filament\Tables\Filters\Filter::make('from_date')
+                    ->label('From Date')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('from_date')
+                            ->label('From Date')
+                            ->placeholder('Select start date'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): void {
+                        if (isset($data['from_date'])) {
+                            $query->whereDate('created_at', '>=', $data['from_date']);
+                        }
+                    }),
+                \Filament\Tables\Filters\Filter::make('to_date')
+                    ->label('To Date')
+                    ->form([
+                        \Filament\Forms\Components\DatePicker::make('to_date')
+                            ->label('To Date')
+                            ->placeholder('Select end date'),
+                    ])
+                    ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): void {
+                        if (isset($data['to_date'])) {
+                            $query->whereDate('created_at', '<=', $data['to_date']);
+                        }
+                    }),
+                \Filament\Tables\Filters\SelectFilter::make('delivery_slot_id')
+                    ->label('Delivery Slot')
+                    ->options(function () {
+                        return \App\Models\TimeSlot::with('deliveryDate')
+                            ->get()
+                            ->mapWithKeys(function ($slot) {
+                                $date = $slot->deliveryDate?->date ?? '';
+                                $timeRange = $slot->start_time . ' - ' . $slot->end_time;
+                                $label = $date ? "{$date} ({$timeRange})" : $timeRange;
+                                return [$slot->id => $label];
+                            })
+                            ->toArray();
+                    })
+                    ->searchable(),
             ])
             ->recordActions([
                 ViewAction::make(),
@@ -130,6 +168,17 @@ class OrdersTable
                     }),
             ])
             ->toolbarActions([
+                \Filament\Actions\Action::make('export')
+                    ->label('Export')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->action(function ($livewire) {
+                        $query = $livewire->getFilteredTableQuery();
+
+                        return \Maatwebsite\Excel\Facades\Excel::download(
+                            new \App\Exports\OrdersExport($query),
+                            'orders-' . now()->format('Y-m-d') . '.xlsx'
+                        );
+                    }),
                 BulkActionGroup::make([
                     \Filament\Actions\BulkAction::make('bulkAssignStaff')
                         ->label('Assign Staff')

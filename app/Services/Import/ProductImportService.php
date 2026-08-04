@@ -3,6 +3,8 @@
 namespace App\Services\Import;
 
 use App\Models\ProductImage;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class ProductImportService
 {
@@ -60,6 +62,7 @@ class ProductImportService
      */
     public function processRow(array $row): void
     {
+        $this->ensureVariantColumns();
         $this->warmCaches();
         $this->logger->incrementTotalRows();
 
@@ -80,7 +83,7 @@ class ProductImportService
             // Parse featured flag
             $isFeatured = $this->parseTruthy($row['featured'] ?? null);
 
-            // Resolve Featured Image
+            // Resolve Featured Image only when a replacement image is actually found.
             $featuredImagePath = null;
             if (!empty($row['featured_image'])) {
                 $featuredImagePath = $this->imageResolver->resolve($row['featured_image']);
@@ -128,6 +131,11 @@ class ProductImportService
             // calculation because the margin from Excel already includes GST.
             $sellingPrice = $this->priceCalculator->calculate($buyingPrice, $marginPercent);
 
+            $strikedPrice = null;
+            if (array_key_exists('striked_price', $row) && $row['striked_price'] !== null && $row['striked_price'] !== '') {
+                $strikedPrice = round((float) $row['striked_price'], 2);
+            }
+
             // Resolve Variant
             $variantAttributes = [
                 'product_id' => $product->id,
@@ -139,6 +147,7 @@ class ProductImportService
                 'tax_percentage' => $gstPercent,
                 'expiry_date' => $this->parseDateValue($row['expiry_date'] ?? null),
                 'selling_price' => $sellingPrice,
+                'striked_price' => $strikedPrice,
                 'stock' => (int) ($row['stock'] ?? 0),
             ];
 
@@ -240,6 +249,35 @@ class ProductImportService
         }
 
         return null;
+    }
+
+    public function ensureVariantColumns(): void
+    {
+        if (! Schema::hasTable('product_variants')) {
+            return;
+        }
+
+        Schema::table('product_variants', function (Blueprint $table) {
+            if (! Schema::hasColumn('product_variants', 'tax_percentage')) {
+                $table->decimal('tax_percentage', 10, 2)->nullable()->after('margin');
+            }
+
+            if (! Schema::hasColumn('product_variants', 'expiry_date')) {
+                $table->date('expiry_date')->nullable()->after('tax_percentage');
+            }
+
+            if (! Schema::hasColumn('product_variants', 'selling_price')) {
+                $table->decimal('selling_price', 10, 2)->nullable()->after('expiry_date');
+            }
+
+            if (! Schema::hasColumn('product_variants', 'striked_price')) {
+                $table->decimal('striked_price', 10, 2)->nullable()->after('selling_price');
+            }
+
+            if (! Schema::hasColumn('product_variants', 'stock')) {
+                $table->integer('stock')->default(0)->after('striked_price');
+            }
+        });
     }
 
     protected function validateRow(array $row): void

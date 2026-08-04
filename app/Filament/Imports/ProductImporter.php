@@ -58,6 +58,9 @@ class ProductImporter extends Importer
             ImportColumn::make('selling_price')
                 ->label('Selling Price (ignored)'),
 
+            ImportColumn::make('striked_price')
+                ->label('Striked Price'),
+
             ImportColumn::make('stock')
                 ->label('Stock'),
 

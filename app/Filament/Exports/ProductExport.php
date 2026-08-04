@@ -36,6 +36,7 @@ class ProductExport implements FromQuery, WithHeadings, WithMapping
             'GST',
             'Margin %',
             'Selling Price',
+            'Striked Price',
             'Stock',
             'Key Features',
             'Product Description',
@@ -54,7 +55,12 @@ class ProductExport implements FromQuery, WithHeadings, WithMapping
         $product = $variant->product;
         [$categoryName, $subCategoryName] = $this->resolveCategoryFields($product?->category);
 
-        $additionalImages = $product?->images?->pluck('image_path')->filter()->join(', ');
+        $featuredImage = $product?->featured_image ? basename((string) $product->featured_image) : null;
+        $additionalImages = $product?->images?->pluck('image_path')
+            ->filter()
+            ->map(fn ($imagePath) => basename((string) $imagePath))
+            ->filter()
+            ->join(', ');
 
         return [
             $product?->sku,
@@ -70,11 +76,12 @@ class ProductExport implements FromQuery, WithHeadings, WithMapping
             $variant->tax_percentage,
             $variant->margin,
             $variant->selling_price,
+            $variant->striked_price,
             $variant->stock,
             $product?->key_features,
             $product?->description,
             $variant->expiry_date,
-            $product?->featured_image,
+            $featuredImage,
             $additionalImages,
             $product?->is_featured ? 'yes' : 'no',
             $product?->meta_title,
