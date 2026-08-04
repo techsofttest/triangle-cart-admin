@@ -534,6 +534,7 @@ class StorefrontController extends Controller
             ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0));
 
         $categoryIds = null;
+        $subcategorySlug = $request->string('sub_category')->toString();
 
         if ($categorySlug = $request->string('category')->toString()) {
             $category = Category::query()->where('slug', $categorySlug)->first();
@@ -545,6 +546,29 @@ class StorefrontController extends Controller
 
         $query = (clone $baseQuery)
             ->when($categoryIds, fn ($query) => $query->whereIn('category_id', $categoryIds));
+
+        if ($subcategorySlug !== '') {
+            $query->where(function ($q) use ($subcategorySlug) {
+                $q->whereHas('category', function ($categoryQuery) use ($subcategorySlug) {
+                    $categoryQuery->where(function ($innerQuery) use ($subcategorySlug) {
+                        $innerQuery->where('slug', $subcategorySlug)
+                            ->orWhere('name', 'like', '%' . $subcategorySlug . '%');
+                    });
+                })
+                ->orWhereHas('category.parent', function ($parentQuery) use ($subcategorySlug) {
+                    $parentQuery->where(function ($innerQuery) use ($subcategorySlug) {
+                        $innerQuery->where('slug', $subcategorySlug)
+                            ->orWhere('name', 'like', '%' . $subcategorySlug . '%');
+                    });
+                })
+                ->orWhereHas('category', function ($categoryQuery) use ($subcategorySlug) {
+                    $categoryQuery->whereNotNull('parent_id')->where(function ($innerQuery) use ($subcategorySlug) {
+                        $innerQuery->where('slug', $subcategorySlug)
+                            ->orWhere('name', 'like', '%' . $subcategorySlug . '%');
+                    });
+                });
+            });
+        }
 
         if ($brandSlug = $request->string('brand')->toString()) {
             $query->whereHas('brand', fn ($q) => $q->where('slug', $brandSlug));
