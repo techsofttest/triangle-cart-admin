@@ -80,18 +80,9 @@ class ProductImportService
             // Parse delivery flags
             $allowsCourier = $this->parseTruthy($row['courier'] ?? null);
 
-            // Parse featured flag
-            $isFeatured = $this->parseTruthy($row['featured'] ?? null);
-
-            // Resolve Featured Image only when a replacement image is actually found.
+            // Featured status and image are managed by admin in the product UI.
+            // Keep import data focused on core product and variant attributes.
             $featuredImagePath = null;
-            if (!empty($row['featured_image'])) {
-                $featuredImagePath = $this->imageResolver->resolve($row['featured_image']);
-                if ($featuredImagePath === null) {
-                    $this->logger->addWarning("Missing featured image: {$row['featured_image']} for product {$row['product_sku']}");
-                    $this->logger->incrementMissingImages();
-                }
-            }
 
             // Resolve Product
             $productAttributes = [
@@ -102,7 +93,6 @@ class ProductImportService
                 'supplier_code' => $row['supplier_code'] ?? null,
                 'key_features' => $row['key_features'] ?? null,
                 'description' => $row['product_description'] ?? null,
-                'is_featured' => $isFeatured,
                 'is_active' => true,
                 'requires_direct_delivery' => true,
                 'allows_courier' => $allowsCourier,
@@ -238,7 +228,18 @@ class ProductImportService
             }
 
             if (preg_match('/^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}$/', $trimmed)) {
-                return \Carbon\Carbon::parse($trimmed)->format('Y-m-d');
+                $parsed = \Carbon\Carbon::createFromFormat('d/m/Y', $trimmed);
+                if ($parsed === false) {
+                    $parsed = \Carbon\Carbon::createFromFormat('d-m-Y', $trimmed);
+                }
+                if ($parsed === false) {
+                    $parsed = \Carbon\Carbon::createFromFormat('d.m.Y', $trimmed);
+                }
+                if ($parsed === false) {
+                    $parsed = \Carbon\Carbon::parse($trimmed);
+                }
+
+                return $parsed->format('Y-m-d');
             }
 
             if (preg_match('/^\d+$/', $trimmed)) {

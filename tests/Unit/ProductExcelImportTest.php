@@ -99,6 +99,26 @@ class ProductExcelImportTest extends TestCase
         $this->assertSame('2024-01-01', $result);
     }
 
+    public function test_parse_date_value_supports_day_month_year_strings(): void
+    {
+        $service = new \App\Services\Import\ProductImportService(
+            new \App\Services\Import\BrandResolver(),
+            new \App\Services\Import\CategoryResolver(),
+            new \App\Services\Import\ProductResolver(),
+            new \App\Services\Import\VariantResolver(),
+            new \App\Services\Import\ImageResolver(),
+            new \App\Services\Import\PriceCalculator(),
+            new \App\Services\Import\ImportLogger()
+        );
+
+        $method = new \ReflectionMethod($service, 'parseDateValue');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($service, '21/03/2027');
+
+        $this->assertSame('2027-03-21', $result);
+    }
+
     public function test_ensure_variant_columns_adds_missing_columns(): void
     {
         Schema::dropIfExists('product_variants');

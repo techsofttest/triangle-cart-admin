@@ -88,8 +88,6 @@ class ProductsImport implements ToCollection, WithStartRow
                 'key_features'     => $keyFeatures ?: null,
                 'description'      => $description ?: null,
                 'expiry_date'      => $expiryDate ? date('Y-m-d', strtotime($expiryDate)) : null,
-                'featured_image'   => $featuredImage ?: null,
-                'is_featured'      => $isFeatured == '1' || strtolower($isFeatured) == 'yes',
                 'meta_title'       => $seoTitle ?: null,
                 'meta_description' => $seoDescription ?: null,
                 'is_active'        => true,

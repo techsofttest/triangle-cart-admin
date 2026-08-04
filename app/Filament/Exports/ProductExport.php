@@ -41,9 +41,7 @@ class ProductExport implements FromQuery, WithHeadings, WithMapping
             'Key Features',
             'Product Description',
             'Expiry Date',
-            'Featured Image',
             'Additional Images',
-            'Featured',
             'SEO Title',
             'SEO Description',
             'Courier',
@@ -55,7 +53,6 @@ class ProductExport implements FromQuery, WithHeadings, WithMapping
         $product = $variant->product;
         [$categoryName, $subCategoryName] = $this->resolveCategoryFields($product?->category);
 
-        $featuredImage = $product?->featured_image ? basename((string) $product->featured_image) : null;
         $additionalImages = $product?->images?->pluck('image_path')
             ->filter()
             ->map(fn ($imagePath) => basename((string) $imagePath))
@@ -81,9 +78,7 @@ class ProductExport implements FromQuery, WithHeadings, WithMapping
             $product?->key_features,
             $product?->description,
             $variant->expiry_date,
-            $featuredImage,
             $additionalImages,
-            $product?->is_featured ? 'yes' : 'no',
             $product?->meta_title,
             $product?->meta_description,
             $product?->allows_courier ? 'yes' : 'no',

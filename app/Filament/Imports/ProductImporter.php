@@ -73,14 +73,8 @@ class ProductImporter extends Importer
             ImportColumn::make('expiry_date')
                 ->label('Expiry Date'),
 
-            ImportColumn::make('featured_image')
-                ->label('Featured Image'),
-
             ImportColumn::make('additional_images')
                 ->label('Additional Images'),
-
-            ImportColumn::make('featured')
-                ->label('Featured'),
 
             ImportColumn::make('seo_title')
                 ->label('SEO Title'),
