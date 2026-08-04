@@ -73,9 +73,12 @@ class ProductImportService
             // Resolve Brand
             $brand = $this->brandResolver->resolve($row['brand']);
 
-            // Resolve Category + Subcategory
+            // Resolve Category + optional Subcategory
             $parentCategory = $this->categoryResolver->resolveParent($row['category']);
-            $subCategory = $this->categoryResolver->resolveChild($row['sub_category'], $parentCategory);
+            $subCategoryName = trim((string) ($row['sub_category'] ?? ''));
+            $category = $subCategoryName !== ''
+                ? $this->categoryResolver->resolveChild($subCategoryName, $parentCategory)
+                : $parentCategory;
 
             // Parse delivery flags
             $allowsCourier = $this->parseTruthy($row['courier'] ?? null);
@@ -89,7 +92,7 @@ class ProductImportService
                 'sku' => trim($row['product_sku']),
                 'name' => trim($row['product_name']),
                 'brand_id' => $brand->id,
-                'category_id' => $subCategory->id,
+                'category_id' => $category->id,
                 'supplier_code' => $row['supplier_code'] ?? null,
                 'key_features' => $row['key_features'] ?? null,
                 'description' => $row['product_description'] ?? null,
@@ -228,25 +231,37 @@ class ProductImportService
             }
 
             if (preg_match('/^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}$/', $trimmed)) {
-                $parsed = \Carbon\Carbon::createFromFormat('d/m/Y', $trimmed);
-                if ($parsed === false) {
-                    $parsed = \Carbon\Carbon::createFromFormat('d-m-Y', $trimmed);
-                }
-                if ($parsed === false) {
-                    $parsed = \Carbon\Carbon::createFromFormat('d.m.Y', $trimmed);
-                }
-                if ($parsed === false) {
-                    $parsed = \Carbon\Carbon::parse($trimmed);
+                $formats = ['d/m/Y', 'd-m-Y', 'd.m.Y', 'Y/m/d', 'Y-m-d', 'Y.m.d'];
+                $parsed = null;
+
+                foreach ($formats as $format) {
+                    $candidate = \Carbon\Carbon::createFromFormat('!' . $format, $trimmed);
+                    if ($candidate !== false) {
+                        $parsed = $candidate;
+                        break;
+                    }
                 }
 
-                return $parsed->format('Y-m-d');
+                if ($parsed instanceof \DateTimeInterface) {
+                    return $parsed->format('Y-m-d');
+                }
+
+                try {
+                    return \Carbon\Carbon::parse($trimmed)->format('Y-m-d');
+                } catch (\Throwable $e) {
+                    return null;
+                }
             }
 
             if (preg_match('/^\d+$/', $trimmed)) {
                 return \Carbon\Carbon::createFromTimestamp((int) $trimmed)->format('Y-m-d');
             }
 
-            return \Carbon\Carbon::parse($trimmed)->format('Y-m-d');
+            try {
+                return \Carbon\Carbon::parse($trimmed)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                return null;
+            }
         }
 
         return null;
@@ -283,7 +298,7 @@ class ProductImportService
 
     protected function validateRow(array $row): void
     {
-        $required = ['product_sku', 'product_name', 'brand', 'category', 'sub_category', 'variant_sku', 'buying_price'];
+        $required = ['product_sku', 'product_name', 'brand', 'category', 'variant_sku', 'buying_price'];
 
         foreach ($required as $field) {
             if (empty($row[$field])) {
