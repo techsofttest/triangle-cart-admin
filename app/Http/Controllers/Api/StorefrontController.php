@@ -370,26 +370,25 @@ class StorefrontController extends Controller
         // Combine main categories first, then child categories
         $allCategories = $mainCategories->concat($childCategories);
 
-        return response()->json($allCategories->map(function (Category $category) {
-            return [
-                'id' => $category->id,
-                'name' => $category->name,
-                'slug' => $category->slug,
-                'image_url' => $this->getCategoryImageUrl($category),
-                'icon_url' => $this->assetUrl($category->icon),
-                'product_count' => $category->products_count,
-                'children' => $category->children?->map(fn (Category $child) => [
-                    'id' => $child->id,
-                    'name' => $child->name,
-                    'slug' => $child->slug,
-                    'parent_id' => $child->parent_id,
-                    'parent_slug' => $child->parent?->slug,
-                    'href' => '/category/' . ($child->parent?->slug ? $child->parent->slug . '/' : '') . $child->slug,
-                    'image_url' => $this->getCategoryImageUrl($child),
-                    'icon_url' => $this->assetUrl($child->icon),
-                ])->values() ?? [],
-            ];
-        }));
+            return response()->json($allCategories->map(function (Category $category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'parent_id' => $category->parent_id,
+                    'image_url' => $this->getCategoryImageUrl($category),
+                    'icon_url' => $this->assetUrl($category->icon),
+                    'product_count' => $category->products_count,
+                    'children' => $category->children?->map(fn (Category $child) => [
+                        'id' => $child->id,
+                        'name' => $child->name,
+                        'slug' => $child->slug,
+                        'parent_id' => $child->parent_id,
+                        'image_url' => $this->getCategoryImageUrl($child),
+                        'icon_url' => $this->assetUrl($child->icon),
+                    ])->values() ?? [],
+                ];
+            }));
     }
 
     public function header(): JsonResponse
