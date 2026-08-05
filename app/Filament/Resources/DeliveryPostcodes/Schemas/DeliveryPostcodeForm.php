@@ -28,6 +28,12 @@ class DeliveryPostcodeForm
                             ->default(0)
                             ->prefix('AUD'),
 
+                        TextInput::make('free_shipping_threshold')
+                            ->label('Free Shipping Threshold')
+                            ->numeric()
+                            ->nullable()
+                            ->prefix('AUD')
+
                         /*TextInput::make('warehouse_id')
                             ->label('Warehouse ID')
                             ->numeric()

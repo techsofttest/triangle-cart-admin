@@ -119,13 +119,18 @@ class StorefrontController extends Controller
 
     private function categoryPayload(Category $category): array
     {
+        $parentSlug = $category->parent?->slug;
+
         return [
             'id' => $category->id,
             'name' => $category->name,
             'slug' => $category->slug,
+            'parent_id' => $category->parent_id,
+            'parent_name' => $category->parent?->name,
+            'parent_slug' => $parentSlug,
             'image_url' => $this->getCategoryImageUrl($category),
             'icon_url' => $this->assetUrl($category->icon),
-            'href' => '/category/' . $category->slug,
+            'href' => '/category/' . ($parentSlug ? $parentSlug . '/' : '') . $category->slug,
         ];
     }
 
@@ -377,6 +382,9 @@ class StorefrontController extends Controller
                     'id' => $child->id,
                     'name' => $child->name,
                     'slug' => $child->slug,
+                    'parent_id' => $child->parent_id,
+                    'parent_slug' => $child->parent?->slug,
+                    'href' => '/category/' . ($child->parent?->slug ? $child->parent->slug . '/' : '') . $child->slug,
                     'image_url' => $this->getCategoryImageUrl($child),
                     'icon_url' => $this->assetUrl($child->icon),
                 ])->values() ?? [],
@@ -405,7 +413,7 @@ class StorefrontController extends Controller
             'id' => $category->id,
             'name' => $category->name,
             'slug' => $category->slug,
-            'href' => '/category/' . $category->slug,
+            'href' => '/category/' . ($category->parent?->slug ? $category->parent->slug . '/' : '') . $category->slug,
             'image_url' => $this->getCategoryImageUrl($category),
             'icon_url' => $this->assetUrl($category->icon),
         ];

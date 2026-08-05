@@ -33,7 +33,7 @@ class ProductImporter extends Importer
 
             ImportColumn::make('sub_category')
                 ->label('Sub Category')
-                ->rules(['required', 'string']),
+                ->rules(['nullable', 'string']),
 
             ImportColumn::make('variant_sku')
                 ->label('Variant SKU')

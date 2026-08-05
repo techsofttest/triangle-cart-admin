@@ -62,8 +62,8 @@ class ProductForm
                                 $categories = Category::with('children')->whereNull('parent_id')->get();
                                 $options = [];
                                 foreach ($categories as $parent) {
-                                    // Group: parent name, options: children
                                     if ($parent->children->count() > 0) {
+                                        $options[$parent->name][$parent->id] = $parent->name;
                                         foreach ($parent->children as $child) {
                                             $options[$parent->name][$child->id] = $child->name;
                                         }

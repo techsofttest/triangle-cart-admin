@@ -6,10 +6,10 @@ use App\Models\Category;
 
 class CategoryResolver
 {
-    /** @var array<string, Category> Parent categories keyed by lowercase name */
+    /** @var array<string, Category> Parent categories keyed by normalized lowercase name */
     protected array $parentCache = [];
 
-    /** @var array<string, Category> Subcategories keyed by "parentId:lowercaseName" */
+    /** @var array<string, Category> Subcategories keyed by "parentId:normalizedLowercaseName" */
     protected array $childCache = [];
 
     /**
@@ -18,7 +18,7 @@ class CategoryResolver
     public function warmCache(): void
     {
         foreach (Category::all() as $category) {
-            $key = strtolower(trim($category->name));
+            $key = $this->normalizeName($category->name);
 
             if (is_null($category->parent_id)) {
                 $this->parentCache[$key] = $category;
@@ -37,14 +37,14 @@ class CategoryResolver
      */
     public function resolveParent(string $name): Category
     {
-        $key = strtolower(trim($name));
+        $normalized = $this->normalizeName($name);
 
-        if (isset($this->parentCache[$key])) {
-            return $this->parentCache[$key];
+        if (isset($this->parentCache[$normalized])) {
+            return $this->parentCache[$normalized];
         }
 
         $category = Category::whereNull('parent_id')
-            ->where('name', trim($name))
+            ->whereRaw('LOWER(name) = ?', [$normalized])
             ->first();
 
         if (!$category) {
@@ -54,7 +54,7 @@ class CategoryResolver
             ]);
         }
 
-        $this->parentCache[$key] = $category;
+        $this->parentCache[$normalized] = $category;
 
         return $category;
     }
@@ -68,14 +68,15 @@ class CategoryResolver
      */
     public function resolveChild(string $name, Category $parent): Category
     {
-        $childKey = $parent->id . ':' . strtolower(trim($name));
+        $normalized = $this->normalizeName($name);
+        $childKey = $parent->id . ':' . $normalized;
 
         if (isset($this->childCache[$childKey])) {
             return $this->childCache[$childKey];
         }
 
         $category = Category::where('parent_id', $parent->id)
-            ->where('name', trim($name))
+            ->whereRaw('LOWER(name) = ?', [$normalized])
             ->first();
 
         if (!$category) {
@@ -89,5 +90,10 @@ class CategoryResolver
         $this->childCache[$childKey] = $category;
 
         return $category;
+    }
+
+    protected function normalizeName(string $name): string
+    {
+        return mb_strtolower(trim($name));
     }
 }
