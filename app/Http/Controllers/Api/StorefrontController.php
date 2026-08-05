@@ -626,7 +626,14 @@ class StorefrontController extends Controller
             ->when($sort === 'featured', fn ($q) => $q->orderByDesc('is_featured'))
             ->when($sort === 'latest' || ! in_array($sort, ['price_low', 'price_high', 'name_asc', 'name_desc', 'featured'], true), fn ($q) => $q->latest());
 
-        $products = $query->get();
+        if ($categoryIds && $subcategorySlug === '' && isset($category)) {
+            $directProductQuery = (clone $query)->where('category_id', $category->id);
+            $subCategoryProductQuery = (clone $query)->whereIn('category_id', array_diff($categoryIds, [$category->id]));
+
+            $products = $directProductQuery->get()->merge($subCategoryProductQuery->get());
+        } else {
+            $products = $query->get();
+        }
 
         if ($products->count() < $minProducts && ! $request->has('brand') && ! $request->has('search') && $categoryIds) {
             $alreadyIncludedIds = $products->pluck('id')->all();
