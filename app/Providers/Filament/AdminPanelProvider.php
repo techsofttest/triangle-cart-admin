@@ -12,7 +12,6 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
-use App\Http\Middleware\SetSessionForAdmin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -66,7 +65,6 @@ class AdminPanelProvider extends PanelProvider
                 Js::make('delivery-map-js', resource_path('js/filament/delivery-map.js'))->defer(),
             ])
             ->middleware([
-                \App\Http\Middleware\SetSessionForAdmin::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

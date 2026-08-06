@@ -127,7 +127,10 @@ return [
     |
     */
 
-    'cookie' => env('SESSION_COOKIE', 'customer_session'),
+    'cookie' => env(
+        'SESSION_COOKIE',
+        Str::slug((string) env('APP_NAME', 'laravel')).'-session'
+    ),
 
     /*
     |--------------------------------------------------------------------------
@@ -216,8 +219,6 @@ return [
     | Admin Panel Session Configurations
     |--------------------------------------------------------------------------
     */
-    'admin_cookie' => env('ADMIN_SESSION_COOKIE', 'admin_session'),
-    'admin_domain' => env('ADMIN_SESSION_DOMAIN'),
-    'admin_same_site' => env('ADMIN_SESSION_SAME_SITE', 'lax'),
+    // No admin-specific session settings. Use standard SESSION_* env vars.
 
 ];
