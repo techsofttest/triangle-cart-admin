@@ -3,48 +3,36 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Str;
 
 class SetSessionForAdmin
 {
     /**
      * Handle an incoming request.
+     *
+     * This middleware runs only for the Filament admin panel (registered
+     * in the panel provider) and sets the session configuration to the
+     * pre-defined admin values from config/session.php. It must run
+     * before StartSession so the session system uses these values.
      */
     public function handle($request, Closure $next)
     {
-        $host = $request->getHost();
-        \Illuminate\Support\Facades\Log::info('SetSessionForAdmin running', [
-            'host' => $host,
-            'path' => $request->path(),
-            'is_admin_subdomain' => Str::contains($host, 'admin'),
-            'is_api' => $request->is('api/*')
-        ]);
+        // Only override the minimal session settings required for admin
+        // cookies. Values come from config/session.php which should be
+        // populated from environment variables.
+        $adminCookie = config('session.admin_cookie');
+        $adminDomain = config('session.admin_domain');
+        $adminSameSite = config('session.admin_same_site');
 
-        if (Str::contains($host, 'admin')) {
-            if ($request->is('api/*')) {
-                // Customer API request: isolate session path to /api to prevent cookie/CSRF token collisions with admin panel
-                config([
-                    'session.path' => '/api',
-                ]);
-            } else {
-                // Admin panel request: configure admin session cookies
-                $sessionDomain = config('session.admin_domain');
-                if ($sessionDomain === 'null' || !$sessionDomain) {
-                    $sessionDomain = $request->getHost();
-                } else {
-                    // If current host environment does not match configured domain (e.g. test vs com.au), fallback to request host
-                    $configBase = Str::after($sessionDomain, 'admin.');
-                    if (!Str::contains($host, $configBase)) {
-                        $sessionDomain = $request->getHost();
-                    }
-                }
+        if ($adminCookie) {
+            config(['session.cookie' => $adminCookie]);
+        }
 
-                config([
-                    'session.cookie' => config('session.admin_cookie', 'admin_session'),
-                    'session.domain' => $sessionDomain,
-                    'session.same_site' => config('session.admin_same_site', 'lax'),
-                ]);
-            }
+        // Allow explicit null to clear the domain (single host cookie),
+        // otherwise set the configured value (typically ".example.com").
+        config(['session.domain' => $adminDomain ?? null]);
+
+        if ($adminSameSite) {
+            config(['session.same_site' => $adminSameSite]);
         }
 
         return $next($request);

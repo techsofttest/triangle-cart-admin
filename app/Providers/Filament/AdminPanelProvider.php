@@ -66,6 +66,7 @@ class AdminPanelProvider extends PanelProvider
                 Js::make('delivery-map-js', resource_path('js/filament/delivery-map.js'))->defer(),
             ])
             ->middleware([
+                \App\Http\Middleware\SetSessionForAdmin::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
