@@ -14,7 +14,7 @@ class SetSessionForAdmin
     {
         $host = $request->getHost();
 
-        if (Str::contains($host, 'admin')) {
+        if (Str::contains($host, 'admin') && !$request->is('api/*')) {
             $sessionDomain = env('ADMIN_SESSION_DOMAIN');
             if ($sessionDomain === 'null') {
                 $sessionDomain = null;
