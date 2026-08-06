@@ -33,24 +33,28 @@ class OrdersTable
                     ->badge()
                     ->color(fn ($state): string => $state === 'direct' ? 'success' : 'gray'),
                 TextColumn::make('delivery_slot_info')
-                    ->label('Slot')
-                    ->state(function ($record): ?string {
-                        if ($record->delivery_type !== 'direct') {
-                            return null;
-                        }
-                        $parts = [];
-                        if ($record->delivery_date) {
-                            $parts[] = \Carbon\Carbon::parse($record->delivery_date)->format('d M Y');
-                        }
-                        if ($record->deliverySlot) {
-                            $parts[] =
-                            \Carbon\Carbon::parse($record->deliverySlot->start_time)->format('g:i A')
+                ->label('Slot')
+                ->state(function ($record): ?string {
+                    if ($record->delivery_type !== 'direct') {
+                        return null;
+                    }
+
+                    $date = $record->delivery_date
+                        ? \Carbon\Carbon::parse($record->delivery_date)->format('d M Y')
+                        : null;
+
+                    $time = $record->deliverySlot
+                        ? \Carbon\Carbon::parse($record->deliverySlot->start_time)->format('g:i A')
                             . ' - ' .
-                            \Carbon\Carbon::parse($record->deliverySlot->end_time)->format('g:i A');
-                        }
-                        return implode(' | ', $parts) ?: null;
-                    })
-                    ->placeholder('-'),
+                            \Carbon\Carbon::parse($record->deliverySlot->end_time)->format('g:i A')
+                        : null;
+
+                    return collect([$date, $time])
+                        ->filter()
+                        ->implode('<br>');
+                })
+                ->html()
+                ->placeholder('-'),
                 TextColumn::make('shipping_postcode')
                     ->label('Postcode')
                     ->searchable(),

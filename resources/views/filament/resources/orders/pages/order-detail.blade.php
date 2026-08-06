@@ -581,11 +581,17 @@
                                     {{ $item->product_name }}
                                 </div>
 
-                                @if ($item->variant_details)
-                                    <div class="order-product-variant">
-                                        {{ $item->variant_details }}
-                                    </div>
-                                @endif
+                                <div class="order-product-variant product-extra" style="margin-top:0.5rem;font-size:0.85rem;color:rgba(107,114,128,1);">
+                                    @if($item->product?->brand?->name)
+                                        <div>Brand: {{ $item->product->brand->name }}</div>
+                                    @endif
+                                    @if($item->variant?->unit)
+                                        <div>Unit: {{ $item->variant->unit }}</div>
+                                    @endif
+                                    @if($item->variant?->size)
+                                        <div>Size: {{ $item->variant->size }}</div>
+                                    @endif
+                                </div>
                             </div>
 
                             <div style="align-self: center; margin-right: 1.5rem;">

@@ -29,9 +29,8 @@ class ViewOrder extends ViewRecord
                 ->label('Print Order')
                 ->icon('heroicon-o-printer')
                 ->color('gray')
-                ->extraAttributes([
-                    'onclick' => 'window.print(); return false;',
-                ]),
+                ->url(fn () => route('admin.orders.print', $this->record))
+                ->openUrlInNewTab(),
         ];
     }
 }
