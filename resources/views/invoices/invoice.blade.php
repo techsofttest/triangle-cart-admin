@@ -148,9 +148,9 @@
             <thead>
                 <tr>
                     <th style="width:48%">Product</th>
-                    <th>Variant Details</th>
-                    <th style="width:8%">Qty</th>
+                    <th>Variant</th>
                     <th style="width:12%">Unit Price</th>
+                     <th style="width:8%">Qty</th>
                     <th style="width:12%">Line Total</th>
                 </tr>
             </thead>
@@ -161,19 +161,14 @@
                             {{ $item->product_name }}
                             <div class="product-extra">
                                 @if($item->product?->brand?->name)
-                                    <div>Brand: {{ $item->product->brand->name }}</div>
-                                @endif
-                                @if($item->variant?->unit)
-                                    <div>Unit: {{ $item->variant->unit }}</div>
-                                @endif
-                                @if($item->variant?->size)
-                                    <div>Size: {{ $item->variant->size }}</div>
+                                <div>Brand: {{ $item->product->brand->name }}</div>
                                 @endif
                             </div>
                         </td>
-                        <td>{{ $item->variant_details ?? '—' }}</td>
-                        <td class="right">{{ $item->quantity }}</td>
+                        <td>@if($item->variant?->unit){{ $item->variant->unit }}@endif @if($item->variant?->size){{ $item->variant->size }}@endif</td>
+                        
                         <td class="right">${{ number_format($item->price, 2) }}</td>
+                        <td class="right">{{ $item->quantity }}</td>
                         <td class="right">${{ number_format($item->line_total, 2) }}</td>
                     </tr>
                 @endforeach

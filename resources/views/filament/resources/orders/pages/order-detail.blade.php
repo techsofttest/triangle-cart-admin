@@ -585,12 +585,10 @@
                                     @if($item->product?->brand?->name)
                                         <div>Brand: {{ $item->product->brand->name }}</div>
                                     @endif
-                                    @if($item->variant?->unit)
-                                        <div>Unit: {{ $item->variant->unit }}</div>
-                                    @endif
-                                    @if($item->variant?->size)
-                                        <div>Size: {{ $item->variant->size }}</div>
-                                    @endif
+                                    
+                             <div>@if($item->variant?->size) {{ $item->variant->size }} @endif @if($item->variant?->unit) {{ $item->variant->unit }} @endif</div>
+                                    
+                                    
                                 </div>
                             </div>
 
