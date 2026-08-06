@@ -13,9 +13,15 @@ class SetSessionForAdmin
     public function handle($request, Closure $next)
     {
         $host = $request->getHost();
+        \Illuminate\Support\Facades\Log::info('SetSessionForAdmin running', [
+            'host' => $host,
+            'path' => $request->path(),
+            'is_admin_subdomain' => Str::contains($host, 'admin'),
+            'is_api' => $request->is('api/*')
+        ]);
 
         if (Str::contains($host, 'admin') && !$request->is('api/*')) {
-            $sessionDomain = env('ADMIN_SESSION_DOMAIN');
+            $sessionDomain = config('session.admin_domain');
             if ($sessionDomain === 'null' || !$sessionDomain) {
                 $sessionDomain = $request->getHost();
             } else {
@@ -27,9 +33,9 @@ class SetSessionForAdmin
             }
 
             config([
-                'session.cookie' => env('ADMIN_SESSION_COOKIE', 'admin_session'),
+                'session.cookie' => config('session.admin_cookie', 'admin_session'),
                 'session.domain' => $sessionDomain,
-                'session.same_site' => env('ADMIN_SESSION_SAME_SITE', config('session.same_site')),
+                'session.same_site' => config('session.admin_same_site', 'lax'),
             ]);
         }
 

@@ -214,4 +214,13 @@ return [
 
     'partitioned' => env('SESSION_PARTITIONED_COOKIE', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Panel Session Configurations
+    |--------------------------------------------------------------------------
+    */
+    'admin_cookie' => env('ADMIN_SESSION_COOKIE', 'admin_session'),
+    'admin_domain' => env('ADMIN_SESSION_DOMAIN'),
+    'admin_same_site' => env('ADMIN_SESSION_SAME_SITE', 'lax'),
+
 ];
