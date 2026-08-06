@@ -79,23 +79,14 @@
 <div class="container">
     <header>
         <div class="company">
-            @if(function_exists('asset') && file_exists(public_path('images/logo.png')))
-                <div><img src="{{ asset('images/logo.png') }}" alt="logo" style="height:48px"></div>
-            @endif
             <div class="name">{{ config('app.name', 'Company Name') }}</div>
-            <div class="small">
-                {{ config('app.address', 'Company Address') }}<br>
-                {{ config('app.phone', 'Phone:') }}<br>
-                {{ config('app.email', 'Email:') }}<br>
-                ABN: {{ config('app.abn', '—') }}
-            </div>
+            
         </div>
 
         <div class="meta">
-            <div><strong>Invoice</strong></div>
+            
             <div>Order #: {{ $order->order_number }}</div>
             <div>Order Date: {{ optional($order->created_at)->format('d M Y \a\t g:i A') }}</div>
-            <div>Status: {{ optional($order->status)->value ?? $order->status }}</div>
             <div>Payment: {{ optional($order->payment_status)->value ?? $order->payment_status }}</div>
         </div>
     </header>
@@ -165,7 +156,7 @@
                                 @endif
                             </div>
                         </td>
-                        <td>@if($item->variant?->unit){{ $item->variant->unit }}@endif @if($item->variant?->size){{ $item->variant->size }}@endif</td>
+                        <td>@if($item->variant?->size){{ $item->variant->size }}@endif @if($item->variant?->unit){{ $item->variant->unit }}@endif</td>
                         
                         <td class="right">${{ number_format($item->price, 2) }}</td>
                         <td class="right">{{ $item->quantity }}</td>
@@ -202,17 +193,8 @@
         <div style="clear:both"></div>
     </div>
 
-    <div class="section">
-        <h2>Payment</h2>
-        <div class="small">Status: {{ optional($order->payment_status)->value ?? $order->payment_status }}</div>
-        @if($order->payment_method)
-            <div class="small">Method: {{ $order->payment_method }}</div>
-        @endif
-    </div>
+    
 
-    <footer>
-        Thank you for your order.
-    </footer>
 </div>
 
 <script>
