@@ -18,18 +18,21 @@ class DeliveryPostcodesTable
                 TextColumn::make('postcode')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('region')
+                    ->searchable()
+                    ->sortable(),
                 /*TextColumn::make('warehouse_id')
                     ->label('Warehouse')
-                    ->sortable(),
+                    ->sortable(),*/
                 TextColumn::make('delivery_fee')
-                    ->money('INR')
+                    ->money('AUD')
                     ->sortable(),
                 TextColumn::make('free_shipping_threshold')
-                    ->money('INR')
-                    ->sortable(),*/
-                IconColumn::make('is_active')
+                    ->money('AUD')
+                    ->sortable(),
+                /*IconColumn::make('is_active')
                     ->boolean()
-                    ->label('Active'),
+                    ->label('Active'),*/
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

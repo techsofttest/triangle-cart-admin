@@ -65,5 +65,10 @@ class Order extends Model
     {
         return $this->belongsTo(TimeSlot::class, 'delivery_slot_id');
     }
+
+    public function deliveryPostcode()
+    {
+        return $this->belongsTo(DeliveryPostcode::class, 'shipping_postcode', 'postcode');
+    }
 }
 

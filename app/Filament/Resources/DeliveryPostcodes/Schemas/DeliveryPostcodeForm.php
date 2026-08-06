@@ -22,6 +22,11 @@ class DeliveryPostcodeForm
                             ->required()
                             ->maxLength(20),
 
+                        TextInput::make('region')
+                            ->label('Region')
+                            ->nullable()
+                            ->maxLength(255),
+
                         TextInput::make('delivery_fee')
                             ->label('Delivery Fee')
                             ->numeric()

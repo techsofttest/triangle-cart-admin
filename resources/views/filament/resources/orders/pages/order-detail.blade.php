@@ -480,12 +480,17 @@
             </h1>
 
             <div class="order-detail-status-badges">
+
                 <span class="order-status-badge order-status-{{ $this->record->status->value }}">
                     {{ ucfirst($this->record->status->value) }}
                 </span>
-                <span class="order-status-badge order-status-{{ $this->record->payment_status->value }}">
+
+                <span class="order-status-badge order-status-{{ $this->record->payment_status->value }}"
+                    style="display:inline-flex;align-items:center;gap:0.35rem;">
+                    <x-heroicon-m-banknotes class="w-4 h-4" />
                     {{ ucfirst($this->record->payment_status->value) }}
                 </span>
+
             </div>
         </div>
 
@@ -560,10 +565,10 @@
 
                             <div class="order-product-price">
                                 <div class="order-product-quantity">
-                                    {{ $item->quantity }} × ₹{{ number_format($item->price, 2) }}
+                                    {{ $item->quantity }} × ${{ number_format($item->price, 2) }}
                                 </div>
                                 <div class="order-product-total">
-                                    ₹{{ number_format($item->line_total, 2) }}
+                                    ${{ number_format($item->line_total, 2) }}
                                 </div>
                             </div>
                         </div>
@@ -602,10 +607,10 @@
                     <h2 class="order-detail-card-title">Payment</h2>
                 </div>
 
-                <div class="order-info-row">
+                <!--<div class="order-info-row">
                     <span>Payment method</span>
                     <span>{{ strtoupper($this->record->payment_method) }}</span>
-                </div>
+                </div>-->
 
                 <div class="order-info-row">
                     <span>Status</span>
@@ -686,7 +691,13 @@
                 @if($this->record->deliverySlot)
                 <div class="order-info-row">
                     <span class="order-info-label">Time Slot</span>
-                    <span class="order-info-value">{{ $this->record->deliverySlot->start_time }} - {{ $this->record->deliverySlot->end_time }}</span>
+                    
+                    <span class="order-info-value">
+                        {{ \Carbon\Carbon::parse($this->record->deliverySlot->start_time)->format('g:i A') }}
+                        -
+                        {{ \Carbon\Carbon::parse($this->record->deliverySlot->end_time)->format('g:i A') }}
+                    </span>
+
                 </div>
                 @endif
 

@@ -8,6 +8,7 @@ class DeliveryPostcode extends Model
 {
     protected $fillable = [
         'postcode',
+        'region',
         'warehouse_id',
         'delivery_fee',
         'free_shipping_threshold',

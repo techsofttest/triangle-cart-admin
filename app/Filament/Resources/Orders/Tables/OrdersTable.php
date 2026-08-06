@@ -17,20 +17,23 @@ class OrdersTable
             ->defaultSort('id','desc')
             ->columns([
                 TextColumn::make('order_number')
+                    ->label('ID')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('assignedStaff.name')
-                    ->label('Assigned Staff')
+                    ->label('Staff')
                     ->placeholder('-')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('customer_name')
+                    ->label('C-Name')
                     ->searchable(),
                 TextColumn::make('delivery_type')
+                    ->label('Del Type')
                     ->badge()
                     ->color(fn ($state): string => $state === 'direct' ? 'success' : 'gray'),
                 TextColumn::make('delivery_slot_info')
-                    ->label('Delivery Slot')
+                    ->label('Slot')
                     ->state(function ($record): ?string {
                         if ($record->delivery_type !== 'direct') {
                             return null;
@@ -40,7 +43,10 @@ class OrdersTable
                             $parts[] = \Carbon\Carbon::parse($record->delivery_date)->format('d M Y');
                         }
                         if ($record->deliverySlot) {
-                            $parts[] = $record->deliverySlot->start_time . ' - ' . $record->deliverySlot->end_time;
+                            $parts[] =
+                            \Carbon\Carbon::parse($record->deliverySlot->start_time)->format('g:i A')
+                            . ' - ' .
+                            \Carbon\Carbon::parse($record->deliverySlot->end_time)->format('g:i A');
                         }
                         return implode(' | ', $parts) ?: null;
                     })
@@ -48,10 +54,18 @@ class OrdersTable
                 TextColumn::make('shipping_postcode')
                     ->label('Postcode')
                     ->searchable(),
+                TextColumn::make('deliveryPostcode.region')
+                    ->label('Region')
+                    ->badge()
+                    ->color('info')
+                    ->searchable()
+                    ->placeholder('-'),
                 TextColumn::make('grand_total')
+                    ->label('Total')
                     ->money('AUD')
                     ->sortable(),
                 TextColumn::make('payment_status')
+                    ->label('Payment')
                     ->badge()
                     ->color(function ($state): string {
                         $value = $state instanceof \BackedEnum ? $state->value : $state;
@@ -133,7 +147,7 @@ class OrdersTable
                             ->get()
                             ->mapWithKeys(function ($slot) {
                                 $date = $slot->deliveryDate?->date ?? '';
-                                $timeRange = $slot->start_time . ' - ' . $slot->end_time;
+                                $timeRange = \Carbon\Carbon::parse($slot->start_time)->format('g:i A') . ' - ' . \Carbon\Carbon::parse($slot->end_time)->format('g:i A');
                                 $label = $date ? "{$date} ({$timeRange})" : $timeRange;
                                 return [$slot->id => $label];
                             })
