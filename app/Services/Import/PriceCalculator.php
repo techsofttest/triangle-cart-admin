@@ -5,19 +5,22 @@ namespace App\Services\Import;
 class PriceCalculator
 {
     /**
-     * Calculate the selling price from buying price and margin percentage.
-     * GST should not be applied here because the Excel margin already includes GST.
+     * Calculate the selling price from buying price, margin percentage and GST.
+     * Match the Filament admin form calculation formula.
      *
      * Formula:
-     *   selling_price = buying_price × (1 + margin / 100)
+     *   price_after_tax = buying_price * (1 + tax / 100)
+     *   selling_price = price_after_tax * (1 + margin / 100)
      *
      * @param float $buyingPrice
      * @param float $marginPercent
+     * @param float $gstPercent
      * @return float Rounded to 2 decimal places
      */
-    public function calculate(float $buyingPrice, float $marginPercent): float
+    public function calculate(float $buyingPrice, float $marginPercent, float $gstPercent = 0.0): float
     {
-        $sellingPrice = $buyingPrice * (1 + $marginPercent / 100);
+        $priceAfterTax = $buyingPrice * (1 + $gstPercent / 100);
+        $sellingPrice = $priceAfterTax * (1 + $marginPercent / 100);
 
         return round($sellingPrice, 2);
     }

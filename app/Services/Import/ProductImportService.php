@@ -83,9 +83,39 @@ class ProductImportService
             // Parse delivery flags
             $allowsCourier = $this->parseTruthy($row['courier'] ?? null);
 
-            // Featured status and image are managed by admin in the product UI.
-            // Keep import data focused on core product and variant attributes.
+            // Resolve Featured Image
             $featuredImagePath = null;
+            if (array_key_exists('featured_image', $row) && $row['featured_image'] !== null && $row['featured_image'] !== '') {
+                // Directly save it into the database under products/ directory
+                $featuredImagePath = 'products/' . basename($row['featured_image']);
+
+                /*
+                // Old resolution logic (preserved for future use):
+                $existingProduct = \App\Models\Product::where('sku', trim($row['product_sku']))->first();
+                $existingFeatured = $existingProduct?->featured_image;
+
+                if ($existingFeatured) {
+                    $existingFeaturedBase = basename($existingFeatured);
+                    $existingFeaturedNoExt = pathinfo($existingFeatured, PATHINFO_FILENAME);
+                    $newFeaturedBase = basename($row['featured_image']);
+                    $newFeaturedNoExt = pathinfo($row['featured_image'], PATHINFO_FILENAME);
+
+                    if (strcasecmp($existingFeaturedBase, $newFeaturedBase) === 0 || strcasecmp($existingFeaturedNoExt, $newFeaturedNoExt) === 0) {
+                        $featuredImagePath = $existingFeatured;
+                    }
+                }
+
+                if (!$featuredImagePath) {
+                    $resolved = $this->imageResolver->resolve($row['featured_image']);
+                    if ($resolved) {
+                        $featuredImagePath = $resolved;
+                    } else {
+                        $this->logger->addWarning("Missing featured image: {$row['featured_image']} for product {$row['product_sku']}");
+                        $this->logger->incrementMissingImages();
+                    }
+                }
+                */
+            }
 
             // Resolve Product
             $productAttributes = [
@@ -120,9 +150,14 @@ class ProductImportService
             $buyingPrice = (float) ($row['buying_price'] ?? 0);
             $gstPercent = $this->priceCalculator->parseGst($row['gst'] ?? null);
             $marginPercent = (float) ($row['margin'] ?? 0);
-            // GST is stored in `tax_percentage` but should not be applied during price
-            // calculation because the margin from Excel already includes GST.
-            $sellingPrice = $this->priceCalculator->calculate($buyingPrice, $marginPercent);
+            
+            // If selling_price is provided directly in the Excel row, use it.
+            // Otherwise, calculate it using the compounded formula (same as admin form).
+            if (isset($row['selling_price']) && (float)$row['selling_price'] > 0) {
+                $sellingPrice = round((float)$row['selling_price'], 2);
+            } else {
+                $sellingPrice = $this->priceCalculator->calculate($buyingPrice, $marginPercent, $gstPercent);
+            }
 
             $strikedPrice = null;
             if (array_key_exists('striked_price', $row) && $row['striked_price'] !== null && $row['striked_price'] !== '') {
@@ -153,28 +188,86 @@ class ProductImportService
             }
 
             // Resolve Additional Images
-            if (!empty($row['additional_images'])) {
-                $additionalPaths = $this->imageResolver->resolveMultiple($row['additional_images']);
+            if (array_key_exists('additional_images', $row) && $row['additional_images'] !== null && $row['additional_images'] !== '') {
+                $requestedNames = array_filter(array_map('trim', explode(',', $row['additional_images'])));
+                
+                // Directly construct the paths under products/ directory
+                $finalPaths = [];
+                foreach ($requestedNames as $name) {
+                    $finalPaths[] = 'products/' . basename($name);
+                }
 
-                // Remove old gallery images and recreate
-                ProductImage::where('product_id', $product->id)->delete();
+                // Delete existing ones not in $finalPaths
+                ProductImage::where('product_id', $product->id)
+                    ->whereNotIn('image_path', $finalPaths)
+                    ->delete();
 
-                foreach ($additionalPaths as $path) {
-                    ProductImage::create([
-                        'product_id' => $product->id,
-                        'image_path' => $path,
-                    ]);
+                // Insert only the new ones
+                $existingImages = ProductImage::where('product_id', $product->id)->get();
+                $existingPaths = $existingImages->pluck('image_path')->toArray();
+                foreach ($finalPaths as $path) {
+                    if (!in_array($path, $existingPaths)) {
+                        ProductImage::create([
+                            'product_id' => $product->id,
+                            'image_path' => $path,
+                        ]);
+                    }
+                }
+
+                /*
+                // Old resolution logic (preserved for future use):
+                $existingImages = ProductImage::where('product_id', $product->id)->get();
+                $finalPaths = [];
+                $missingPaths = [];
+
+                foreach ($requestedNames as $name) {
+                    $nameBase = basename($name);
+                    $nameNoExt = pathinfo($name, PATHINFO_FILENAME);
+
+                    // Check if already exists in DB (either exact basename or name without extension matches)
+                    $matched = $existingImages->first(function ($img) use ($nameBase, $nameNoExt) {
+                        $existingBase = basename($img->image_path);
+                        $existingNoExt = pathinfo($img->image_path, PATHINFO_FILENAME);
+                        return strcasecmp($existingBase, $nameBase) === 0 || strcasecmp($existingNoExt, $nameNoExt) === 0;
+                    });
+
+                    if ($matched) {
+                        $finalPaths[] = $matched->image_path;
+                    } else {
+                        // Resolve new image
+                        $resolvedPath = $this->imageResolver->resolve($name);
+                        if ($resolvedPath) {
+                            $finalPaths[] = $resolvedPath;
+                        } else {
+                            $missingPaths[] = $name;
+                        }
+                    }
+                }
+
+                // Delete existing ones not in $finalPaths
+                ProductImage::where('product_id', $product->id)
+                    ->whereNotIn('image_path', $finalPaths)
+                    ->delete();
+
+                // Insert only the new ones
+                $existingPaths = $existingImages->pluck('image_path')->toArray();
+                foreach ($finalPaths as $path) {
+                    if (!in_array($path, $existingPaths)) {
+                        ProductImage::create([
+                            'product_id' => $product->id,
+                            'image_path' => $path,
+                        ]);
+                    }
                 }
 
                 // Log missing additional images
-                $requested = array_map('trim', explode(',', $row['additional_images']));
-                $missingCount = count($requested) - count($additionalPaths);
-                if ($missingCount > 0) {
-                    $this->logger->addWarning("Missing {$missingCount} additional image(s) for product {$row['product_sku']}");
-                    for ($i = 0; $i < $missingCount; $i++) {
+                if (count($missingPaths) > 0) {
+                    $this->logger->addWarning("Missing " . count($missingPaths) . " additional image(s) for product {$row['product_sku']}: " . implode(', ', $missingPaths));
+                    foreach ($missingPaths as $_) {
                         $this->logger->incrementMissingImages();
                     }
                 }
+                */
             }
 
         } catch (\Exception $e) {

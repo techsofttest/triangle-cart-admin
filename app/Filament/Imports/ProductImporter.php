@@ -39,6 +39,9 @@ class ProductImporter extends Importer
                 ->label('Variant SKU')
                 ->rules(['required', 'string']),
 
+            ImportColumn::make('supplier_code')
+                ->label('Supplier Code'),
+
             ImportColumn::make('unit')
                 ->label('Unit'),
 
@@ -72,6 +75,9 @@ class ProductImporter extends Importer
 
             ImportColumn::make('expiry_date')
                 ->label('Expiry Date'),
+
+            ImportColumn::make('featured_image')
+                ->label('Featured Image'),
 
             ImportColumn::make('additional_images')
                 ->label('Additional Images'),
