@@ -20,23 +20,31 @@ class SetSessionForAdmin
             'is_api' => $request->is('api/*')
         ]);
 
-        if (Str::contains($host, 'admin') && !$request->is('api/*')) {
-            $sessionDomain = config('session.admin_domain');
-            if ($sessionDomain === 'null' || !$sessionDomain) {
-                $sessionDomain = $request->getHost();
+        if (Str::contains($host, 'admin')) {
+            if ($request->is('api/*')) {
+                // Customer API request: isolate session path to /api to prevent cookie/CSRF token collisions with admin panel
+                config([
+                    'session.path' => '/api',
+                ]);
             } else {
-                // If current host environment does not match configured domain (e.g. test vs com.au), fallback to request host
-                $configBase = Str::after($sessionDomain, 'admin.');
-                if (!Str::contains($host, $configBase)) {
+                // Admin panel request: configure admin session cookies
+                $sessionDomain = config('session.admin_domain');
+                if ($sessionDomain === 'null' || !$sessionDomain) {
                     $sessionDomain = $request->getHost();
+                } else {
+                    // If current host environment does not match configured domain (e.g. test vs com.au), fallback to request host
+                    $configBase = Str::after($sessionDomain, 'admin.');
+                    if (!Str::contains($host, $configBase)) {
+                        $sessionDomain = $request->getHost();
+                    }
                 }
-            }
 
-            config([
-                'session.cookie' => config('session.admin_cookie', 'admin_session'),
-                'session.domain' => $sessionDomain,
-                'session.same_site' => config('session.admin_same_site', 'lax'),
-            ]);
+                config([
+                    'session.cookie' => config('session.admin_cookie', 'admin_session'),
+                    'session.domain' => $sessionDomain,
+                    'session.same_site' => config('session.admin_same_site', 'lax'),
+                ]);
+            }
         }
 
         return $next($request);
