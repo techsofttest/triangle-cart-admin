@@ -16,13 +16,13 @@ class SetSessionForAdmin
 
         if (Str::contains($host, 'admin') && !$request->is('api/*')) {
             $sessionDomain = env('ADMIN_SESSION_DOMAIN');
-            if ($sessionDomain === 'null') {
-                $sessionDomain = null;
-            } elseif ($sessionDomain) {
-                // If current host environment does not match configured domain (e.g. test vs com.au), default to null
+            if ($sessionDomain === 'null' || !$sessionDomain) {
+                $sessionDomain = $request->getHost();
+            } else {
+                // If current host environment does not match configured domain (e.g. test vs com.au), fallback to request host
                 $configBase = Str::after($sessionDomain, 'admin.');
                 if (!Str::contains($host, $configBase)) {
-                    $sessionDomain = null;
+                    $sessionDomain = $request->getHost();
                 }
             }
 
