@@ -464,6 +464,55 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @media print {
+            .fi-sidebar,
+            .fi-topbar,
+            .fi-header,
+            .fi-actions,
+            .fi-breadcrumbs,
+            .order-card-actions,
+            form,
+            button,
+            .order-note-form,
+            .fi-sidebar-close-overlay,
+            .order-product-pick-btn {
+                display: none !important;
+            }
+            
+            body, .fi-layout, .fi-main {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            .order-detail-wrapper {
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            
+            .order-detail-header, 
+            .order-detail-card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                background: transparent !important;
+                page-break-inside: avoid;
+                margin-bottom: 1rem !important;
+            }
+
+            .order-detail-content {
+                display: block !important;
+            }
+            
+            .order-detail-main-section,
+            .order-detail-sidebar {
+                width: 100% !important;
+                margin-bottom: 1.5rem !important;
+            }
+        }
     </style>
 
 

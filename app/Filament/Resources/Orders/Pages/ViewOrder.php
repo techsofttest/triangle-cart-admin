@@ -25,7 +25,13 @@ class ViewOrder extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            //EditAction::make(),
+            \Filament\Actions\Action::make('print')
+                ->label('Print Order')
+                ->icon('heroicon-o-printer')
+                ->color('gray')
+                ->extraAttributes([
+                    'onclick' => 'window.print(); return false;',
+                ]),
         ];
     }
 }
