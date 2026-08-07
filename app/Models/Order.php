@@ -51,6 +51,11 @@ class Order extends Model
         return $this->hasMany(DeliverySessionOrder::class);
     }
 
+    public function complianceLogs()
+    {
+        return $this->hasMany(DeliveryComplianceLog::class);
+    }
+
     public function assignedStaff()
     {
         return $this->belongsTo(User::class, 'assigned_staff_id');

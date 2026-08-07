@@ -763,6 +763,70 @@
             </div>
             @endif
 
+            {{-- DELIVERY COMPLETION --}}
+            @if($this->record->status->value === 'delivered' || $this->record->complianceLogs()->exists())
+                @php
+                    $complianceLog = $this->record->complianceLogs()->latest()->first();
+                    $sessionOrder = $this->record->deliverySessionOrders()->latest()->first();
+                    $deliveryNotes = $complianceLog?->notes ?: ($sessionOrder?->notes ?: null);
+                @endphp
+                
+                <div class="order-detail-card">
+                    <div class="order-detail-card-header">
+                        <h2 class="order-detail-card-title">Delivery Completion Info</h2>
+                    </div>
+
+                    @if($sessionOrder && $sessionOrder->delivered_at)
+                    <div class="order-info-row">
+                        <span class="order-info-label">Delivered At</span>
+                        <span class="order-info-value">{{ $sessionOrder->delivered_at->format('F j, Y \a\t g:i A') }}</span>
+                    </div>
+                    @endif
+
+                    @if($complianceLog && $complianceLog->temperature_reading !== null)
+                    <div class="order-info-row">
+                        <span class="order-info-label">Temperature Reading</span>
+                        <span class="order-info-value">{{ $complianceLog->temperature_reading }} °C</span>
+                    </div>
+                    @endif
+
+                    @if($deliveryNotes)
+                    <div class="order-info-row" style="flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                        <span class="order-info-label">Delivery Notes</span>
+                        <span class="order-info-value" style="text-align: left; font-style: italic; margin-top: 0.25rem; word-break: break-all;">
+                            {{ $deliveryNotes }}
+                        </span>
+                    </div>
+                    @endif
+
+                    @if($complianceLog && $complianceLog->thermometer_photo)
+                    <div class="order-info-row" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                        <span class="order-info-label">Thermometer Photo</span>
+                        <div class="order-info-value" style="width: 100%;">
+                            <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($complianceLog->thermometer_photo) }}" target="_blank">
+                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($complianceLog->thermometer_photo) }}" 
+                                     alt="Thermometer Reading" 
+                                     style="max-width: 100%; max-height: 200px; border-radius: 0.375rem; border: 1px solid rgb(229, 231, 235); object-fit: contain;" />
+                            </a>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($complianceLog && $complianceLog->latitude && $complianceLog->longitude)
+                    <div class="order-info-row">
+                        <span class="order-info-label">GPS Location</span>
+                        <span class="order-info-value">
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ $complianceLog->latitude }},{{ $complianceLog->longitude }}" 
+                               target="_blank" 
+                               style="color: rgb(37, 99, 235); text-decoration: underline;">
+                                {{ $complianceLog->latitude }}, {{ $complianceLog->longitude }}
+                            </a>
+                        </span>
+                    </div>
+                    @endif
+                </div>
+            @endif
+
             {{-- BILLING ADDRESS 
             <div class="order-detail-card">
                 <div class="order-detail-card-header">

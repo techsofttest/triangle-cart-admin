@@ -255,16 +255,18 @@ class Timesheets extends Page implements HasTable
                             ->send();
                     }),
 
-                // Export Action (for future use in phase 2)
+                // Export Action
                 Action::make('export')
                     ->label('Export')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('gray')
-                    ->action(function () {
-                        Notification::make()
-                            ->title('Timesheets exported successfully! (Coming in Phase 2)')
-                            ->info()
-                            ->send();
+                    ->action(function ($livewire) {
+                        $query = $livewire->getFilteredTableQuery();
+
+                        return \Maatwebsite\Excel\Facades\Excel::download(
+                            new \App\Exports\TimesheetsExport($query),
+                            'timesheets-' . now()->format('Y-m-d') . '.xlsx'
+                        );
                     }),
             ])
             ->actions([
