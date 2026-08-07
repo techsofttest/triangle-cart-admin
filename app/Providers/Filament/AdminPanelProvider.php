@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('/')
             ->login()
+            ->profile()
             ->brandLogo(asset('images/logo/logo.webp?v1'))
             ->brandLogoHeight('2rem')
             ->middleware(['throttle:filament-login'])
