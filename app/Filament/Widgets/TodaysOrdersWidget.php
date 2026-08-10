@@ -6,6 +6,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use App\Models\Order;
+use App\Enums\PaymentStatus;
 use Carbon\Carbon;
 
 class TodaysOrdersWidget extends BaseWidget
@@ -21,6 +22,7 @@ class TodaysOrdersWidget extends BaseWidget
         return $table
             ->query(
                 Order::query()
+                    ->where('payment_status', PaymentStatus::PAID)
                     ->whereDate('created_at', Carbon::today())
                     ->latest()
                     ->limit(20)
