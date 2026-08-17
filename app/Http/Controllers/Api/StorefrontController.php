@@ -35,6 +35,22 @@ class StorefrontController extends Controller
         ];
     }
 
+    private function cleanRichText(?string $text): ?string
+    {
+        if ($text === null || $text === '') {
+            return null;
+        }
+
+        $plainText = trim(html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $plainText = trim(str_replace(["\xc2\xa0", '&nbsp;'], ' ', $plainText));
+
+        if ($plainText === '') {
+            return null;
+        }
+
+        return trim($text);
+    }
+
     private function productPayload(Product $product): array
     {
         $inStockVariants = $product->variants
@@ -73,8 +89,8 @@ class StorefrontController extends Controller
             'rating' => $rating,
             'review_count' => $reviews->count(),
             'variants' => $inStockVariants->map(fn ($variant) => $this->variantPayload($variant))->values(),
-            'description' => $product->description,
-            'key_features' => $product->key_features,
+            'description' => $this->cleanRichText($product->description),
+            'key_features' => $this->cleanRichText($product->key_features),
             'meta_title' => $product->meta_title,
             'meta_description' => $product->meta_description,
         ];

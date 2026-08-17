@@ -76,8 +76,8 @@ class ProductExport implements FromQuery, WithHeadings, WithMapping
             $variant->selling_price,
             $variant->striked_price,
             $variant->stock,
-            $product?->key_features,
-            $product?->description,
+            $this->cleanRichText($product?->key_features),
+            $this->cleanRichText($product?->description),
             $variant->expiry_date,
             $product?->featured_image ? basename($product->featured_image) : null,
             $additionalImages,
@@ -85,6 +85,22 @@ class ProductExport implements FromQuery, WithHeadings, WithMapping
             $product?->meta_description,
             $product?->allows_courier ? 'yes' : 'no',
         ];
+    }
+
+    protected function cleanRichText(?string $text): ?string
+    {
+        if ($text === null || $text === '') {
+            return null;
+        }
+
+        $plainText = trim(html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $plainText = trim(str_replace(["\xc2\xa0", '&nbsp;'], ' ', $plainText));
+
+        if ($plainText === '') {
+            return null;
+        }
+
+        return trim($text);
     }
 
     protected function resolveCategoryFields(?Category $category): array

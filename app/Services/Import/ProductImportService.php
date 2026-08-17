@@ -124,8 +124,8 @@ class ProductImportService
                 'brand_id' => $brand->id,
                 'category_id' => $category->id,
                 'supplier_code' => $row['supplier_code'] ?? null,
-                'key_features' => $row['key_features'] ?? null,
-                'description' => $row['product_description'] ?? null,
+                'key_features' => $this->cleanRichText($row['key_features'] ?? null),
+                'description' => $this->cleanRichText($row['product_description'] ?? null),
                 'is_active' => true,
                 'requires_direct_delivery' => true,
                 'allows_courier' => $allowsCourier,
@@ -418,5 +418,21 @@ class ProductImportService
     public function getLogger(): ImportLogger
     {
         return $this->logger;
+    }
+
+    protected function cleanRichText(?string $text): ?string
+    {
+        if ($text === null || $text === '') {
+            return null;
+        }
+
+        $plainText = trim(html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $plainText = trim(str_replace(["\xc2\xa0", '&nbsp;'], ' ', $plainText));
+
+        if ($plainText === '') {
+            return null;
+        }
+
+        return trim($text);
     }
 }
