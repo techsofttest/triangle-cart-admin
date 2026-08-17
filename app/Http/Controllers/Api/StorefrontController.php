@@ -91,6 +91,7 @@ class StorefrontController extends Controller
             ->where('category_id', $category->id)
             ->whereNotNull('featured_image')
             ->where('is_active', true)
+            ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
             ->first();
 
         if ($product) {
@@ -107,6 +108,7 @@ class StorefrontController extends Controller
                 ->whereIn('category_id', $childIds)
                 ->whereNotNull('featured_image')
                 ->where('is_active', true)
+                ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
                 ->first();
 
             if ($product) {
@@ -294,7 +296,7 @@ class StorefrontController extends Controller
                 ->values();
         } elseif ($section->source === HomePageSection::SOURCE_CUSTOM_BRANDS && filled($section->brand_ids)) {
             $brands = Brand::query()
-                ->with(['products' => fn ($q) => $q->where('is_active', true)->take(1)])
+                ->with(['products' => fn ($q) => $q->where('is_active', true)->whereHas('variants', fn ($v) => $v->where('stock', '>', 0))->take(1)])
                 ->whereIn('id', $section->brand_ids)
                 ->get()
                 ->sortBy(fn (Brand $brand) => array_search($brand->id, $section->brand_ids, true));
@@ -302,7 +304,7 @@ class StorefrontController extends Controller
             $items = $brands->map(fn (Brand $brand) => $this->brandPayload($brand))->values();
         } elseif ($section->source === HomePageSection::SOURCE_BRANDS) {
             $items = Brand::query()
-                ->with(['products' => fn ($q) => $q->where('is_active', true)->take(1)])
+                ->with(['products' => fn ($q) => $q->where('is_active', true)->whereHas('variants', fn ($v) => $v->where('stock', '>', 0))->take(1)])
                 ->take($limit)
                 ->get()
                 ->map(fn (Brand $brand) => $this->brandPayload($brand))
@@ -354,7 +356,7 @@ class StorefrontController extends Controller
         $mainCategories = Category::query()
             ->whereNull('parent_id')
             ->where('is_active', true)
-            ->withCount('products')
+            ->withCount(['products' => fn ($q) => $q->where('is_active', true)->whereHas('variants', fn ($v) => $v->where('stock', '>', 0))])
             ->with(['children' => fn ($query) => $query->where('is_active', true)->orderBy('sort_order')])
             ->orderBy('sort_order')
             ->get();
@@ -363,7 +365,7 @@ class StorefrontController extends Controller
         $childCategories = Category::query()
             ->whereNotNull('parent_id')
             ->where('is_active', true)
-            ->withCount('products')
+            ->withCount(['products' => fn ($q) => $q->where('is_active', true)->whereHas('variants', fn ($v) => $v->where('stock', '>', 0))])
             ->orderBy('name')
             ->get();
 
@@ -676,6 +678,10 @@ class StorefrontController extends Controller
 
     public function product(Product $product): JsonResponse
     {
+        if (! $product->is_active || ! $product->variants()->where('stock', '>', 0)->exists()) {
+            return response()->json(['message' => 'Product not found or unavailable.'], 404);
+        }
+
         $product->load(['brand', 'category', 'variants', 'reviews', 'images']);
 
         return response()->json($this->productPayload($product));
@@ -737,6 +743,7 @@ class StorefrontController extends Controller
                     ->with(['brand', 'category', 'variants', 'reviews', 'images'])
                     ->whereIn('category_id', $categoryIds)
                     ->where('is_active', true)
+                    ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0))
                     ->latest()
                     ->take(5)
                     ->get();

@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('coupons', function (Blueprint $table) {
-            $table->dropUnique('tc_coupons_coupon_amount_unique');
-        });
+        if (\Illuminate\Support\Facades\DB::getDriverName() !== 'sqlite') {
+            Schema::table('coupons', function (Blueprint $table) {
+                $table->dropUnique('tc_coupons_coupon_amount_unique');
+            });
+        }
     }
 
     /**

@@ -42,6 +42,34 @@ class CheckoutController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // Validate that each product in cart is active and has sufficient stock
+        foreach ($request->input('cart', []) as $item) {
+            $product = \App\Models\Product::find($item['product_id'] ?? null);
+            if (! $product || ! $product->is_active) {
+                return response()->json([
+                    'error' => 'Product ' . ($product ? "'{$product->name}'" : '#' . ($item['product_id'] ?? '')) . ' is inactive or unavailable.',
+                ], 422);
+            }
+
+            $reqQty = max(1, (int) ($item['quantity'] ?? 1));
+            $variantId = $item['variant_id'] ?? $item['variantId'] ?? null;
+            if ($variantId) {
+                $variant = \App\Models\ProductVariant::find($variantId);
+                if (! $variant || (int) $variant->stock < $reqQty) {
+                    return response()->json([
+                        'error' => "Product '{$product->name}' is out of stock.",
+                    ], 422);
+                }
+            } else {
+                $hasStock = $product->variants()->where('stock', '>=', $reqQty)->exists();
+                if (! $hasStock) {
+                    return response()->json([
+                        'error' => "Product '{$product->name}' is out of stock.",
+                    ], 422);
+                }
+            }
+        }
+
         $deliveryDetails = $request->input('address') ?? $request->input('delivery_details') ?? [];
         $postcode = $deliveryDetails['postcode'] ?? '2000';
 

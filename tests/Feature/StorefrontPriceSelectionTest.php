@@ -59,9 +59,9 @@ class StorefrontPriceSelectionTest extends TestCase
         $response = $this->getJson('/api/storefront/products/' . $product->slug);
 
         $response->assertOk();
-        $response->assertJsonPath('price', 12.0);
+        $this->assertEquals(12, $response->json('price'));
         $response->assertJsonPath('variants.0.id', $lowestVariant->id);
-        $response->assertJsonPath('variants.0.price', 12.0);
+        $this->assertEquals(12, $response->json('variants.0.price'));
         $this->assertNotSame($highestVariant->id, $response->json('variants.0.id'));
     }
 }

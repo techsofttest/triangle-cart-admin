@@ -90,4 +90,20 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeInStock($query)
+    {
+        return $query->whereHas('variants', fn ($q) => $q->where('stock', '>', 0));
+    }
+
+    public function scopeAvailableForStorefront($query)
+    {
+        return $query->where('is_active', true)
+            ->whereHas('variants', fn ($q) => $q->where('stock', '>', 0));
+    }
 }
