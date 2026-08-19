@@ -16,6 +16,7 @@ class Product extends Model
         'category_id',
         'key_features',
         'description',
+        'search_keywords',
         'featured_image',
         'is_featured',
         'is_active',

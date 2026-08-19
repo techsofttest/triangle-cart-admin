@@ -83,12 +83,12 @@ class CheckoutController extends Controller
         $deliveryType = $request->input('delivery_type') ?? ($deliveryCheck['delivery_type'] ?? null);
 
         // If direct delivery is required, ensure delivery_date and delivery_slot_id are provided and valid
-        if ($deliveryType === 'direct') {
+        if ($deliveryType === 'direct' || $deliveryType === 'postcode') {
             $deliveryDate = $request->input('delivery_date');
             $deliverySlotId = $request->input('delivery_slot_id');
 
             $slotValid = false;
-            $availableDates = $this->deliveryEligibilityService->getAvailableDatesAndSlots('direct');
+            $availableDates = $this->deliveryEligibilityService->getAvailableDatesAndSlots($deliveryType);
             foreach ($availableDates as $d) {
                 if (($d['date'] ?? null) === $deliveryDate) {
                     $slots = $d['slots'] ?? [];
@@ -117,7 +117,7 @@ class CheckoutController extends Controller
         }
 
         $shippingInfo = $this->deliveryEligibilityService->calculateShipping($postcode, $subtotal);
-        $shippingCost = $shippingInfo['shipping_cost'] ?? 0;
+        $shippingCost = $shippingInfo['delivery_charge'] ?? $shippingInfo['shipping_cost'] ?? 0;
 
         $customerId = $request->input('customer_id');
         if (! $customerId) {

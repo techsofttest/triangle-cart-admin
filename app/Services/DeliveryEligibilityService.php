@@ -26,14 +26,12 @@ class DeliveryEligibilityService
             }
         }
 
-        $deliveryType = $serviceable ? 'direct' : 'courier';
         $subtotal = $this->calculateSubtotal($cartItems);
         $shippingDetails = $this->calculateShipping($customerPostcode, $subtotal);
-        $availableDates = $this->getAvailableDatesAndSlots($deliveryType);
+        $availableDates = $this->getAvailableDatesAndSlots($shippingDetails['delivery_type']);
 
         return array_merge([
             'valid' => true,
-            'delivery_type' => $deliveryType,
             'available_dates' => $availableDates,
         ], $shippingDetails);
     }
@@ -69,30 +67,34 @@ class DeliveryEligibilityService
         if ($deliveryPostcode) {
             $fee = (float) $deliveryPostcode->delivery_fee;
             $threshold = $deliveryPostcode->free_shipping_threshold !== null ? (float) $deliveryPostcode->free_shipping_threshold : null;
-            $isFree = $threshold !== null && $subtotal >= $threshold;
-
-            return [
-                'shipping_cost' => $isFree ? 0.0 : $fee,
-                'free_shipping_threshold' => $threshold,
-                'is_free_shipping' => $isFree,
-            ];
+            $deliveryType = 'postcode';
+        } else {
+            $fee = (float) config('delivery.courier.fee', 0);
+            $thresholdConfig = config('delivery.courier.free_threshold');
+            $threshold = $thresholdConfig !== null ? (float) $thresholdConfig : null;
+            $deliveryType = 'courier';
         }
 
-        // Courier fallback configuration
-        $courierFee = (float) config('delivery.courier.fee', 0);
-        $courierThreshold = (float) config('delivery.courier.free_threshold', 50.00);
-        $isFree = $subtotal >= $courierThreshold;
+        $isFree = $threshold !== null && $subtotal >= $threshold;
+        $deliveryCharge = $isFree ? 0.0 : $fee;
+        $amountUntilFree = $threshold !== null ? max(0.0, round($threshold - $subtotal, 2)) : null;
 
         return [
-            'shipping_cost' => $isFree ? 0.0 : $courierFee,
-            'free_shipping_threshold' => $courierThreshold,
+            'delivery_type' => $deliveryType,
+            'delivery_charge' => $deliveryCharge,
+            'free_shipping_threshold' => $threshold,
+            'amount_until_free_delivery' => $amountUntilFree,
+            'is_free_delivery' => $isFree,
+
+            // Backwards compatibility
+            'shipping_cost' => $deliveryCharge,
             'is_free_shipping' => $isFree,
         ];
     }
 
     public function getAvailableDatesAndSlots(string $deliveryType): array
     {
-        if ($deliveryType !== 'direct') {
+        if ($deliveryType !== 'direct' && $deliveryType !== 'postcode') {
             return [];
         }
 

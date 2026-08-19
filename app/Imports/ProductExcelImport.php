@@ -46,6 +46,7 @@ class ProductExcelImport implements ToArray, WithHeadingRow, WithChunkReading
             'stock'               => $excelRow['stock'] ?? 0,
             'key_features'        => $excelRow['key_features'] ?? null,
             'product_description' => $excelRow['product_description'] ?? null,
+            'search_keywords'     => $excelRow['search_keywords'] ?? $excelRow['search_terms'] ?? $excelRow['keywords'] ?? null,
             'expiry_date'         => $excelRow['expiry_date'] ?? null,
             'featured_image'      => $excelRow['featured_image'] ?? null,
             'additional_images'   => $excelRow['additional_images'] ?? null,

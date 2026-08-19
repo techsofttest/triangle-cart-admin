@@ -249,6 +249,13 @@ class ProductForm
                         ->label('Product Description')
                         ->columnSpanFull(),
 
+                    Textarea::make('search_keywords')
+                        ->label('Search Keywords')
+                        ->placeholder('e.g. amul mil, amul millk, amulmilk, milk')
+                        ->helperText('Enter comma-separated search terms. Include common misspellings, alternate spellings, alternate product names, or terms customers may commonly use when searching.')
+                        ->rows(3)
+                        ->columnSpanFull(),
+
                 ])->columnSpanFull(),
 
             /* ================= SEO ================= */

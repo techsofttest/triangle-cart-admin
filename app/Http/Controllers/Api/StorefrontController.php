@@ -182,6 +182,7 @@ class StorefrontController extends Controller
         return cache()->remember('search_dictionary', now()->addHours(12), function () {
             return collect()
                 ->merge(Product::pluck('name'))
+                ->merge(Product::whereNotNull('search_keywords')->pluck('search_keywords'))
                 ->merge(Brand::pluck('name'))
                 ->merge(Category::pluck('name'))
                 ->flatMap(function ($text) {
@@ -474,6 +475,7 @@ class StorefrontController extends Controller
                             foreach ($expandedKeywords as $searchTerm) {
                                 $q->orWhere('name', 'like', '%' . $searchTerm . '%')
                                     ->orWhere('sku', 'like', '%' . $searchTerm . '%')
+                                    ->orWhere('search_keywords', 'like', '%' . $searchTerm . '%')
                                     ->orWhereHas('variants', fn ($v) => $v->where('sku', 'like', '%' . $searchTerm . '%'))
                                     ->orWhereHas('brand', fn ($b) => $b->where('name', 'like', '%' . $searchTerm . '%'))
                                     ->orWhereHas('category', fn ($c) => $c->where('name', 'like', '%' . $searchTerm . '%'));
@@ -481,6 +483,7 @@ class StorefrontController extends Controller
                         });
                     }
                 })
+                ->orderByRaw("CASE WHEN name LIKE ? THEN 1 WHEN sku LIKE ? THEN 2 WHEN search_keywords LIKE ? THEN 3 ELSE 4 END", ['%' . $search . '%', '%' . $search . '%', '%' . $search . '%'])
                 ->take($perPage)
                 ->get()
                 ->map(fn (Product $product) => $this->productPayload($product))
@@ -609,6 +612,7 @@ class StorefrontController extends Controller
                         foreach ($expandedKeywords as $searchTerm) {
                             $q->orWhere('name', 'like', '%' . $searchTerm . '%')
                                 ->orWhere('sku', 'like', '%' . $searchTerm . '%')
+                                ->orWhere('search_keywords', 'like', '%' . $searchTerm . '%')
                                 ->orWhereHas('brand', fn ($brandQuery) => $brandQuery->where('name', 'like', '%' . $searchTerm . '%'))
                                 ->orWhereHas('category', fn ($categoryQuery) => $categoryQuery->where('name', 'like', '%' . $searchTerm . '%'));
                         }

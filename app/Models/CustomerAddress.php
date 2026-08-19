@@ -30,6 +30,13 @@ class CustomerAddress extends Model
         'is_default_billing'
     ];
 
+    protected $casts = [
+        'is_default_shipping' => 'boolean',
+        'is_default_billing' => 'boolean',
+        'latitude' => 'float',
+        'longitude' => 'float',
+    ];
+
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');

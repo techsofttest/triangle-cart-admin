@@ -126,6 +126,7 @@ class ProductImportService
                 'supplier_code' => $row['supplier_code'] ?? null,
                 'key_features' => $this->cleanRichText($row['key_features'] ?? null),
                 'description' => $this->cleanRichText($row['product_description'] ?? null),
+                'search_keywords' => $row['search_keywords'] ?? null,
                 'is_active' => true,
                 'requires_direct_delivery' => true,
                 'allows_courier' => $allowsCourier,
