@@ -80,15 +80,16 @@ class CheckoutController extends Controller
         }
 
         // Determine delivery type (direct/courier)
-        $deliveryType = $request->input('delivery_type') ?? ($deliveryCheck['delivery_type'] ?? null);
+        $rawDeliveryType = $request->input('delivery_type') ?? ($deliveryCheck['delivery_type'] ?? null);
+        $deliveryType = ($rawDeliveryType === 'direct' || $rawDeliveryType === 'postcode') ? 'direct' : 'courier';
 
         // If direct delivery is required, ensure delivery_date and delivery_slot_id are provided and valid
-        if ($deliveryType === 'direct' || $deliveryType === 'postcode') {
+        if ($deliveryType === 'direct') {
             $deliveryDate = $request->input('delivery_date');
             $deliverySlotId = $request->input('delivery_slot_id');
 
             $slotValid = false;
-            $availableDates = $this->deliveryEligibilityService->getAvailableDatesAndSlots($deliveryType);
+            $availableDates = $this->deliveryEligibilityService->getAvailableDatesAndSlots('direct');
             foreach ($availableDates as $d) {
                 if (($d['date'] ?? null) === $deliveryDate) {
                     $slots = $d['slots'] ?? [];
