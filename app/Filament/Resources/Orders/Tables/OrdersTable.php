@@ -159,12 +159,13 @@ class OrdersTable
                     })
                     ->searchable(),
             ])
+            ->checkIfRecordIsSelectableUsing(fn (\App\Models\Order $record): bool => $record->delivery_type !== 'courier')
             ->recordActions([
                 ViewAction::make(),
                 \Filament\Actions\Action::make('assignStaff')
                     ->label('Assign Staff')
                     ->icon('heroicon-o-user')
-                    ->visible(fn () => auth()->user()?->can('orders.assign') ?? false)
+                    ->visible(fn (\App\Models\Order $record): bool => $record->delivery_type !== 'courier' && (auth()->user()?->can('orders.assign') ?? false))
                     ->form([
                         \Filament\Forms\Components\Select::make('assigned_staff_id')
                             ->label('Staff Member')
@@ -182,6 +183,19 @@ class OrdersTable
                             'assigned_staff_id' => $data['assigned_staff_id'],
                             'assigned_at' => now(),
                             'assigned_by' => auth()->id(),
+                        ]);
+                    }),
+                \Filament\Actions\Action::make('markAsDelivered')
+                    ->label('Mark as Delivered')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn (\App\Models\Order $record): bool => $record->delivery_type === 'courier' && $record->status !== \App\Enums\OrderStatus::DELIVERED)
+                    ->requiresConfirmation()
+                    ->modalHeading('Mark Order as Delivered')
+                    ->modalDescription('Are you sure you want to mark this order as delivered?')
+                    ->action(function (\App\Models\Order $record): void {
+                        $record->update([
+                            'status' => \App\Enums\OrderStatus::DELIVERED,
                         ]);
                     }),
             ])
