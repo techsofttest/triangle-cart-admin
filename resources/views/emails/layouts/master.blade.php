@@ -76,7 +76,7 @@
     <div class="email-container">
         <!-- Header -->
         <div class="header">
-            <img src="{{ asset('images/logo/logo.webp') }}" alt="{{ config('app.name') }}" style="max-width: 150px; margin-top: 10px;">
+            <img src="{{ asset('images/logo/brand-logo-outline.png') }}" alt="{{ config('app.name') }}" style="max-width: 150px; margin-top: 10px;">
         </div>
 
         <!-- Content -->
