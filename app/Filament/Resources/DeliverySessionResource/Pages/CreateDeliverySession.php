@@ -3,37 +3,39 @@
 namespace App\Filament\Resources\DeliverySessionResource\Pages;
 
 use App\Filament\Resources\DeliverySessionResource\DeliverySessionResource;
-use App\Models\Order;
-use Carbon\Carbon;
+use App\Services\DeliverySessionService;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateDeliverySession extends CreateRecord
 {
     protected static string $resource = DeliverySessionResource::class;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    protected function handleRecordCreation(array $data): Model
     {
-        $data['delivery_date'] = Carbon::today()->toDateString();
-        $data['status'] = $data['status'] ?? 'in_progress';
+        $missedOrderIds = $data['missed_order_ids'] ?? [];
+        $todayOrderIds = $data['today_order_ids'] ?? [];
+        $futureOrderIds = $data['future_order_ids'] ?? [];
 
-        // Check if there are any orders for the selected timeslot
-        $ordersCount = Order::query()
-            ->where('delivery_slot_id', $data['delivery_slot_id'])
-            ->whereDate('delivery_date', $data['delivery_date'])
-            ->count();
+        unset($data['missed_order_ids'], $data['today_order_ids'], $data['future_order_ids']);
 
-        if ($ordersCount === 0) {
+        $selectedOrderIds = array_merge($missedOrderIds, $todayOrderIds, $futureOrderIds);
+        $selectedOrderIds = array_values(array_unique(array_filter($selectedOrderIds)));
+
+        if (empty($selectedOrderIds)) {
             Notification::make()
                 ->danger()
-                ->title('No Orders in Timeslot')
-                ->body('There are no orders scheduled for the selected timeslot. Please select a different time slot or date.')
+                ->title('No Orders Selected')
+                ->body('Please select at least one order to create a delivery session.')
                 ->send();
 
-            throw new \Exception('No orders found for the selected timeslot.');
+            $this->halt();
         }
 
-        return $data;
+        $data['status'] = $data['status'] ?? 'in_progress';
+
+        return app(DeliverySessionService::class)->createSessionWithOrders($data, $selectedOrderIds);
     }
 
     protected function getRedirectUrl(): string

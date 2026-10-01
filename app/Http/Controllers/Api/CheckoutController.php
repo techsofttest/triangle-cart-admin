@@ -10,13 +10,17 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 use App\Services\DeliveryEligibilityService;
+use App\Services\BuyXGetXPromotionService;
+use App\Services\FreeGiftPromotionService;
 use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
     public function __construct(
         protected PaymentGatewayInterface $paymentGateway,
-        protected DeliveryEligibilityService $deliveryEligibilityService
+        protected DeliveryEligibilityService $deliveryEligibilityService,
+        protected BuyXGetXPromotionService $promotionService,
+        protected FreeGiftPromotionService $freeGiftService
     ) {
     }
 
@@ -24,7 +28,7 @@ class CheckoutController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'cart' => 'required|array|min:1',
-            'cart.*.product_id' => 'required|exists:products,id',
+            'cart.*.product_id' => 'required',
             'cart.*.quantity' => 'required|integer|min:1',
             'cart.*.price' => 'required|numeric|min:0',
             'customer_id' => 'nullable|exists:customers,id',
@@ -42,12 +46,20 @@ class CheckoutController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // Validate that each product in cart is active and has sufficient stock
+        // Validate that each product in cart is active (or valid free gift) and has sufficient stock
         foreach ($request->input('cart', []) as $item) {
-            $product = \App\Models\Product::find($item['product_id'] ?? null);
-            if (! $product || ! $product->is_active) {
+            $rawProductId = $item['product_id'] ?? $item['id'] ?? null;
+            if (is_string($rawProductId) && str_starts_with($rawProductId, 'free-gift-')) {
+                $rawProductId = (int) str_replace('free-gift-', '', $rawProductId);
+            } elseif (is_string($rawProductId) && str_starts_with($rawProductId, 'free-')) {
+                $rawProductId = (int) str_replace('free-', '', $rawProductId);
+            }
+
+            $isFreeItem = !empty($item['is_free']) || !empty($item['is_free_gift']);
+            $product = $rawProductId ? \App\Models\Product::find($rawProductId) : null;
+            if (! $product || (! $product->is_active && ! $isFreeItem)) {
                 return response()->json([
-                    'error' => 'Product ' . ($product ? "'{$product->name}'" : '#' . ($item['product_id'] ?? '')) . ' is inactive or unavailable.',
+                    'error' => 'Product ' . ($product ? "'{$product->name}'" : '#' . ($rawProductId ?? '')) . ' is inactive or unavailable.',
                 ], 422);
             }
 
@@ -112,9 +124,19 @@ class CheckoutController extends Controller
             }
         }
 
+        // Server-side Buy X Get X promotion recalculation
+        $promoCalculation = $this->promotionService->calculatePromotion($request->input('cart', []));
+
+        // Server-side Free Gift promotion recalculation
+        $selectedGiftId = $request->input('selected_gift_id') ? (int) $request->input('selected_gift_id') : null;
+        $freeGiftCalculation = $this->freeGiftService->calculateFreeGift($promoCalculation['cart_items'], $selectedGiftId);
+        $recalculatedCartItems = $freeGiftCalculation['cart_items'];
+
         $subtotal = 0;
-        foreach ($request->input('cart') as $item) {
-            $subtotal += $item['price'] * $item['quantity'];
+        foreach ($recalculatedCartItems as $item) {
+            if (empty($item['is_free']) && empty($item['is_free_gift'])) {
+                $subtotal += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
+            }
         }
 
         $shippingInfo = $this->deliveryEligibilityService->calculateShipping($postcode, $subtotal);
@@ -206,10 +228,18 @@ class CheckoutController extends Controller
             ]);
 
             // Create order items
-            foreach ($request->input('cart') as $item) {
-                $product = \App\Models\Product::find($item['product_id']);
+            foreach ($recalculatedCartItems as $item) {
+                $rawProductId = $item['product_id'] ?? $item['id'] ?? null;
+                if (is_string($rawProductId) && str_starts_with($rawProductId, 'free-gift-')) {
+                    $productId = (int) str_replace('free-gift-', '', $rawProductId);
+                } elseif (is_string($rawProductId) && str_starts_with($rawProductId, 'free-')) {
+                    $productId = (int) str_replace('free-', '', $rawProductId);
+                } else {
+                    $productId = $rawProductId;
+                }
 
-                // Determine variant: prefer provided variant_id / variantId, otherwise pick a sensible fallback
+                $product = $productId ? \App\Models\Product::find($productId) : null;
+
                 $variantId = $item['variant_id'] ?? $item['variantId'] ?? null;
                 if (is_string($variantId)) {
                     $variantId = trim($variantId);
@@ -226,7 +256,6 @@ class CheckoutController extends Controller
                 }
 
                 if (!$variant && $product) {
-                    // Ensure variants are loaded and prefer the cheapest available variant by default
                     $product->loadMissing('variants');
                     $variant = $product->variants
                         ->filter(fn ($v) => (int) $v->stock > 0)
@@ -245,14 +274,23 @@ class CheckoutController extends Controller
                     $variantDetails = $variant->name ?? $variant->sku ?? null;
                 }
 
+                $isFree = !empty($item['is_free']) || !empty($item['is_free_gift']);
+                $isFreeGift = !empty($item['is_free_gift']);
+                $itemPrice = $isFree ? 0 : (float)($item['price'] ?? 0);
+                $itemQty = $isFreeGift ? 1 : max(1, (int)($item['quantity'] ?? 1));
+
                 $order->items()->create([
-                    'product_id' => $item['product_id'],
-                    'variant_id' => $variantId !== null ? $variantId : null,
-                    'product_name' => $product ? $product->name : 'Product #' . $item['product_id'],
-                    'variant_details' => $variantDetails,
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'line_total' => $item['price'] * $item['quantity'],
+                    'product_id'             => $productId,
+                    'variant_id'             => $variantId !== null ? $variantId : null,
+                    'product_name'           => $product ? $product->name : ($item['name'] ?? 'Product #' . $productId),
+                    'variant_details'        => $variantDetails,
+                    'quantity'               => $itemQty,
+                    'price'                  => $itemPrice,
+                    'line_total'             => $itemPrice * $itemQty,
+                    'is_free'                => $isFree,
+                    'promotion_id'           => ($isFree && !$isFreeGift) ? ($item['promotion_id'] ?? null) : null,
+                    'is_free_gift'           => $isFreeGift,
+                    'free_gift_promotion_id' => $isFreeGift ? ($item['free_gift_promotion_id'] ?? ($freeGiftCalculation['promotion_id'] ?? null)) : null,
                 ]);
             }
 

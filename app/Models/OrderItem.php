@@ -8,11 +8,14 @@ class OrderItem extends Model
 {
     protected $fillable = [
         'order_id', 'product_id', 'variant_id', 'product_name',
-        'variant_details', 'quantity', 'price', 'line_total', 'is_picked'
+        'variant_details', 'quantity', 'price', 'line_total', 'is_picked',
+        'is_free', 'promotion_id', 'is_free_gift', 'free_gift_promotion_id'
     ];
 
     protected $casts = [
         'is_picked' => 'boolean',
+        'is_free'   => 'boolean',
+        'is_free_gift' => 'boolean',
     ];
 
     public function order()
@@ -28,5 +31,15 @@ class OrderItem extends Model
     public function variant()
     {
         return $this->belongsTo(ProductVariant::class, 'variant_id');
+    }
+
+    public function promotion()
+    {
+        return $this->belongsTo(Promotion::class);
+    }
+
+    public function freeGiftPromotion()
+    {
+        return $this->belongsTo(FreeGiftPromotion::class, 'free_gift_promotion_id');
     }
 }

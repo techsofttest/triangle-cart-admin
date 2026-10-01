@@ -12,9 +12,7 @@ class DeliverySession extends Model
 {
     protected static function booted(): void
     {
-        static::created(function (DeliverySession $session) {
-            app(DeliverySessionService::class)->pullAndOptimize($session);
-        });
+        // Order pulling and optimization is managed explicitly by DeliverySessionService
     }
     protected $fillable = [
         'delivery_date',

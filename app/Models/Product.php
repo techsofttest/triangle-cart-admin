@@ -20,6 +20,7 @@ class Product extends Model
         'featured_image',
         'is_featured',
         'is_active',
+        'is_free_gift',
         'requires_direct_delivery',
         'allows_courier',
         'meta_title',
@@ -29,6 +30,7 @@ class Product extends Model
     protected $casts = [
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'is_free_gift' => 'boolean',
         'requires_direct_delivery' => 'boolean',
         'allows_courier' => 'boolean',
     ];
@@ -90,6 +92,16 @@ class Product extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function freeGiftPromotions()
+    {
+        return $this->belongsToMany(
+            FreeGiftPromotion::class,
+            'free_gift_promotion_products',
+            'product_id',
+            'free_gift_promotion_id'
+        )->withTimestamps();
     }
 
     public function scopeActive($query)

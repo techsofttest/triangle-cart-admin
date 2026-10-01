@@ -34,7 +34,12 @@ Route::get('/email/verify/{id}/{hash}', [CustomerVerificationController::class, 
     ->middleware('signed')
     ->name('customer.verification.verify');
 
+use App\Http\Controllers\Api\CartController;
+
 Route::post('/delivery/check', [DeliveryEligibilityController::class, 'check']);
+Route::post('/cart/calculate', [CartController::class, 'calculate'])->middleware('web');
+Route::post('/free-gift/calculate', [\App\Http\Controllers\Api\FreeGiftController::class, 'calculate'])->middleware('web');
+Route::post('/free-gift/select', [\App\Http\Controllers\Api\FreeGiftController::class, 'select'])->middleware('web');
 Route::post('/coupons/validate', [CouponController::class, 'validate'])->middleware('web');
 Route::post('/checkout', [CheckoutController::class, 'create'])->middleware('web');
 Route::post('/checkout/retry', [CheckoutController::class, 'retry'])->middleware('web');

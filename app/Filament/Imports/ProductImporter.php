@@ -59,7 +59,7 @@ class ProductImporter extends Importer
                 ->label('Margin %'),
 
             ImportColumn::make('selling_price')
-                ->label('Selling Price (ignored)'),
+                ->label('Selling Price (ignored)'), 
 
             ImportColumn::make('striked_price')
                 ->label('Striked Price'),

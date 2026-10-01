@@ -32,6 +32,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('/')
             ->login()
             ->profile()
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
             ->brandLogo(asset('images/logo/logo.webp?v1'))
             ->brandLogoHeight('2rem')
             ->middleware(['throttle:filament-login'])

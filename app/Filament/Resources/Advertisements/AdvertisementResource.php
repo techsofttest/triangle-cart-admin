@@ -30,6 +30,11 @@ class AdvertisementResource extends Resource
         return false;
     }
 
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return AdvertisementForm::configure($schema);

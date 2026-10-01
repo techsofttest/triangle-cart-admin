@@ -16,6 +16,131 @@ class DeliverySessionService
     ) {}
 
     /**
+     * Get eligible paid orders grouped into missed/previous, today's, and future orders.
+     *
+     * @param string|\Carbon\Carbon $deliveryDate
+     * @param int|null $deliverySlotId
+     * @param int|null $staffId
+     * @return array{missed: \Illuminate\Support\Collection, today: \Illuminate\Support\Collection, future: \Illuminate\Support\Collection}
+     */
+    public function getEligibleOrders(mixed $deliveryDate, ?int $deliverySlotId = null, ?int $staffId = null): array
+    {
+        $targetDate = \Carbon\Carbon::parse($deliveryDate)->toDateString();
+
+        // Orders currently in pending or delivered status in any session are not available.
+        // Orders with status 'failed' (missed deliveries) or not in any session ARE available.
+        $unavailableOrderIds = DeliverySessionOrder::query()
+            ->whereIn('status', ['pending', 'delivered'])
+            ->pluck('order_id');
+
+        $query = Order::query()
+            ->where(function ($q) {
+                $q->where('payment_status', PaymentStatus::PAID)
+                  ->orWhere('payment_status', 'paid');
+            })
+            ->whereNotIn('status', [
+                \App\Enums\OrderStatus::DELIVERED,
+                \App\Enums\OrderStatus::CANCELLED,
+                \App\Enums\OrderStatus::REFUNDED,
+            ])
+            ->whereNotIn('id', $unavailableOrderIds);
+
+        if ($staffId) {
+            $query->where(function ($q) use ($staffId) {
+                $q->whereNull('assigned_staff_id')
+                  ->orWhere('assigned_staff_id', $staffId);
+            });
+        }
+
+        $allEligible = $query->get();
+
+        $missed = $allEligible->filter(function ($order) use ($targetDate) {
+            $date = \Carbon\Carbon::parse($order->delivery_date)->toDateString();
+            return $date < $targetDate;
+        })->values();
+
+        $today = $allEligible->filter(function ($order) use ($targetDate, $deliverySlotId) {
+            $date = \Carbon\Carbon::parse($order->delivery_date)->toDateString();
+            if ($date !== $targetDate) {
+                return false;
+            }
+            if ($deliverySlotId !== null && (int)$order->delivery_slot_id !== (int)$deliverySlotId) {
+                return false;
+            }
+            return true;
+        })->values();
+
+        $future = $allEligible->filter(function ($order) use ($targetDate) {
+            $date = \Carbon\Carbon::parse($order->delivery_date)->toDateString();
+            return $date > $targetDate;
+        })->values();
+
+        return [
+            'missed' => $missed,
+            'today'  => $today,
+            'future' => $future,
+        ];
+    }
+
+    /**
+     * Attach a list of order IDs to a delivery session without changing their original delivery dates.
+     *
+     * @param DeliverySession $session
+     * @param array $orderIds
+     * @return int
+     */
+    public function attachOrdersToSession(DeliverySession $session, array $orderIds): int
+    {
+        $orderIds = array_values(array_unique(array_filter($orderIds)));
+        if (empty($orderIds)) {
+            return 0;
+        }
+
+        $orders = Order::whereIn('id', $orderIds)->get();
+        $seq = DeliverySessionOrder::where('delivery_session_id', $session->id)->max('stop_sequence') ?? 0;
+        $attachedCount = 0;
+
+        foreach ($orders as $order) {
+            $exists = $session->sessionOrders()->where('order_id', $order->id)->exists();
+            if (!$exists) {
+                $session->sessionOrders()->create([
+                    'order_id' => $order->id,
+                    'stop_sequence' => ++$seq,
+                    'status' => 'pending',
+                ]);
+
+                // Update staff assignment while preserving original delivery_date
+                $order->update([
+                    'assigned_staff_id' => $session->staff_id,
+                    'assigned_at' => now(),
+                    'assigned_by' => auth()->id(),
+                ]);
+
+                $attachedCount++;
+            }
+        }
+
+        return $attachedCount;
+    }
+
+    /**
+     * Create a delivery session with explicitly selected order IDs and optimize its route.
+     *
+     * @param array $sessionData
+     * @param array $orderIds
+     * @return DeliverySession
+     */
+    public function createSessionWithOrders(array $sessionData, array $orderIds): DeliverySession
+    {
+        $session = DeliverySession::create($sessionData);
+        if (!empty($orderIds)) {
+            $this->attachOrdersToSession($session, $orderIds);
+            $this->optimizeRoute($session);
+        }
+        return $session;
+    }
+
+    /**
      * Pull new paid orders for a delivery session's date and slot.
      *
      * @param DeliverySession $session
@@ -23,30 +148,14 @@ class DeliverySessionService
      */
     public function pullOrders(DeliverySession $session): int
     {
-        $orders = Order::where('delivery_date', $session->delivery_date)
-            ->where('delivery_slot_id', $session->delivery_slot_id)
-            ->where('assigned_staff_id', $session->staff_id)
-            ->where('payment_status', PaymentStatus::PAID)
-            ->whereNotIn('id', function ($query) {
-                $query->select('order_id')->from('delivery_session_orders');
-            })
-            ->get();
+        $eligible = $this->getEligibleOrders($session->delivery_date, $session->delivery_slot_id, $session->staff_id);
+        $orderIds = $eligible['today']->pluck('id')->toArray();
 
-        if ($orders->isEmpty()) {
+        if (empty($orderIds)) {
             return 0;
         }
 
-        $seq = DeliverySessionOrder::where('delivery_session_id', $session->id)->max('stop_sequence') ?? 0;
-        
-        foreach ($orders as $order) {
-            $session->sessionOrders()->create([
-                'order_id' => $order->id,
-                'stop_sequence' => ++$seq,
-                'status' => 'pending',
-            ]);
-        }
-
-        return $orders->count();
+        return $this->attachOrdersToSession($session, $orderIds);
     }
 
     /**

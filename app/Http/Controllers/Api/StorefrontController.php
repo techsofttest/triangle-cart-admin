@@ -664,17 +664,7 @@ class StorefrontController extends Controller
             $products = $query->get();
         }
 
-        if ($products->count() < $minProducts && ! $request->has('brand') && ! $request->has('search') && $categoryIds) {
-            $alreadyIncludedIds = $products->pluck('id')->all();
 
-            $fallbackProducts = (clone $baseQuery)
-                ->whereNotIn('id', $alreadyIncludedIds)
-                ->latest()
-                ->take($minProducts - $products->count())
-                ->get();
-
-            $products = $products->merge($fallbackProducts)->take($minProducts)->values();
-        }
 
         $page = (int) $request->integer('page', 1);
         $paginator = new LengthAwarePaginator(
@@ -785,6 +775,17 @@ class StorefrontController extends Controller
                 'text' => $announcement->text,
             ])->values();
 
+        $promotions = \App\Models\Promotion::query()
+            ->active()
+            ->whereNotNull('offer_image')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (\App\Models\Promotion $promo) => [
+                'id'          => $promo->id,
+                'name'        => $promo->name,
+                'offer_image' => $this->assetUrl($promo->offer_image),
+            ])->values();
+
         return response()->json([
             'home_advertisement' => $homeAdvertisement ? [
                 'id' => $homeAdvertisement->id,
@@ -799,6 +800,7 @@ class StorefrontController extends Controller
             'sections' => $sections,
             'featured_categories' => $featuredCategories,
             'announcements' => $announcements,
+            'promotions' => $promotions,
         ]);
     }
 
