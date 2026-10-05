@@ -57,7 +57,7 @@ class CheckoutController extends Controller
 
             $isFreeItem = !empty($item['is_free']) || !empty($item['is_free_gift']);
             $product = $rawProductId ? \App\Models\Product::find($rawProductId) : null;
-            if (! $product || (! $product->is_active && ! $isFreeItem)) {
+            if (! $product || (! $product->is_active && ! $isFreeItem && ! $product->is_free_gift)) {
                 return response()->json([
                     'error' => 'Product ' . ($product ? "'{$product->name}'" : '#' . ($rawProductId ?? '')) . ' is inactive or unavailable.',
                 ], 422);

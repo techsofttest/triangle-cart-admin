@@ -229,7 +229,7 @@ class FreeGiftPromotionService
             'remaining_amount' => round($remainingAmount, 2),
             'has_excluded_category' => $hasExcludedCategory,
             'excluded_category_message' => $hasExcludedCategory
-                ? 'This order is not eligible for a free gift because your cart contains an excluded product category.'
+                ? 'This order is not eligible for a free product because your cart contains an excluded product category.'
                 : null,
             'gift_options' => $validGiftOptions,
             'selected_gift' => $selectedGiftOption,

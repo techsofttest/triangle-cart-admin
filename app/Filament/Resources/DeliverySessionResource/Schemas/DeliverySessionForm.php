@@ -9,6 +9,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use App\Models\TimeSlot;
 use App\Services\DeliverySessionService;
 use Carbon\Carbon;
@@ -34,6 +35,11 @@ class DeliverySessionForm
                     ->label('Staff')
                     ->required()
                     ->live()
+                    ->afterStateUpdated(function (Set $set, Get $get) {
+                        $set('today_order_ids', static::getTodayDefaultIds($get));
+                        $set('missed_order_ids', []);
+                        $set('future_order_ids', []);
+                    })
                     ->default(fn () => auth()->id())
                     ->disabled(fn () => auth()->user()?->hasRole('Staff') || auth()->user()?->role === 'staff')
                     ->dehydrated(true),
@@ -45,12 +51,39 @@ class DeliverySessionForm
                     ->native(false)
                     ->disabled(fn ($operation) => $operation !== 'create')
                     ->live()
+                    ->afterStateUpdated(function (Set $set, Get $get, $state) {
+                        $defaultSlotId = TimeSlot::query()
+                            ->whereHas('deliveryDate', fn ($q) => $q->whereDate('date', $state ?? Carbon::today()->toDateString()))
+                            ->orderBy('start_time')
+                            ->first()?->id;
+
+                        if (! $defaultSlotId) {
+                            $defaultSlotId = TimeSlot::query()->orderBy('start_time')->first()?->id;
+                        }
+
+                        $set('delivery_slot_id', $defaultSlotId);
+                        $set('today_order_ids', static::getTodayDefaultIds($get));
+                        $set('missed_order_ids', []);
+                        $set('future_order_ids', []);
+                    })
                     ->dehydrated(true),
 
                 Select::make('delivery_slot_id')
                     ->label('Time Slot')
                     ->required()
                     ->live()
+                    ->default(function (Get $get) {
+                        $date = $get('delivery_date') ?? Carbon::today()->toDateString();
+                        $firstSlot = TimeSlot::query()
+                            ->whereHas('deliveryDate', fn ($query) => $query->whereDate('date', $date))
+                            ->orderBy('start_time')
+                            ->first();
+
+                        return $firstSlot?->id ?? TimeSlot::query()->orderBy('start_time')->first()?->id;
+                    })
+                    ->afterStateUpdated(function (Set $set, Get $get) {
+                        $set('today_order_ids', static::getTodayDefaultIds($get));
+                    })
                     ->options(function (Get $get) {
                         $date = $get('delivery_date') ?? Carbon::today()->toDateString();
                         $slots = TimeSlot::query()
@@ -137,6 +170,10 @@ class DeliverySessionForm
         $slotId = $get('delivery_slot_id') ? (int)$get('delivery_slot_id') : null;
         $staffId = $get('staff_id') ? (int)$get('staff_id') : null;
 
+        if ($category === 'today' && ! $slotId) {
+            return [];
+        }
+
         $eligible = app(DeliverySessionService::class)->getEligibleOrders($date, $slotId, $staffId);
         $collection = $eligible[$category] ?? collect();
 
@@ -157,6 +194,10 @@ class DeliverySessionForm
         $date = $get('delivery_date') ?? Carbon::today()->toDateString();
         $slotId = $get('delivery_slot_id') ? (int)$get('delivery_slot_id') : null;
         $staffId = $get('staff_id') ? (int)$get('staff_id') : null;
+
+        if (! $slotId) {
+            return [];
+        }
 
         $eligible = app(DeliverySessionService::class)->getEligibleOrders($date, $slotId, $staffId);
 
