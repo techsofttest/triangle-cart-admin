@@ -565,6 +565,15 @@
 
                 <div class="order-product-list">
                     @foreach ($this->record->items as $item)
+                        @php
+                            $isFree = (bool)($item->is_free || $item->is_free_gift);
+                            $offerName = null;
+                            if ($item->is_free_gift) {
+                                $offerName = $item->freeGiftPromotion?->name ?? "Free Gift";
+                            } elseif ($item->is_free) {
+                                $offerName = $item->promotion?->name ?? "Buy X Get X";
+                            }
+                        @endphp
                         <div class="order-product-item">
                             @php
                                 $productImage = ($item->product && $item->product->featured_image)
@@ -579,6 +588,11 @@
                             <div class="order-product-details">
                                 <div class="order-product-name">
                                     {{ $item->product_name }}
+                                    @if($isFree)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200 ml-2">
+                                            Free Product ({{ $offerName }})
+                                        </span>
+                                    @endif
                                 </div>
 
                                 <div class="order-product-variant product-extra" style="margin-top:0.5rem;font-size:0.85rem;color:rgba(107,114,128,1);">

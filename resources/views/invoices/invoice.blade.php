@@ -147,9 +147,23 @@
             </thead>
             <tbody>
                 @foreach($order->items as $item)
+                    @php
+                        $isFree = (bool)($item->is_free || $item->is_free_gift);
+                        $offerName = null;
+                        if ($item->is_free_gift) {
+                            $offerName = $item->freeGiftPromotion?->name ?? "Free Gift";
+                        } elseif ($item->is_free) {
+                            $offerName = $item->promotion?->name ?? "Buy X Get X";
+                        }
+                    @endphp
                     <tr>
                         <td>
                             {{ $item->product_name }}
+                            @if($isFree)
+                                <div style="margin-top: 3px; font-size: 10px; font-weight: bold; color: #b45309;">
+                                    [FREE PRODUCT ({{ $offerName }})]
+                                </div>
+                            @endif
                             <div class="product-extra">
                                 @if($item->product?->brand?->name)
                                 <div>Brand: {{ $item->product->brand->name }}</div>
@@ -158,9 +172,9 @@
                         </td>
                         <td>@if($item->variant?->size){{ $item->variant->size }}@endif @if($item->variant?->unit){{ $item->variant->unit }}@endif</td>
                         
-                        <td class="right">${{ number_format($item->price, 2) }}</td>
+                        <td class="right">{{ $isFree ? "FREE" : "$" . number_format($item->price, 2) }}</td>
                         <td class="right">{{ $item->quantity }}</td>
-                        <td class="right">${{ number_format($item->line_total, 2) }}</td>
+                        <td class="right">{{ $isFree ? "$0.00" : "$" . number_format($item->line_total, 2) }}</td>
                     </tr>
                 @endforeach
             </tbody>

@@ -15,7 +15,7 @@ class SendCustomerOrderConfirmation
     public function handle(OrderPaymentSuccessful $event): void
     {
         if ($event->order->customer_email) {
-            $this->mailService->send($event->order->customer_email, new CustomerOrderPaidMail($event->order->fresh(['items', 'customer'])));
+            $this->mailService->send($event->order->customer_email, new CustomerOrderPaidMail($event->order->fresh(['items.promotion', 'items.freeGiftPromotion', 'customer'])));
         }
     }
 }

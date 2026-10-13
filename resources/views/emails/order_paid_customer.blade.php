@@ -52,12 +52,42 @@
         </thead>
         <tbody>
             @foreach ($order->items as $item)
-            <tr style="border-bottom: 1px solid #edf2f7;">
-                <td style="padding: 12px 10px; font-weight: 500;">{{ $item->product_name }}</td>
+            @php
+                $isFree = (bool)($item->is_free || $item->is_free_gift);
+                $offerName = null;
+                if ($item->is_free_gift) {
+                    $offerName = $item->freeGiftPromotion?->name ?? 'Free Gift';
+                } elseif ($item->is_free) {
+                    $offerName = $item->promotion?->name ?? 'Buy X Get X';
+                }
+            @endphp
+            <tr style="border-bottom: 1px solid #edf2f7; {{ $isFree ? 'background-color: #fefce8;' : '' }}">
+                <td style="padding: 12px 10px; font-weight: 500;">
+                    {{ $item->product_name }}
+                    @if($isFree)
+                        <div style="margin-top: 4px;">
+                            <span style="display: inline-block; background-color: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; border: 1px solid #fde68a;">
+                                FREE PRODUCT ({{ $offerName }})
+                            </span>
+                        </div>
+                    @endif
+                </td>
                 <td style="padding: 12px 10px; color: #64748b; font-size: 13px;">{{ $item->variant_details ?: 'N/A' }}</td>
                 <td style="padding: 12px 10px; text-align: center;">{{ $item->quantity }}</td>
-                <td style="padding: 12px 10px; text-align: right;">${{ number_format((float) $item->price, 2) }}</td>
-                <td style="padding: 12px 10px; text-align: right; font-weight: 500;">${{ number_format((float) $item->line_total, 2) }}</td>
+                <td style="padding: 12px 10px; text-align: right;">
+                    @if($isFree)
+                        <span style="color: #16a34a; font-weight: 700;">FREE</span>
+                    @else
+                        ${{ number_format((float) $item->price, 2) }}
+                    @endif
+                </td>
+                <td style="padding: 12px 10px; text-align: right; font-weight: 500;">
+                    @if($isFree)
+                        <span style="color: #16a34a; font-weight: 700;">$0.00</span>
+                    @else
+                        ${{ number_format((float) $item->line_total, 2) }}
+                    @endif
+                </td>
             </tr>
             @endforeach
         </tbody>
