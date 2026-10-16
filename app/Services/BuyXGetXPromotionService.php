@@ -28,12 +28,17 @@ class BuyXGetXPromotionService
      */
     public function calculatePromotion(array $rawCartItems): array
     {
-        // Filter out existing promotional/free items submitted by frontend or previous calculation
+        // Filter out existing promotional/free items (Buy X Get X items) submitted by frontend or previous calculation,
+        // but preserve free gift items so FreeGiftPromotionService can process them.
         $userPaidCartItems = array_values(array_filter($rawCartItems, function ($item) {
+            $isFreeGift = !empty($item['is_free_gift']);
+            $itemId = (string)($item['id'] ?? $item['product_id'] ?? '');
+            if ($isFreeGift || str_starts_with($itemId, 'free-gift-')) {
+                return true;
+            }
             if (!empty($item['is_free'])) {
                 return false;
             }
-            $itemId = (string)($item['id'] ?? $item['product_id'] ?? '');
             if (str_starts_with($itemId, 'free-')) {
                 return false;
             }
@@ -101,6 +106,11 @@ class BuyXGetXPromotionService
                 in_array((int) $product->id, $eligibleProductIds, true) ||
                 ($productCategoryId && in_array($productCategoryId, $eligibleCategoryIds, true)) ||
                 ($productBrandId && in_array($productBrandId, $eligibleBrandIds, true));
+
+            // Free gifts do not count towards qualifying Buy X Get X quantity
+            if (!empty($item['is_free_gift']) || (is_string($item['id'] ?? null) && str_starts_with($item['id'], 'free-gift-')) || (is_string($item['product_id'] ?? null) && str_starts_with($item['product_id'], 'free-gift-'))) {
+                continue;
+            }
 
             if ($isEligible) {
                 $currentQuantity += max(0, (int) ($item['quantity'] ?? 1));

@@ -125,10 +125,23 @@ class CheckoutController extends Controller
         }
 
         // Server-side Buy X Get X promotion recalculation
-        $promoCalculation = $this->promotionService->calculatePromotion($request->input('cart', []));
+        $rawCart = $request->input('cart', []);
+        $promoCalculation = $this->promotionService->calculatePromotion($rawCart);
 
         // Server-side Free Gift promotion recalculation
         $selectedGiftId = $request->input('selected_gift_id') ? (int) $request->input('selected_gift_id') : null;
+        if (! $selectedGiftId) {
+            foreach ($rawCart as $rawItem) {
+                $rawId = $rawItem['product_id'] ?? $rawItem['id'] ?? null;
+                if (! empty($rawItem['is_free_gift']) || (is_string($rawId) && str_starts_with($rawId, 'free-gift-'))) {
+                    $cleanId = is_string($rawId) ? (int) str_replace('free-gift-', '', $rawId) : (int) $rawId;
+                    if ($cleanId) {
+                        $selectedGiftId = $cleanId;
+                        break;
+                    }
+                }
+            }
+        }
         $freeGiftCalculation = $this->freeGiftService->calculateFreeGift($promoCalculation['cart_items'], $selectedGiftId);
         $recalculatedCartItems = $freeGiftCalculation['cart_items'];
 

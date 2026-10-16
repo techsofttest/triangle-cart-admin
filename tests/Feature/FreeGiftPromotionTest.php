@@ -292,4 +292,62 @@ class FreeGiftPromotionTest extends TestCase
         $this->assertEquals(1, $freeItem->quantity);
         $this->assertEquals($promo->id, $freeItem->free_gift_promotion_id);
     }
+
+    public function test_checkout_with_multiple_gift_options_and_coupon_preserves_free_gift(): void
+    {
+        $paidProd = $this->createProductWithVariant(['name' => 'Paid Item 2', 'is_active' => true], 10, 100.00);
+        $giftA = $this->createProductWithVariant(['name' => 'Gift Option A', 'is_active' => false, 'is_free_gift' => true], 5, 0.00);
+        $giftB = $this->createProductWithVariant(['name' => 'Gift Option B', 'is_active' => false, 'is_free_gift' => true], 5, 0.00);
+
+        $promo = FreeGiftPromotion::create([
+            'name' => 'Multi Gift Promo',
+            'status' => 'active',
+            'minimum_cart_amount' => 100.00,
+        ]);
+        $promo->freeProducts()->attach([$giftA->id, $giftB->id]);
+
+        $coupon = \App\Models\Coupon::create([
+            'coupon_code' => 'TESTGIFT20',
+            'coupon_name' => '20% Off',
+            'coupon_type' => 'percentage',
+            'coupon_amount' => 20,
+            'active' => true,
+        ]);
+
+        $payload = [
+            'cart' => [
+                ['product_id' => $paidProd->id, 'quantity' => 1, 'price' => 100.00],
+                ['product_id' => 'free-gift-' . $giftB->id, 'quantity' => 1, 'price' => 0.00, 'is_free' => true, 'is_free_gift' => true],
+            ],
+            'coupon_code' => 'TESTGIFT20',
+            'address' => [
+                'contact_name' => 'Jane Doe',
+                'email' => 'jane@example.com',
+                'phone' => '0400000000',
+                'address_line_1' => '123 Test St',
+                'city' => 'Sydney',
+                'state' => 'NSW',
+                'postcode' => '2000',
+                'country' => 'Australia',
+            ],
+            'payment_method' => 'card',
+        ];
+
+        $response = $this->postJson('/api/checkout', $payload);
+        $response->assertOk();
+
+        $orderId = $response->json('order_id');
+        $order = Order::with('items')->find($orderId);
+
+        $this->assertNotNull($order);
+        // Order subtotal before discount: 100, discount: 20
+        $this->assertEquals(100.00, (float)$order->subtotal);
+        $this->assertEquals(20.00, (float)$order->discount);
+
+        $freeItem = $order->items->firstWhere('is_free_gift', true);
+        $this->assertNotNull($freeItem, 'Free gift item must be present in order items even with coupon discount and multi gifts.');
+        $this->assertEquals($giftB->id, $freeItem->product_id);
+        $this->assertEquals(0, $freeItem->price);
+        $this->assertEquals($promo->id, $freeItem->free_gift_promotion_id);
+    }
 }

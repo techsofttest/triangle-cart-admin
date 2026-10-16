@@ -34,6 +34,18 @@ class CartController extends Controller
 
         $rawCart = $request->input('cart', []);
         $selectedGiftId = $request->input('selected_gift_id') ? (int) $request->input('selected_gift_id') : null;
+        if (! $selectedGiftId) {
+            foreach ($rawCart as $rawItem) {
+                $rawId = $rawItem['product_id'] ?? $rawItem['id'] ?? null;
+                if (! empty($rawItem['is_free_gift']) || (is_string($rawId) && str_starts_with($rawId, 'free-gift-'))) {
+                    $cleanId = is_string($rawId) ? (int) str_replace('free-gift-', '', $rawId) : (int) $rawId;
+                    if ($cleanId) {
+                        $selectedGiftId = $cleanId;
+                        break;
+                    }
+                }
+            }
+        }
 
         // Recalculate Buy X Get X promotion server-side
         $promoResult = $this->promotionService->calculatePromotion($rawCart);
