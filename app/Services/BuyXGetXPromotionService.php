@@ -34,8 +34,9 @@ class BuyXGetXPromotionService
 
     /**
      * Recalculate promotion state and return structured result.
-     * Evaluates all active Buy X Get X promotions and returns the first one
-     * for which the cart qualifies (or the one with the best partial progress).
+     * ALL active Buy X Get X promotions are evaluated independently and their
+     * free products are merged — if the cart qualifies for multiple offers,
+     * all corresponding free items are added.
      *
      * @param array $rawCartItems
      * @return array
@@ -61,166 +62,9 @@ class BuyXGetXPromotionService
 
         $offers = $this->getActiveOffers();
 
-        // Resolve the best matching offer: prefer one that fully qualifies,
-        // then fall back to the one with the highest partial progress.
-        $offer    = null;
-        $bestQty  = -1;
-        foreach ($offers as $candidate) {
-            $qty = $this->countEligibleQty($candidate, $userPaidCartItems);
-            if ($qty >= (int) $candidate->eligible_quantity) {
-                // Fully qualified — use this offer immediately
-                $offer = $candidate;
-                break;
-            }
-            if ($qty > $bestQty) {
-                $bestQty = $qty;
-                $offer   = $candidate;
-            }
-        }
-
-        if (!$offer) {
+        if ($offers->isEmpty()) {
             return [
                 'promotion'  => null,
-                'free_item'  => null,
-                'cart_items' => $userPaidCartItems,
-                'qualified'  => false,
-            ];
-        }
-
-        $eligibleProductIds  = array_map('intval', $offer->eligibleProducts->pluck('id')->toArray());
-        $eligibleCategoryIds = array_map('intval', $offer->eligibleCategories->pluck('id')->toArray());
-        $eligibleBrandIds    = array_map('intval', $offer->eligibleBrands->pluck('id')->toArray());
-
-        if (!empty($eligibleCategoryIds)) {
-            $childCategoryIds    = \App\Models\Category::whereIn('parent_id', $eligibleCategoryIds)->pluck('id')->toArray();
-            $eligibleCategoryIds = array_unique(array_merge($eligibleCategoryIds, array_map('intval', $childCategoryIds)));
-        }
-
-        $hasRestrictions = !empty($eligibleProductIds) || !empty($eligibleCategoryIds) || !empty($eligibleBrandIds);
-
-        // Calculate qualifying quantity from customer-purchased products
-        $currentQuantity = 0;
-
-        foreach ($userPaidCartItems as $item) {
-            $rawId        = $item['product_id'] ?? $item['id'] ?? null;
-            $rawVariantId = $item['variant_id'] ?? $item['variantId'] ?? null;
-
-            if (is_string($rawId) && str_starts_with($rawId, 'free-gift-')) {
-                $rawId = (int) str_replace('free-gift-', '', $rawId);
-            } elseif (is_string($rawId) && str_starts_with($rawId, 'free-')) {
-                $rawId = (int) str_replace('free-', '', $rawId);
-            }
-
-            $product = null;
-            if ($rawId && is_numeric($rawId)) {
-                $product = Product::find((int) $rawId);
-            }
-
-            if (! $product && $rawVariantId && is_numeric($rawVariantId)) {
-                $variant = \App\Models\ProductVariant::with('product')->find((int) $rawVariantId);
-                $product = $variant?->product;
-            }
-
-            if (! $product && $rawId && is_numeric($rawId)) {
-                $variant = \App\Models\ProductVariant::with('product')->find((int) $rawId);
-                $product = $variant?->product;
-            }
-
-            if (! $product || (! $product->is_active && ! $product->is_free_gift)) {
-                continue;
-            }
-
-            $productBrandId    = $product->brand_id    ? (int) $product->brand_id    : null;
-            $productCategoryId = $product->category_id ? (int) $product->category_id : null;
-
-            $isEligible = ! $hasRestrictions ||
-                in_array((int) $product->id, $eligibleProductIds, true) ||
-                ($productCategoryId && in_array($productCategoryId, $eligibleCategoryIds, true)) ||
-                ($productBrandId && in_array($productBrandId, $eligibleBrandIds, true));
-
-            // Free gifts do not count towards qualifying Buy X Get X quantity
-            if (!empty($item['is_free_gift']) || (is_string($item['id'] ?? null) && str_starts_with($item['id'], 'free-gift-')) || (is_string($item['product_id'] ?? null) && str_starts_with($item['product_id'], 'free-gift-'))) {
-                continue;
-            }
-
-            if ($isEligible) {
-                $currentQuantity += max(0, (int) ($item['quantity'] ?? 1));
-            }
-        }
-
-        $eligibleQty = (int) $offer->eligible_quantity;
-
-        if ($currentQuantity < $eligibleQty) {
-            $needed = max(0, $eligibleQty - $currentQuantity);
-            return [
-                'promotion' => [
-                    'type'               => 'buy_x_get_x',
-                    'offer_id'           => $offer->id,
-                    'name'               => $offer->name,
-                    'qualified'          => false,
-                    'eligible_quantity'  => $eligibleQty,
-                    'current_quantity'   => $currentQuantity,
-                    'remaining_quantity' => $needed,
-                    'message'            => "Buy {$needed} more eligible item" . ($needed > 1 ? 's' : '') . " to get a free product!",
-                ],
-                'free_item'  => null,
-                'cart_items' => $userPaidCartItems,
-                'qualified'  => false,
-            ];
-        }
-
-        // Cart qualifies! Evaluate every configured free product independently
-        $qualifyingFreeItems = [];
-
-        foreach ($offer->freeProducts as $freeProduct) {
-            if (!$freeProduct->is_active && !$freeProduct->is_free_gift) {
-                continue;
-            }
-
-            // Check stock of variants
-            $availableVariant = $freeProduct->variants
-                ->filter(fn ($v) => (int)$v->stock > 0)
-                ->sortBy(fn ($v) => [(float)$v->selling_price, (string)($v->sku ?? '')])
-                ->first();
-
-            $hasVariants = $freeProduct->variants->isNotEmpty();
-
-            // Product qualifies if:
-            // 1. It has variants and at least one variant has stock > 0
-            // 2. It has no variants (stock is considered > 0 or product level)
-            if ($hasVariants && !$availableVariant) {
-                continue;
-            }
-
-            $qualifyingFreeItems[] = [
-                'id'           => 'free-' . $freeProduct->id,
-                'product_id'   => $freeProduct->id,
-                'variant_id'   => $availableVariant?->id ?? null,
-                'name'         => $freeProduct->name,
-                'price'        => 0,
-                'quantity'     => 1,
-                'is_free'      => true,
-                'promotion_id' => $offer->id,
-                'image'        => $freeProduct->featured_image ?? $freeProduct->image ?? '',
-                'brand'        => $freeProduct->brand?->name ?? 'General',
-                'weight'       => $availableVariant ? trim("{$availableVariant->size} {$availableVariant->unit}") : '1 unit',
-                'category'     => $freeProduct->category?->slug ?? 'General',
-                'inStock'      => true,
-            ];
-        }
-
-        if (empty($qualifyingFreeItems)) {
-            return [
-                'promotion' => [
-                    'type'               => 'buy_x_get_x',
-                    'offer_id'           => $offer->id,
-                    'name'               => $offer->name,
-                    'qualified'          => false,
-                    'eligible_quantity'  => $eligibleQty,
-                    'current_quantity'   => $currentQuantity,
-                    'remaining_quantity' => 0,
-                    'message'            => 'Free product is currently unavailable.',
-                ],
                 'free_item'  => null,
                 'free_items' => [],
                 'cart_items' => $userPaidCartItems,
@@ -228,35 +72,182 @@ class BuyXGetXPromotionService
             ];
         }
 
-        $finalCartItems = array_merge($userPaidCartItems, $qualifyingFreeItems);
+        // Evaluate every offer independently and collect results
+        $qualifiedOffers    = [];   // offers the cart fully qualifies for
+        $unqualifiedOffers  = [];   // offers with partial progress (for the UI nudge)
+        $allFreeItems       = [];   // merged free items from all qualified offers
+
+        foreach ($offers as $offer) {
+            $currentQty  = $this->countEligibleQty($offer, $userPaidCartItems);
+            $eligibleQty = (int) $offer->eligible_quantity;
+
+            if ($currentQty < $eligibleQty) {
+                $unqualifiedOffers[] = [
+                    'offer'       => $offer,
+                    'currentQty'  => $currentQty,
+                    'eligibleQty' => $eligibleQty,
+                    'needed'      => $eligibleQty - $currentQty,
+                ];
+                continue;
+            }
+
+            // Offer qualifies — collect its free products
+            $freeItemsForOffer = $this->buildFreeItems($offer);
+
+            if (!empty($freeItemsForOffer)) {
+                $qualifiedOffers[] = [
+                    'offer'      => $offer,
+                    'currentQty' => $currentQty,
+                    'freeItems'  => $freeItemsForOffer,
+                ];
+                $allFreeItems = array_merge($allFreeItems, $freeItemsForOffer);
+            } else {
+                // Qualified but stock unavailable
+                $unqualifiedOffers[] = [
+                    'offer'       => $offer,
+                    'currentQty'  => $currentQty,
+                    'eligibleQty' => $eligibleQty,
+                    'needed'      => 0,
+                    'unavailable' => true,
+                ];
+            }
+        }
+
+        // Build the aggregated promotion summary
+        if (!empty($qualifiedOffers)) {
+            $qualifiedNames = implode(' + ', array_map(fn ($o) => $o['offer']->name, $qualifiedOffers));
+
+            $promotionSummary = [
+                'type'          => 'buy_x_get_x',
+                'qualified'     => true,
+                'free_quantity' => count($allFreeItems),
+                'free_products' => array_map(fn ($item) => [
+                    'id'         => $item['product_id'],
+                    'name'       => $item['name'],
+                    'image'      => $item['image'],
+                    'offer_id'   => $item['promotion_id'],
+                    'offer_name' => $item['promotion_name'],
+                ], $allFreeItems),
+                // Individual offer details for the frontend (progress bars, etc.)
+                'offers'        => array_map(fn ($o) => [
+                    'offer_id'          => $o['offer']->id,
+                    'name'              => $o['offer']->name,
+                    'qualified'         => true,
+                    'eligible_quantity' => (int) $o['offer']->eligible_quantity,
+                    'current_quantity'  => $o['currentQty'],
+                    'remaining_quantity'=> 0,
+                    'message'           => $o['offer']->name . ' applied!',
+                ], $qualifiedOffers),
+                // Legacy flat fields (kept for backward compat with the frontend)
+                'offer_id'          => $qualifiedOffers[0]['offer']->id,
+                'name'              => $qualifiedNames,
+                'eligible_quantity' => (int) $qualifiedOffers[0]['offer']->eligible_quantity,
+                'current_quantity'  => $qualifiedOffers[0]['currentQty'],
+                'remaining_quantity'=> 0,
+                'message'           => $qualifiedNames . ' applied!',
+            ];
+
+            $finalCartItems = array_merge($userPaidCartItems, $allFreeItems);
+
+            return [
+                'promotion'  => $promotionSummary,
+                'free_item'  => $allFreeItems[0] ?? null,
+                'free_items' => $allFreeItems,
+                'cart_items' => $finalCartItems,
+                'qualified'  => true,
+            ];
+        }
+
+        // Nothing fully qualified — return progress info for the best partial offer
+        usort($unqualifiedOffers, fn ($a, $b) => ($a['needed'] ?? PHP_INT_MAX) <=> ($b['needed'] ?? PHP_INT_MAX));
+        $best  = $unqualifiedOffers[0];
+        $offer = $best['offer'];
+
+        $unavailable = $best['unavailable'] ?? false;
+        $needed      = $best['needed'];
+
+        $message = $unavailable
+            ? 'Free product is currently unavailable.'
+            : "Buy {$needed} more eligible item" . ($needed > 1 ? 's' : '') . " to get a free product!";
 
         return [
             'promotion' => [
                 'type'               => 'buy_x_get_x',
                 'offer_id'           => $offer->id,
                 'name'               => $offer->name,
-                'qualified'          => true,
-                'eligible_quantity'  => $eligibleQty,
-                'current_quantity'   => $currentQuantity,
-                'remaining_quantity' => 0,
-                'free_quantity'      => count($qualifyingFreeItems),
-                'free_products'      => array_map(fn ($item) => [
-                    'id'    => $item['product_id'],
-                    'name'  => $item['name'],
-                    'image' => $item['image'],
-                ], $qualifyingFreeItems),
-                'message'            => $offer->name . ' applied!',
+                'qualified'          => false,
+                'eligible_quantity'  => $best['eligibleQty'],
+                'current_quantity'   => $best['currentQty'],
+                'remaining_quantity' => $needed,
+                'offers'             => array_map(fn ($o) => [
+                    'offer_id'           => $o['offer']->id,
+                    'name'               => $o['offer']->name,
+                    'qualified'          => false,
+                    'eligible_quantity'  => $o['eligibleQty'],
+                    'current_quantity'   => $o['currentQty'],
+                    'remaining_quantity' => $o['needed'],
+                    'message'            => "Buy {$o['needed']} more eligible item" . ($o['needed'] > 1 ? 's' : '') . " to get a free product!",
+                ], $unqualifiedOffers),
+                'message' => $message,
             ],
-            'free_item'  => $qualifyingFreeItems[0] ?? null,
-            'free_items' => $qualifyingFreeItems,
-            'cart_items' => $finalCartItems,
-            'qualified'  => true,
+            'free_item'  => null,
+            'free_items' => [],
+            'cart_items' => $userPaidCartItems,
+            'qualified'  => false,
         ];
     }
 
     /**
+     * Build the free cart items for a fully-qualified offer.
+     * Returns an empty array if no free products have stock.
+     *
+     * @param Promotion $offer
+     * @return array
+     */
+    protected function buildFreeItems(Promotion $offer): array
+    {
+        $items = [];
+
+        foreach ($offer->freeProducts as $freeProduct) {
+            if (!$freeProduct->is_active && !$freeProduct->is_free_gift) {
+                continue;
+            }
+
+            $availableVariant = $freeProduct->variants
+                ->filter(fn ($v) => (int) $v->stock > 0)
+                ->sortBy(fn ($v) => [(float) $v->selling_price, (string) ($v->sku ?? '')])
+                ->first();
+
+            $hasVariants = $freeProduct->variants->isNotEmpty();
+
+            // Skip if all variants are out of stock
+            if ($hasVariants && !$availableVariant) {
+                continue;
+            }
+
+            $items[] = [
+                'id'            => 'free-' . $freeProduct->id,
+                'product_id'    => $freeProduct->id,
+                'variant_id'    => $availableVariant?->id ?? null,
+                'name'          => $freeProduct->name,
+                'price'         => 0,
+                'quantity'      => 1,
+                'is_free'       => true,
+                'promotion_id'  => $offer->id,
+                'promotion_name'=> $offer->name,
+                'image'         => $freeProduct->featured_image ?? $freeProduct->image ?? '',
+                'brand'         => $freeProduct->brand?->name ?? 'General',
+                'weight'        => $availableVariant ? trim("{$availableVariant->size} {$availableVariant->unit}") : '1 unit',
+                'category'      => $freeProduct->category?->slug ?? 'General',
+                'inStock'       => true,
+            ];
+        }
+
+        return $items;
+    }
+
+    /**
      * Count how many eligible units in the cart qualify for the given promotion.
-     * This is used to pick the best-matching offer when multiple are active.
      */
     protected function countEligibleQty(Promotion $offer, array $userPaidCartItems): int
     {
