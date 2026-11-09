@@ -8,20 +8,34 @@ use App\Models\Promotion;
 class BuyXGetXPromotionService
 {
     /**
-     * Fetch active Buy X Get X offer.
+     * Fetch all active Buy X Get X offers.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, Promotion>
      */
-    public function getActiveOffer(): ?Promotion
+    public function getActiveOffers()
     {
         return Promotion::query()
             ->active()
             ->where('type', 'buy_x_get_x')
             ->orderBy('id')
             ->with(['eligibleProducts', 'eligibleCategories', 'eligibleBrands', 'freeProducts.variants', 'freeProducts.brand', 'freeProducts.category'])
-            ->first();
+            ->get();
+    }
+
+    /**
+     * Fetch active Buy X Get X offer.
+     *
+     * @deprecated Use getActiveOffers() for multi-promotion support.
+     */
+    public function getActiveOffer(): ?Promotion
+    {
+        return $this->getActiveOffers()->first();
     }
 
     /**
      * Recalculate promotion state and return structured result.
+     * Evaluates all active Buy X Get X promotions and returns the first one
+     * for which the cart qualifies (or the one with the best partial progress).
      *
      * @param array $rawCartItems
      * @return array
@@ -45,7 +59,24 @@ class BuyXGetXPromotionService
             return true;
         }));
 
-        $offer = $this->getActiveOffer();
+        $offers = $this->getActiveOffers();
+
+        // Resolve the best matching offer: prefer one that fully qualifies,
+        // then fall back to the one with the highest partial progress.
+        $offer    = null;
+        $bestQty  = -1;
+        foreach ($offers as $candidate) {
+            $qty = $this->countEligibleQty($candidate, $userPaidCartItems);
+            if ($qty >= (int) $candidate->eligible_quantity) {
+                // Fully qualified — use this offer immediately
+                $offer = $candidate;
+                break;
+            }
+            if ($qty > $bestQty) {
+                $bestQty = $qty;
+                $offer   = $candidate;
+            }
+        }
 
         if (!$offer) {
             return [
@@ -56,12 +87,12 @@ class BuyXGetXPromotionService
             ];
         }
 
-        $eligibleProductIds = array_map('intval', $offer->eligibleProducts->pluck('id')->toArray());
+        $eligibleProductIds  = array_map('intval', $offer->eligibleProducts->pluck('id')->toArray());
         $eligibleCategoryIds = array_map('intval', $offer->eligibleCategories->pluck('id')->toArray());
-        $eligibleBrandIds = array_map('intval', $offer->eligibleBrands->pluck('id')->toArray());
+        $eligibleBrandIds    = array_map('intval', $offer->eligibleBrands->pluck('id')->toArray());
 
         if (!empty($eligibleCategoryIds)) {
-            $childCategoryIds = \App\Models\Category::whereIn('parent_id', $eligibleCategoryIds)->pluck('id')->toArray();
+            $childCategoryIds    = \App\Models\Category::whereIn('parent_id', $eligibleCategoryIds)->pluck('id')->toArray();
             $eligibleCategoryIds = array_unique(array_merge($eligibleCategoryIds, array_map('intval', $childCategoryIds)));
         }
 
@@ -71,7 +102,7 @@ class BuyXGetXPromotionService
         $currentQuantity = 0;
 
         foreach ($userPaidCartItems as $item) {
-            $rawId = $item['product_id'] ?? $item['id'] ?? null;
+            $rawId        = $item['product_id'] ?? $item['id'] ?? null;
             $rawVariantId = $item['variant_id'] ?? $item['variantId'] ?? null;
 
             if (is_string($rawId) && str_starts_with($rawId, 'free-gift-')) {
@@ -99,7 +130,7 @@ class BuyXGetXPromotionService
                 continue;
             }
 
-            $productBrandId = $product->brand_id ? (int) $product->brand_id : null;
+            $productBrandId    = $product->brand_id    ? (int) $product->brand_id    : null;
             $productCategoryId = $product->category_id ? (int) $product->category_id : null;
 
             $isEligible = ! $hasRestrictions ||
@@ -152,7 +183,6 @@ class BuyXGetXPromotionService
                 ->sortBy(fn ($v) => [(float)$v->selling_price, (string)($v->sku ?? '')])
                 ->first();
 
-            $totalStock = $freeProduct->variants->sum('stock');
             $hasVariants = $freeProduct->variants->isNotEmpty();
 
             // Product qualifies if:
@@ -222,5 +252,71 @@ class BuyXGetXPromotionService
             'cart_items' => $finalCartItems,
             'qualified'  => true,
         ];
+    }
+
+    /**
+     * Count how many eligible units in the cart qualify for the given promotion.
+     * This is used to pick the best-matching offer when multiple are active.
+     */
+    protected function countEligibleQty(Promotion $offer, array $userPaidCartItems): int
+    {
+        $eligibleProductIds  = array_map('intval', $offer->eligibleProducts->pluck('id')->toArray());
+        $eligibleCategoryIds = array_map('intval', $offer->eligibleCategories->pluck('id')->toArray());
+        $eligibleBrandIds    = array_map('intval', $offer->eligibleBrands->pluck('id')->toArray());
+
+        if (!empty($eligibleCategoryIds)) {
+            $childCategoryIds    = \App\Models\Category::whereIn('parent_id', $eligibleCategoryIds)->pluck('id')->toArray();
+            $eligibleCategoryIds = array_unique(array_merge($eligibleCategoryIds, array_map('intval', $childCategoryIds)));
+        }
+
+        $hasRestrictions = !empty($eligibleProductIds) || !empty($eligibleCategoryIds) || !empty($eligibleBrandIds);
+
+        $qty = 0;
+        foreach ($userPaidCartItems as $item) {
+            // Skip free gifts
+            if (!empty($item['is_free_gift'])) {
+                continue;
+            }
+            $rawId = $item['product_id'] ?? $item['id'] ?? null;
+            if (is_string($rawId) && str_starts_with($rawId, 'free-gift-')) {
+                continue;
+            }
+            if (is_string($rawId) && str_starts_with($rawId, 'free-')) {
+                $rawId = (int) str_replace('free-', '', $rawId);
+            }
+
+            $product      = null;
+            $rawVariantId = $item['variant_id'] ?? $item['variantId'] ?? null;
+
+            if ($rawId && is_numeric($rawId)) {
+                $product = Product::find((int) $rawId);
+            }
+            if (!$product && $rawVariantId && is_numeric($rawVariantId)) {
+                $variant = \App\Models\ProductVariant::with('product')->find((int) $rawVariantId);
+                $product = $variant?->product;
+            }
+            if (!$product && $rawId && is_numeric($rawId)) {
+                $variant = \App\Models\ProductVariant::with('product')->find((int) $rawId);
+                $product = $variant?->product;
+            }
+
+            if (!$product || (!$product->is_active && !$product->is_free_gift)) {
+                continue;
+            }
+
+            $productBrandId    = $product->brand_id    ? (int) $product->brand_id    : null;
+            $productCategoryId = $product->category_id ? (int) $product->category_id : null;
+
+            $isEligible = !$hasRestrictions
+                || in_array((int) $product->id, $eligibleProductIds, true)
+                || ($productCategoryId && in_array($productCategoryId, $eligibleCategoryIds, true))
+                || ($productBrandId    && in_array($productBrandId,    $eligibleBrandIds,    true));
+
+            if ($isEligible) {
+                $qty += max(0, (int) ($item['quantity'] ?? 1));
+            }
+        }
+
+        return $qty;
     }
 }
